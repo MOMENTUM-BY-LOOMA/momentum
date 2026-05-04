@@ -13,7 +13,7 @@ function Login() {
     event.preventDefault()
 
     if (!email.trim() || !password.trim()) {
-      setError('Completa correo y contrasena')
+      setError('Completa correo y contraseña')
       return
     }
 
@@ -23,6 +23,9 @@ function Login() {
     try {
       const result = await loginUser(email.trim(), password)
       localStorage.setItem('authToken', result.token)
+      if (result.refreshToken) {
+        localStorage.setItem('refreshToken', result.refreshToken)
+      }
       localStorage.setItem('authUser', JSON.stringify(result.user))
       navigate('/dashboard')
     } catch (submitError) {
@@ -53,7 +56,7 @@ function Login() {
           </label>
 
           <label className="field auth-field" htmlFor="login-password">
-            <span>Contrasena</span>
+            <span>Contraseña</span>
             <input
               id="login-password"
               name="password"
@@ -67,7 +70,7 @@ function Login() {
 
           {error ? <p className="auth-screen__error">{error}</p> : null}
 
-          <button type="button" className="auth-screen__forgot">He olvidado mi contrasena</button>
+          <button type="button" className="auth-screen__forgot">He olvidado mi contraseña</button>
 
           <div className="auth-screen__actions">
             <Link to="/" className="auth-screen__back" aria-label="Volver a inicio">←</Link>

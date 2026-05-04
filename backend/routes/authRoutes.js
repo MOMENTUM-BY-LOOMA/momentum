@@ -508,6 +508,18 @@ router.post(
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('avatar')
+      .optional()
+      .isString()
+      .withMessage('avatar must be a string')
+      .custom((value) => value.startsWith('data:image/'))
+      .withMessage('avatar must be an image'),
+    body('profilePhoto')
+      .optional()
+      .isString()
+      .withMessage('profilePhoto must be a string')
+      .custom((value) => value.startsWith('data:image/'))
+      .withMessage('profilePhoto must be an image'),
     body('biography').optional().isString().withMessage('biography must be a string'),
     body('birthDate').optional({ nullable: true }).isISO8601().withMessage('Invalid birthDate'),
     body('country').optional().isString().withMessage('country must be a string'),
@@ -535,6 +547,8 @@ router.post(
         name,
         email,
         password: hashed,
+        avatar: req.body.avatar ?? '',
+        profilePhoto: req.body.profilePhoto ?? req.body.avatar ?? '',
         biography: req.body.biography ?? '',
         birthDate: req.body.birthDate ? new Date(req.body.birthDate) : null,
         country: req.body.country ?? '',

@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerUser } from '../services/api.ts'
 
@@ -8,8 +8,43 @@ function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
+  const [profilePhoto, setProfilePhoto] = useState('')
+  const [photoName, setPhotoName] = useState('')
+  const [photoPreview, setPhotoPreview] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      setProfilePhoto('')
+      setPhotoName('')
+      setPhotoPreview('')
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Solo se permiten fotos (jpg, png, webp, etc.)')
+      event.target.value = ''
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La foto debe pesar menos de 5MB')
+      event.target.value = ''
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = String(reader.result ?? '')
+      setProfilePhoto(result)
+      setPhotoPreview(result)
+      setPhotoName(file.name)
+      setError('')
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -20,12 +55,12 @@ function Register() {
     }
 
     if (password.length < 8) {
-      setError('La contrasena debe tener al menos 8 caracteres')
+      setError('La contraseña debe tener al menos 8 caracteres')
       return
     }
 
     if (password !== repeatPassword) {
-      setError('Las contrasenas no coinciden')
+      setError('Las contraseñas no coinciden')
       return
     }
 
@@ -33,7 +68,7 @@ function Register() {
     setError('')
 
     try {
-      await registerUser(name.trim(), email.trim(), password)
+      await registerUser(name.trim(), email.trim(), password, profilePhoto || undefined)
       navigate('/login')
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : 'Error en el registro'
@@ -75,7 +110,7 @@ function Register() {
           </label>
 
           <label className="field auth-field" htmlFor="register-password">
-            <span>Contrasena</span>
+            <span>Contraseña</span>
             <input
               id="register-password"
               name="password"
@@ -88,7 +123,7 @@ function Register() {
           </label>
 
           <label className="field auth-field" htmlFor="register-repeat-password">
-            <span>Repetir contrasena</span>
+            <span>Repetir contraseña</span>
             <input
               id="register-repeat-password"
               name="repeatPassword"
@@ -102,10 +137,26 @@ function Register() {
 
           <label className="field auth-field" htmlFor="register-photo">
             <span>Foto de usuario</span>
-            <div className="auth-screen__file-wrap">
-              <input id="register-photo" name="userPhoto" type="text" placeholder="Selecciona foto de usuario" readOnly />
-              <span className="auth-screen__file-arrow">&gt;</span>
-            </div>
+            <input
+              id="register-photo"
+              name="userPhoto"
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="auth-screen__file-input"
+            />
+            <label htmlFor="register-photo" className="auth-screen__file-picker">
+              <span>{photoName ? 'Cambiar foto' : 'Seleccionar foto'}</span>
+              <span className="auth-screen__file-picker-arrow">&gt;</span>
+            </label>
+            <small className="auth-screen__file-hint">
+              {photoName ? `Seleccionada: ${photoName}` : 'Elige una imagen para tu perfil'}
+            </small>
+            {photoPreview ? (
+              <div className="auth-screen__preview-wrap">
+                <img src={photoPreview} alt="Vista previa de foto de perfil" className="auth-screen__preview-image" />
+              </div>
+            ) : null}
           </label>
 
           {error ? <p className="auth-screen__error">{error}</p> : null}

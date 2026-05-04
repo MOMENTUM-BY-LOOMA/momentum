@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 interface Model3DViewerProps {
   modelPath: string;
@@ -57,14 +58,14 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
 
     loader.load(
       modelPath,
-      (gltf) => {
+      (gltf: GLTF) => {
         console.log('✅ Modelo cargado');
         
         // Crear grupo para el modelo
         const modelGroup = new THREE.Group();
         
         // Copiar todas las geometrías y materiales del modelo
-        gltf.scene.children.forEach(child => {
+        gltf.scene.children.forEach((child: THREE.Object3D) => {
           modelGroup.add(child.clone(true));
         });
 
@@ -76,7 +77,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
         console.log('📏 Tamaño:', { x: size.x.toFixed(2), y: size.y.toFixed(2), z: size.z.toFixed(2) });
 
         // Centrar todo en el origen
-        modelGroup.children.forEach(child => {
+        modelGroup.children.forEach((child: THREE.Object3D) => {
           if (child instanceof THREE.Mesh) {
             child.position.sub(center);
           }
@@ -91,7 +92,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
         scene.add(modelGroup);
       },
       undefined,
-      (error) => {
+      (error: unknown) => {
         console.error('❌ Error cargando modelo:', error);
       }
     );
