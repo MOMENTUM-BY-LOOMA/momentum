@@ -12,11 +12,12 @@ import './styles/app.css'
 function AppLayout() {
   const location = useLocation()
   const hideNavbar = ['/', '/inicio-publico', '/login', '/registro'].includes(location.pathname)
+  const isCapsuleRoute = location.pathname === '/capsula'
 
   return (
     <div className="app-shell">
       {!hideNavbar && <Navbar />}
-      <main className={`app-content ${hideNavbar ? 'app-content--auth' : ''}`}>
+      <main className={`app-content ${hideNavbar ? 'app-content--auth' : ''} ${isCapsuleRoute ? 'app-content--capsule' : ''}`}>
         <Routes>
           <Route path="/" element={<InitialLoading />} />
           <Route path="/inicio-publico" element={<Home />} />
