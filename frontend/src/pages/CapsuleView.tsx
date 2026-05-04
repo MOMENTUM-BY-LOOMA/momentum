@@ -1,27 +1,37 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Model3DViewer } from '../3d/Model3DViewer'
-import { fetchCapsuleById, fetchCapsules, type ApiCapsule } from '../services/api.ts'
+import { fetchCapsuleById, fetchCapsules, fetchFriends, type ApiCapsule, type ApiFriendRelation, type ApiUser } from '../services/api.ts'
 
 type CapsuleLocationState = {
   capsuleId?: string
 }
 
-function formatDate(value?: string) {
-  if (!value) return 'Sin fecha'
+function resolveUserAvatar(user: ApiUser | string | undefined) {
+  if (!user || typeof user === 'string') return undefined
 
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(value))
+  return user.avatar || user.profilePhoto
 }
 
-function resolveUserName(user: ApiCapsule['owner']) {
-  if (!user) return 'Desconocido'
-  if (typeof user === 'string') return user
+function getUserId(user: ApiUser | string | undefined) {
+  if (!user || typeof user === 'string') return user
 
-  return user.name
+  return user._id
+}
+
+function friendFromRelation(relation: ApiFriendRelation, currentUserId?: string) {
+  const requesterId = getUserId(relation.requester)
+  const recipientId = getUserId(relation.recipient)
+
+  if (currentUserId && requesterId === currentUserId) {
+    return relation.recipient
+  }
+
+  if (currentUserId && recipientId === currentUserId) {
+    return relation.requester
+  }
+
+  return relation.friend ?? relation.otherUser ?? relation.recipient ?? relation.requester
 }
 
 function CapsuleView() {
@@ -31,6 +41,7 @@ function CapsuleView() {
   const locationState = location.state as CapsuleLocationState | null
   const capsuleId = locationState?.capsuleId
   const [capsule, setCapsule] = useState<ApiCapsule | null>(null)
+  const [friends, setFriends] = useState<ApiFriendRelation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -45,8 +56,14 @@ function CapsuleView() {
       setError('')
 
       try {
-        const selectedCapsule = capsuleId ? await fetchCapsuleById(capsuleId) : (await fetchCapsules())[0] ?? null
+        const [capsuleResponse, friendsResponse] = await Promise.all([
+          capsuleId ? fetchCapsuleById(capsuleId).catch(() => null) : Promise.resolve(null),
+          fetchFriends().catch(() => []),
+        ])
+
+        const selectedCapsule = capsuleResponse ?? (await fetchCapsules())[0] ?? null
         setCapsule(selectedCapsule)
+        setFriends(friendsResponse)
       } catch (loadError) {
         const message = loadError instanceof Error ? loadError.message : 'No se pudo cargar la capsula'
         setError(message)
@@ -79,73 +96,66 @@ function CapsuleView() {
     )
   }
 
-  const mediaItems = capsule.mediaItems ?? []
-  const firstMedia = mediaItems[0]
+  const sharedUsers = (capsule.sharedWith ?? []).filter((sharedUser) => {
+    const sharedUserId = typeof sharedUser === 'string' ? sharedUser : sharedUser._id
+    return friends.some((relation) => {
+      const friend = friendFromRelation(relation)
+      const friendId = getUserId(friend)
+      return friendId === sharedUserId
+    })
+  })
 
   return (
     <div className="capsule-view">
       <section className="page-layout">
-        <article className="page-card">
-          <div className="capsule-header">
-            <div>
-              <h1>{capsule.title}</h1>
-              <p>{capsule.description || 'Sin descripcion añadida.'}</p>
-            </div>
-            <div className="capsule-meta">
-              <span>{capsule.category || 'Sin categoria'}</span>
-              <span>{formatDate(capsule.updatedAt ?? capsule.createdAt ?? capsule.date)}</span>
-              <span>{mediaItems.length} archivos</span>
-              <span>{capsule.sharedWith?.length ?? 0} compartidos</span>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <div className="panel-grid capsule-view__grid">
-        <article className="panel">
-          <h2>Detalle</h2>
-          <p className="capsule-story">Propietario: {resolveUserName(capsule.owner)}</p>
-          <p className="capsule-story">Diseño: {capsule.design?.label || capsule.design?.key || 'Estándar'}</p>
-          <p className="capsule-story">
-            Tiempo bloqueado: {capsule.timeCapsule?.enabled ? `Sí, se abre el ${formatDate(capsule.timeCapsule.unlockAt ?? undefined)}` : 'No'}
-          </p>
-        </article>
-
-        <article className="panel">
-          <h2>Archivos</h2>
-          {mediaItems.length === 0 ? (
-            <p>No hay archivos subidos todavía.</p>
-          ) : (
-            <div className="capsule-media-grid">
-              {mediaItems.map((mediaItem) => (
-                <article key={mediaItem._id ?? mediaItem.url} className="capsule-media-card">
-                  {mediaItem.type === 'image' || mediaItem.thumbnailUrl ? (
-                    <img
-                      src={mediaItem.thumbnailUrl || mediaItem.url}
-                      alt={mediaItem.title || 'Archivo de la capsula'}
-                      className="capsule-media-card__image"
-                    />
-                  ) : (
-                    <div className="capsule-media-card__placeholder">{mediaItem.type || 'file'}</div>
-                  )}
-                  <strong>{mediaItem.title || 'Archivo sin titulo'}</strong>
-                  <small>{mediaItem.description || mediaItem.url}</small>
-                  <small>{mediaItem.comments?.length ?? 0} comentarios</small>
-                </article>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
-
-      <section className="capsule-view__viewer">
-        <div className="capsule-view__viewer-shell">
-          <Model3DViewer
-            modelPath="/3d/statue of liberty 3d model.glb"
-            backgroundColor="#f5f5f5"
-          />
+        <div className="capsule-header capsule-header--plain">
+          <h1>{capsule.title}</h1>
         </div>
-        {firstMedia ? <p className="page-status">Mostrando la primera pieza multimedia como referencia visual.</p> : null}
+
+        <section className="capsule-view__viewer">
+          <div className="capsule-view__viewer-shell">
+            <Model3DViewer
+              modelPath="/3d/statue of liberty 3d model.glb"
+              backgroundColor="transparent"
+            />
+          </div>
+        </section>
+
+        <section className="capsule-friends-section">
+          <h2 className="capsule-friends-section__title">Amigos que comparten esta capsula</h2>
+          {sharedUsers.length === 0 ? (
+            <p className="capsule-friends-section__empty">No hay amigos tuyos compartiendo esta capsula todavía.</p>
+          ) : (
+            <ul className="capsule-friends-list">
+              {sharedUsers.map((sharedUser) => {
+                const sharedUserId = typeof sharedUser === 'string' ? sharedUser : sharedUser._id
+                const friendRelation = friends.find((relation) => {
+                  const friend = friendFromRelation(relation)
+                  return getUserId(friend) === sharedUserId
+                })
+                const friend = friendRelation ? friendFromRelation(friendRelation) : sharedUser
+                const avatar = resolveUserAvatar(friend)
+                const name = typeof friend === 'string' ? friend : friend.name
+
+                return (
+                  <li key={sharedUserId} className="capsule-friend-chip">
+                    {avatar ? (
+                      <img src={avatar} alt={name} className="capsule-friend-chip__avatar" />
+                    ) : (
+                      <span className="capsule-friend-chip__avatar capsule-friend-chip__avatar--fallback" aria-hidden="true">
+                        {name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <div className="capsule-friend-chip__text">
+                      <strong>{name}</strong>
+                      <small>Amigo compartido</small>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
       </section>
     </div>
   )

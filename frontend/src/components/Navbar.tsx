@@ -10,7 +10,6 @@ const publicNavItems = [
 ]
 
 const privateNavItems = [
-  { to: '/dashboard', label: 'Dashboard' },
   { to: '/capsula', label: 'Capsula' },
   { to: '/subir', label: 'Subir' },
 ]
@@ -63,12 +62,7 @@ function Navbar() {
 
   return (
     <header className="navbar">
-      <div className="navbar__brand-wrap">
-        <div className="navbar__brand">Momentum</div>
-        {token && user ? <span className="navbar__user">{user.name}</span> : null}
-      </div>
-
-      <div className="navbar__actions">
+      <div className="navbar__side navbar__side--left">
         <nav className="navbar__menu" aria-label="Navegación principal">
           {(token ? privateNavItems : publicNavItems).map((item: NavItem) => (
             <NavLink
@@ -81,7 +75,14 @@ function Navbar() {
             </NavLink>
           ))}
         </nav>
+      </div>
 
+      <NavLink to={token ? '/dashboard' : '/login'} className="navbar__center-btn" aria-label="Ir al dashboard">
+        <span className="navbar__center-btn-circle">M</span>
+      </NavLink>
+
+      <div className="navbar__side navbar__side--right">
+        {token && user ? <span className="navbar__user">{user.name}</span> : null}
         {token ? (
           <>
             <NotificationBell token={token} />

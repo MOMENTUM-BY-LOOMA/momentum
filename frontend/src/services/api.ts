@@ -63,6 +63,19 @@ export type ApiNotification = {
   }
 }
 
+export type ApiFriendRelation = {
+  _id: string
+  pairKey: string
+  status: 'pending' | 'accepted' | 'blocked'
+  blockedBy?: string | null
+  createdAt?: string
+  updatedAt?: string
+  requester: ApiUser | string
+  recipient: ApiUser | string
+  otherUser?: ApiUser | string
+  friend?: ApiUser | string
+}
+
 export type LoginResponse = {
   token: string
   refreshToken?: string
@@ -176,6 +189,10 @@ export async function fetchCapsules(): Promise<ApiCapsule[]> {
 
 export async function fetchCapsuleById(capsuleId: string): Promise<ApiCapsule> {
   return requestJson<ApiCapsule>(`/api/capsules/${capsuleId}`)
+}
+
+export async function fetchFriends(): Promise<ApiFriendRelation[]> {
+  return requestJson<ApiFriendRelation[]>('/api/friends')
 }
 
 export async function createCapsule(payload: {

@@ -41,6 +41,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(new THREE.Color(backgroundColor), backgroundColor === 'transparent' ? 0 : 1);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -169,7 +170,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        background: 'radial-gradient(circle at 50% 50%, #6ea8e6 0%, #a7ccef 42%, #d8e9f8 78%, #ffffff 100%)',
+        background: backgroundColor === 'transparent' ? 'transparent' : backgroundColor,
       }}
     />
   );
