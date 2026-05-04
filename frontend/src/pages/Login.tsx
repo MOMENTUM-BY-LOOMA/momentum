@@ -29,7 +29,7 @@ function Login() {
       localStorage.setItem('authUser', JSON.stringify(result.user))
       navigate('/dashboard')
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : 'Error de autenticacion'
+      const message = submitError instanceof Error ? submitError.message : 'Error de autenticación'
       setError(message)
     } finally {
       setIsSubmitting(false)
@@ -37,13 +37,13 @@ function Login() {
   }
 
   return (
-    <section className="auth-screen" aria-label="Pantalla de inicio de sesion">
+    <section className="auth-screen" aria-label="Pantalla de inicio de sesión">
       <div className="auth-screen__brand" aria-hidden="true">M</div>
       <article className="auth-screen__card">
 
         <form className="auth-screen__form" onSubmit={handleSubmit}>
           <label className="field auth-field" htmlFor="login-email">
-            <span>Correo electronico</span>
+            <span>Correo electrónico</span>
             <input
               id="login-email"
               name="email"
