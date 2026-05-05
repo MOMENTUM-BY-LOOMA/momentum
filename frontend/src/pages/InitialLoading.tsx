@@ -44,7 +44,7 @@ function InitialLoading() {
         }
       }}
     >
-      <img src="/img/logo_momentum.png" alt="Momentum" className="onboarding-screen__splash-logo" />
+      <img src="/img/logo_momentum.svg" alt="Momentum" className="onboarding-screen__splash-logo" />
     </section>
   )
 }

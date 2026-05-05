@@ -84,7 +84,7 @@ function Register() {
 
   return (
     <section className="auth-screen" aria-label="Pantalla de registro">
-      <img className="auth-screen__brand auth-screen__brand-image" src="/img/logo_m.png" alt="M" />
+      <img className="auth-screen__brand auth-screen__brand-image" src="/img/logo_m.svg" alt="M" />
       <article className="auth-screen__card">
         <form className="auth-screen__form" onSubmit={handleSubmit}>
           <label className="field auth-field" htmlFor="register-name">
@@ -175,7 +175,7 @@ function Register() {
 
         <div className="auth-screen__footer">
           <p>Captura tus recuerdos</p>
-          <img className="auth-screen__looma-logo" src="/img/logo_looma.png" alt="looma" />
+          <img className="auth-screen__looma-logo" src="/img/logo_looma.svg" alt="looma" />
         </div>
       </article>
     </section>

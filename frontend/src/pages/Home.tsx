@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 function Home() {
   return (
     <section className="onboarding-screen onboarding-screen--welcome" aria-label="Pantalla de bienvenida">
-      <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
+      <img className="onboarding-screen__mark" src="/img/logo_m.svg" alt="M" />
 
       <div className="onboarding-screen__welcome-copy">
         <h1>BIENVENIDO A MOMENTUM</h1>
@@ -21,7 +21,7 @@ function Home() {
         </p>
       </div>
 
-      <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
+      <img className="onboarding-screen__wordmark" src="/img/logo_looma.svg" alt="looma" />
 
       <Link className="onboarding-screen__cta" to="/inicio-registro">
         Inicia sesión para empezar la experiencia

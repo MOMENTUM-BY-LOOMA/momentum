@@ -16,7 +16,7 @@ function StartAccess() {
 
       <div className="onboarding-screen__footer">
         <p>Captura tus recuerdos</p>
-        <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
+        <img className="onboarding-screen__wordmark" src="/img/logo_looma.svg" alt="looma" />
       </div>
     </section>
   )
