@@ -21,7 +21,7 @@ import './styles/app.css'
 
 function AppLayout() {
   const location = useLocation()
-  const hideNavbar = ['/', '/inicio-publico', '/inicio-registro', '/login', '/registro', '/dashboard'].includes(location.pathname)
+  const hideNavbar = ['/', '/inicio-publico', '/inicio-registro', '/login', '/registro', '/dashboard', '/buscar', '/amigos', '/perfil'].includes(location.pathname)
 
   return (
     <div className="app-shell">

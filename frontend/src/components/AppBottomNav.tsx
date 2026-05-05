@@ -47,7 +47,7 @@ function AppBottomNav() {
 
   // Hide rules: splash '/', registro, login, onboarding intro '/inicio-registro',
   // and any create flow steps that start with '/capsulas/crear'
-  const hidePaths = ['/', '/registro', '/login', '/inicio-registro']
+  const hidePaths = ['/', '/inicio-publico', '/registro', '/login', '/inicio-registro']
   const shouldHide = hidePaths.includes(location.pathname) || location.pathname.startsWith('/capsulas/crear')
 
   if (shouldHide) return null

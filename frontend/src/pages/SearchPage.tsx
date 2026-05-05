@@ -1,94 +1,95 @@
-import { useEffect, useMemo, useState } from 'react'
-import { fetchCapsules, fetchFriends, type ApiCapsule, type ApiFriendRelation, type ApiUser } from '../services/api.ts'
+import { useMemo, useState } from 'react'
 
-function getFriendUser(relation: ApiFriendRelation) {
-  if (relation.friend && typeof relation.friend !== 'string') return relation.friend
-  if (relation.otherUser && typeof relation.otherUser !== 'string') return relation.otherUser
-  if (relation.recipient && typeof relation.recipient !== 'string') return relation.recipient
-  if (relation.requester && typeof relation.requester !== 'string') return relation.requester
-  return null
+type CategoryCard = {
+  title: string
+  icon: 'travel' | 'study' | 'friends' | 'empty'
+}
+
+const CATEGORIES: CategoryCard[] = [
+  { title: 'Viajes', icon: 'travel' },
+  { title: 'Estudio', icon: 'study' },
+  { title: 'Amigos', icon: 'friends' },
+  { title: 'Otros', icon: 'empty' },
+]
+
+function CategoryIcon({ icon }: { icon: CategoryCard['icon'] }) {
+  if (icon === 'empty') return null
+
+  if (icon === 'travel') {
+    return (
+      <svg className="search-screen__category-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="17" y="10" width="22" height="34" rx="3" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <path d="M22 17h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M22 23h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M37 26l10-7 2 4-8 6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M41 31l12-2-3 10-8 2-4-4z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="28" cy="48" r="2" fill="currentColor" />
+      </svg>
+    )
+  }
+
+  if (icon === 'study') {
+    return (
+      <svg className="search-screen__category-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M16 16h20v28H16z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d="M20 20h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M20 26h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M38 28a9 9 0 1 1 9 9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="47" cy="38" r="4" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <path d="M47 43v6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg className="search-screen__category-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M12 34l10-8 10 8-10 8-10-8z" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M22 30l8-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M32 34l8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M40 22l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M41 21l10-3 3 10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
 }
 
 function SearchPage() {
-  const [mode, setMode] = useState<'capsules' | 'friends'>('capsules')
   const [query, setQuery] = useState('')
-  const [capsules, setCapsules] = useState<ApiCapsule[]>([])
-  const [friends, setFriends] = useState<ApiFriendRelation[]>([])
-
-  useEffect(() => {
-    const load = async () => {
-      const [capsulesResponse, friendsResponse] = await Promise.all([
-        fetchCapsules().catch(() => []),
-        fetchFriends().catch(() => []),
-      ])
-
-      setCapsules(capsulesResponse)
-      setFriends(friendsResponse)
-    }
-
-    load()
-  }, [])
-
-  const filteredCapsules = useMemo(() => {
-    if (!query.trim()) return capsules
-    const q = query.toLowerCase()
-    return capsules.filter((capsule) => `${capsule.title} ${capsule.category || ''}`.toLowerCase().includes(q))
-  }, [capsules, query])
-
-  const filteredFriends = useMemo(() => {
-    const users = friends
-      .map((relation) => getFriendUser(relation))
-      .filter((user): user is ApiUser => Boolean(user))
-
-    if (!query.trim()) return users
-
-    const q = query.toLowerCase()
-    return users.filter((user) => `${user.name} ${user.email}`.toLowerCase().includes(q))
-  }, [friends, query])
+  const categories = useMemo(() => CATEGORIES, [])
 
   return (
-    <section className="page-layout page-layout--module">
-      <article className="page-card">
-        <h1>Buscar</h1>
-        <p>Explora capsulas y amigos con filtros rapidos.</p>
-
-        <div className="button-row">
-          <button type="button" className={mode === 'capsules' ? 'button-primary' : 'button-secondary'} onClick={() => setMode('capsules')}>
-            Capsulas
-          </button>
-          <button type="button" className={mode === 'friends' ? 'button-primary' : 'button-secondary'} onClick={() => setMode('friends')}>
-            Amigos
-          </button>
+    <section className="search-screen" aria-label="Pantalla de búsqueda">
+      <header className="search-screen__header">
+        <div className="search-screen__brand" aria-hidden="true">
+          <img src="/img/logo_m.svg" alt="" />
         </div>
+        <h1>BÚSQUEDA</h1>
+      </header>
 
-        <label className="field" htmlFor="search-query">
-          <span>Busqueda</span>
-          <input
-            id="search-query"
-            type="text"
-            placeholder="Buscar por nombre, categoria o email"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-      </article>
+      <section className="search-screen__search-bar" aria-label="Buscar cápsula por nombre">
+        <input
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Introduce el nombre de la cápsula"
+          aria-label="Introduce el nombre de la cápsula"
+        />
+        <button type="button">Buscar</button>
+      </section>
 
-      <article className="page-card">
-        <h2>{mode === 'capsules' ? 'Resultados de capsulas' : 'Resultados de amigos'}</h2>
-        {mode === 'capsules' ? (
-          <ul className="module-list">
-            {filteredCapsules.length === 0 ? <li>Sin resultados.</li> : filteredCapsules.map((capsule) => (
-              <li key={capsule._id}>{capsule.title}</li>
-            ))}
-          </ul>
-        ) : (
-          <ul className="module-list">
-            {filteredFriends.length === 0 ? <li>Sin resultados.</li> : filteredFriends.map((friend) => (
-              <li key={friend._id}>{friend.name} ({friend.email})</li>
-            ))}
-          </ul>
-        )}
-      </article>
+      <p className="search-screen__help-text">Elige una categoría y encuentra tu cápsula</p>
+
+      <section className="search-screen__grid" aria-label="Categorías de búsqueda">
+        {categories.map((category) => (
+          <article key={category.title} className="search-screen__category">
+            <h2>{category.title.toUpperCase()}</h2>
+            <div className="search-screen__card">
+              <div className="search-screen__placeholder">
+                <CategoryIcon icon={category.icon} />
+              </div>
+            </div>
+          </article>
+        ))}
+      </section>
     </section>
   )
 }

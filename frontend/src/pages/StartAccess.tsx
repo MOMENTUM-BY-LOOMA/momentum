@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 function StartAccess() {
   return (
     <section className="onboarding-screen onboarding-screen--entry" aria-label="Pantalla de acceso">
-      <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
+      <img className="onboarding-screen__mark" src="/img/logo_m.svg" alt="M" />
 
       <div className="onboarding-screen__entry-actions">
         <Link className="onboarding-screen__button onboarding-screen__button--light" to="/login">

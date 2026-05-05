@@ -1,117 +1,103 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCapsules, fetchCurrentUser, type ApiCapsule, type ApiUser } from '../services/api.ts'
-
-function formatDate(value?: string) {
-  if (!value) return 'Sin fecha'
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value))
-}
 
 function Dashboard() {
   const navigate = useNavigate()
-  const token = localStorage.getItem('authToken')
-  const [user, setUser] = useState<ApiUser | null>(null)
-  const [capsules, setCapsules] = useState<ApiCapsule[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
-    const loadDashboard = async () => {
-      setLoading(true)
-      setError('')
-
-      try {
-        const [currentUser, capsuleList] = await Promise.all([
-          fetchCurrentUser(),
-          fetchCapsules(),
-        ])
-
-        setUser(currentUser)
-        setCapsules(capsuleList)
-      } catch (loadError) {
-        const message = loadError instanceof Error ? loadError.message : 'No se pudo cargar el dashboard'
-        setError(message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadDashboard()
-  }, [navigate, token])
-
-  const totalCapsules = capsules.length
-  const capsulesWithMedia = capsules.filter((capsule) => (capsule.mediaItems?.length ?? 0) > 0).length
-  const sharedCapsules = capsules.filter((capsule) => (capsule.sharedWith?.length ?? 0) > 0).length
-  const recentCapsules = capsules.slice(0, 3)
 
   return (
-    <section className="page-layout">
-      <div className="hero-panel">
-        <h1>Inicio</h1>
-        <p>
-          {user ? `Hola, ${user.name}.` : 'Vista general de actividad, recuerdos recientes y estado de tu coleccion.'}
-        </p>
-        <p>Todo lo que ves aquí sale del backend real.</p>
-      </div>
+    <section className="dashboard-mobile" aria-label="Pantalla principal de Momentum">
+      <header className="dashboard-mobile__topbar">
+        <button
+          type="button"
+          className="dashboard-mobile__icon-btn"
+          aria-label="Cambiar brillo o contraste"
+          onClick={() => navigate('/ajustes')}
+        >
+          <span aria-hidden="true">☀</span>
+        </button>
 
-      <div className="stats-grid">
-        {[
-          { label: 'Capsulas totales', value: totalCapsules.toString() },
-          { label: 'Con multimedia', value: capsulesWithMedia.toString() },
-          { label: 'Compartidas', value: sharedCapsules.toString() },
-        ].map((stat) => (
-          <article key={stat.label} className="stat-card">
-            <span>{stat.label}</span>
-            <strong>{stat.value}</strong>
-          </article>
-        ))}
-      </div>
+        <div className="dashboard-mobile__logo-wrap" aria-hidden="true">
+          <img className="dashboard-mobile__logo" src="/img/logo_m.svg" alt="" />
+        </div>
 
-      {error ? <p className="page-status page-status--error">{error}</p> : null}
-      {loading ? <p className="page-status">Cargando capsulas...</p> : null}
+        <button
+          type="button"
+          className="dashboard-mobile__icon-btn"
+          aria-label="Abrir ajustes"
+          onClick={() => navigate('/ajustes')}
+        >
+          <span aria-hidden="true">⚙</span>
+        </button>
+      </header>
 
-      <div className="panel-grid">
-        <article className="panel">
-          <h2>Ultimas capsulas</h2>
-          {recentCapsules.length === 0 ? (
-            <p>No tienes capsulas todavia. Sube la primera para empezar.</p>
-          ) : (
-            <div className="capsule-list">
-              {recentCapsules.map((capsule) => (
-                <button
-                  key={capsule._id}
-                  type="button"
-                  className="capsule-list__item"
-                  onClick={() => navigate(`/capsulas/${capsule._id}`)}
-                >
-                  <strong>{capsule.title}</strong>
-                  <span>{capsule.category || 'Sin categoria'}</span>
-                  <small>{formatDate(capsule.updatedAt ?? capsule.createdAt)}</small>
-                </button>
-              ))}
+      <section className="dashboard-mobile__profile-panel" aria-labelledby="mi-perfil-title">
+        <div className="dashboard-mobile__profile-head">
+          <h1 id="mi-perfil-title">MI PERFIL</h1>
+        </div>
+
+        <div className="dashboard-mobile__profile-main">
+          <div className="dashboard-mobile__capsule-previews" aria-label="Cápsulas destacadas">
+            <div className="dashboard-mobile__preview">
+              <span>imagen</span>
             </div>
-          )}
-        </article>
-        <article className="panel">
-          <h2>Proxima accion</h2>
-          <p>Sube una nueva capsula con fotos, videos o documentos y deja todo guardado en el backend.</p>
-          <div className="button-row">
-            <button type="button" className="button-primary" onClick={() => navigate('/capsulas/crear')}>
-              Crear capsula
-            </button>
+            <div className="dashboard-mobile__preview dashboard-mobile__preview--active">
+              <span>imagen</span>
+            </div>
+          </div>
+
+          <button type="button" className="dashboard-mobile__go-btn" onClick={() => navigate('/perfil')}>
+            Ir
+          </button>
+        </div>
+      </section>
+
+      <section className="dashboard-mobile__search-section" aria-label="Búsqueda de cápsulas">
+        <div className="dashboard-mobile__search-row">
+          <label className="dashboard-mobile__select-wrap" htmlFor="category-select">
+            <select id="category-select" defaultValue="">
+              <option value="" disabled>
+                Elige categoría
+              </option>
+              <option value="conocimiento">Conocimiento</option>
+              <option value="recuerdos">Recuerdos</option>
+              <option value="proyectos">Proyectos</option>
+            </select>
+          </label>
+
+          <button type="button" className="dashboard-mobile__search-btn" onClick={() => navigate('/buscar')}>
+            Buscar
+          </button>
+        </div>
+      </section>
+
+      <section className="dashboard-mobile__capsules-section" aria-labelledby="compartir-capsulas-title">
+        <h2 id="compartir-capsulas-title">Comparte tus cápsulas</h2>
+
+        <article className="dashboard-mobile__share-card">
+          <div className="dashboard-mobile__avatar dashboard-mobile__avatar--placeholder" aria-hidden="true">
+            <span>img</span>
+          </div>
+
+          <div className="dashboard-mobile__share-content">
+            <strong className="dashboard-mobile__share-user">@angeel21</strong>
+
+            <div className="dashboard-mobile__share-row">
+              <div className="dashboard-mobile__capsule-items dashboard-mobile__capsule-items--stacked" aria-hidden="true">
+                <div className="dashboard-mobile__mini-item">img</div>
+                <div className="dashboard-mobile__mini-item">img</div>
+                <div className="dashboard-mobile__mini-item">img</div>
+              </div>
+
+              <div className="dashboard-mobile__share-art" aria-hidden="true">
+                <span>img</span>
+              </div>
+            </div>
+
+            <a className="dashboard-mobile__see-more" href="/amigos">
+              Ver más &gt;
+            </a>
           </div>
         </article>
-      </div>
+      </section>
     </section>
   )
 }
