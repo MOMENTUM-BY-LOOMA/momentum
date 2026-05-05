@@ -17,7 +17,10 @@ function AppLayout() {
   return (
     <div className="app-shell">
       {!hideNavbar && <Navbar />}
-      <main className={`app-content ${hideNavbar ? 'app-content--auth' : ''} ${isCapsuleRoute ? 'app-content--capsule' : ''}`}>
+        <main
+          className={`app-content ${hideNavbar ? 'app-content--auth' : ''} ${isCapsuleRoute ? 'app-content--capsule' : ''}`}
+          style={isCapsuleRoute ? { width: '100vw', maxWidth: 'none', margin: 0, padding: 0 } : undefined}
+        >
         <Routes>
           <Route path="/" element={<InitialLoading />} />
           <Route path="/inicio-publico" element={<Home />} />

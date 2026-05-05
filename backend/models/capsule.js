@@ -13,10 +13,16 @@ const mediaItemSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ['image', 'video', 'audio', 'file'],
+      enum: ['image', 'video', 'audio', 'file', '3d'],
       default: 'image',
     },
     url: { type: String, required: true, trim: true },
+    modelFormat: {
+      type: String,
+      enum: ['', 'glb', 'gltf', 'obj', 'fbx', 'stl'],
+      default: '',
+    },
+    fileSize: { type: Number, default: 0 },
     title: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
     thumbnailUrl: { type: String, trim: true, default: '' },

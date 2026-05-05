@@ -10,8 +10,10 @@ export type ApiUser = {
 
 export type ApiMediaItem = {
   _id?: string
-  type?: 'image' | 'video' | 'audio' | 'file'
+  type?: 'image' | 'video' | 'audio' | 'file' | '3d'
   url: string
+  modelFormat?: '' | 'glb' | 'gltf' | 'obj' | 'fbx' | 'stl'
+  fileSize?: number
   title?: string
   description?: string
   thumbnailUrl?: string
@@ -95,7 +97,8 @@ export type UploadResponse = {
   originalName: string
   mimeType: string
   size: number
-  type: 'image' | 'video' | 'audio' | 'file'
+  type: 'image' | 'video' | 'audio' | 'file' | '3d'
+  modelFormat?: '' | 'glb' | 'gltf' | 'obj' | 'fbx' | 'stl'
   thumbnailUrl?: string
 }
 

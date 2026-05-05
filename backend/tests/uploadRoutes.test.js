@@ -54,6 +54,19 @@ describe('Upload routes', () => {
     expect(response.body.type).toBeDefined();
   });
 
+  test('POST /api/uploads/media uploads glb and marks it as 3d', async () => {
+    const response = await request(app)
+      .post('/api/uploads/media')
+      .set('Authorization', `Bearer ${token}`)
+      .attach('file', Buffer.from('glb-binary'), { filename: 'model.glb', contentType: 'application/octet-stream' });
+
+    expect(response.status).toBe(201);
+    expect(response.body.fileUrl).toMatch(/^\/uploads\//);
+    expect(response.body.originalName).toBe('model.glb');
+    expect(response.body.type).toBe('3d');
+    expect(response.body.modelFormat).toBe('glb');
+  });
+
   test('POST /api/uploads/media requires file', async () => {
     const response = await request(app)
       .post('/api/uploads/media')
@@ -61,5 +74,15 @@ describe('Upload routes', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe('File is required');
+  });
+
+  test('POST /api/uploads/media/model3d/presign-upload returns 400 when S3 is not configured', async () => {
+    const response = await request(app)
+      .post('/api/uploads/media/model3d/presign-upload')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ fileName: 'scene.glb', modelFormat: 'glb' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('S3 is not configured');
   });
 });

@@ -23,6 +23,11 @@ function fileFilter(_req, file, cb) {
     'application/pdf',
     'text/plain',
     'application/octet-stream',
+    'model/gltf-binary',
+    'application/gltf+json',
+    'model/obj',
+    'model/fbx',
+    'model/stl',
   ]);
 
   if (allowedMimeTypes.has(file.mimetype)) {

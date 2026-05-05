@@ -28,8 +28,28 @@ if (useS3) {
   }
 }
 
-function mimeToType(mime) {
-  return mime.startsWith('image/') ? 'image' : mime.startsWith('video/') ? 'video' : mime.startsWith('audio/') ? 'audio' : 'file';
+function extractModelFormat(fileName) {
+  const ext = String(fileName || '').split('.').pop()?.toLowerCase() || '';
+  return ['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext) ? ext : '';
+}
+
+function mimeToType(mime, originalName = '') {
+  if (mime.startsWith('image/')) return 'image';
+  if (mime.startsWith('video/')) return 'video';
+  if (mime.startsWith('audio/')) return 'audio';
+  if (mime.startsWith('model/') || mime.includes('gltf')) return '3d';
+  if (extractModelFormat(originalName)) return '3d';
+  return 'file';
+}
+
+function modelFormatToMime(format) {
+  const normalized = String(format || '').toLowerCase();
+  if (normalized === 'glb') return 'model/gltf-binary';
+  if (normalized === 'gltf') return 'application/gltf+json';
+  if (normalized === 'obj') return 'model/obj';
+  if (normalized === 'fbx') return 'model/fbx';
+  if (normalized === 'stl') return 'model/stl';
+  return 'application/octet-stream';
 }
 
 function safeObjectName(name) {
@@ -102,6 +122,59 @@ router.post('/media/presign-upload', auth, async (req, res) => {
   }
 });
 
+// Generate a dedicated presigned URL for large 3D model uploads (PUT)
+// Always stores objects under 3d-models/ to keep catalog assets separated.
+router.post('/media/model3d/presign-upload', auth, async (req, res) => {
+  if (!useS3 || !s3Client || !S3_BUCKET) {
+    return res.status(400).json({ message: 'S3 is not configured' });
+  }
+
+  const fileName = safeObjectName(req.body?.fileName || '');
+  if (!fileName) {
+    return res.status(400).json({ message: 'fileName is required' });
+  }
+
+  const modelFormat = String(req.body?.modelFormat || extractModelFormat(fileName)).toLowerCase();
+  if (!['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(modelFormat)) {
+    return res.status(400).json({ message: 'modelFormat must be one of glb, gltf, obj, fbx, stl' });
+  }
+
+  const subfolder = safeFolder(req.body?.subfolder || '');
+  const folder = subfolder ? `3d-models/${subfolder}` : '3d-models';
+  const mimeType = modelFormatToMime(modelFormat);
+  const uniquePrefix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+  const key = `${folder}/${uniquePrefix}-${fileName}`;
+
+  const expiresIn = Math.min(
+    Number.parseInt(process.env.S3_PRESIGN_EXPIRES || `${DEFAULT_PRESIGN_EXPIRES}`, 10) || DEFAULT_PRESIGN_EXPIRES,
+    3600,
+  );
+
+  try {
+    const { PutObjectCommand, getSignedUrl } = router.locals.S3;
+    const command = new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+      ContentType: mimeType,
+    });
+
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn });
+
+    return res.json({
+      key,
+      folder,
+      uploadUrl,
+      fileUrl: publicS3Url(S3_BUCKET, key),
+      modelFormat,
+      mimeType,
+      expiresIn,
+    });
+  } catch (error) {
+    console.error('S3 model3d presign upload error', error);
+    return res.status(500).json({ message: 'Could not generate model3d upload URL' });
+  }
+});
+
 // Generate a presigned URL for private S3 downloads (GET)
 router.get('/media/presign-download', auth, async (req, res) => {
   if (!useS3 || !s3Client || !S3_BUCKET) {
@@ -168,6 +241,8 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
       }
 
       const fileUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${key}`;
+      const mediaType = mimeToType(req.file.mimetype, req.file.originalname);
+      const modelFormat = mediaType === '3d' ? extractModelFormat(req.file.originalname) : '';
 
       return res.status(201).json({
         fileUrl,
@@ -175,7 +250,8 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size,
-        type: mimeToType(req.file.mimetype),
+        type: mediaType,
+        modelFormat,
         thumbnailUrl: thumbUrl,
       });
     } catch (err) {
@@ -188,6 +264,8 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
   if (req.file.path || req.file.filename) {
     const fileName = req.file.filename || path.basename(req.file.path);
     const fileUrl = `/uploads/${fileName}`;
+    const mediaType = mimeToType(req.file.mimetype, req.file.originalname);
+    const modelFormat = mediaType === '3d' ? extractModelFormat(req.file.originalname) : '';
 
     return res.status(201).json({
       fileUrl,
@@ -195,7 +273,8 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
       size: req.file.size,
-      type: mimeToType(req.file.mimetype),
+      type: mediaType,
+      modelFormat,
     });
   }
 

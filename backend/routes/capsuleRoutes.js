@@ -149,6 +149,20 @@ function sliceMediaComments(capsule, limit, offset) {
   return plainCapsule;
 }
 
+function mediaLooks3D(mediaItem) {
+  if (!mediaItem || typeof mediaItem !== 'object') return false;
+
+  if (mediaItem.type === '3d') return true;
+
+  const url = String(mediaItem.url || '');
+  return /\.(glb|gltf|obj|fbx|stl)(\?.*)?$/i.test(url);
+}
+
+function resolvePrimary3DMedia(capsule) {
+  const mediaItems = Array.isArray(capsule.mediaItems) ? capsule.mediaItems : [];
+  return mediaItems.find((item) => item.type === '3d') || mediaItems.find(mediaLooks3D) || null;
+}
+
 // Get capsules that the user owns or has shared access to
 router.get('/', auth, async (req, res) => {
   if (!isDbConnected()) {
@@ -299,6 +313,42 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// Get primary 3D model metadata for a capsule
+router.get('/:id/model3d', auth, async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({ message: 'Database unavailable' });
+  }
+
+  if (!isValidObjectId(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid capsule id' });
+  }
+
+  try {
+    const capsule = await findAccessibleCapsule(req.params.id, req.user.id);
+    if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
+
+    const media3d = resolvePrimary3DMedia(capsule);
+    if (!media3d) {
+      return res.status(404).json({ message: '3D model not found for this capsule' });
+    }
+
+    return res.json({
+      capsuleId: String(capsule._id),
+      mediaId: String(media3d._id),
+      type: media3d.type || '3d',
+      url: media3d.url,
+      modelFormat: media3d.modelFormat || '',
+      fileSize: media3d.fileSize || 0,
+      title: media3d.title || '',
+      description: media3d.description || '',
+      thumbnailUrl: media3d.thumbnailUrl || '',
+      createdAt: media3d.createdAt || null,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Create capsule
 router.post(
   '/',
@@ -312,6 +362,10 @@ router.post(
     body('timeCapsule.enabled').optional().isBoolean().withMessage('timeCapsule.enabled must be boolean'),
     body('timeCapsule.unlockAt').optional({ nullable: true }).isISO8601().withMessage('Invalid unlock date'),
     body('mediaItems').optional().isArray().withMessage('mediaItems must be an array'),
+    body('mediaItems.*.url').optional().isString().trim().notEmpty().withMessage('mediaItems url must be a non-empty string'),
+    body('mediaItems.*.type').optional().isIn(['image', 'video', 'audio', 'file', '3d']).withMessage('Invalid mediaItems type'),
+    body('mediaItems.*.modelFormat').optional().isIn(['', 'glb', 'gltf', 'obj', 'fbx', 'stl']).withMessage('Invalid model format'),
+    body('mediaItems.*.fileSize').optional().isInt({ min: 0 }).withMessage('fileSize must be a positive integer'),
     body('collaborators').optional().isArray().withMessage('collaborators must be an array'),
   ],
   async (req, res) => {
@@ -595,7 +649,9 @@ router.post(
   auth,
   [
     body('url').trim().notEmpty().withMessage('Media url is required'),
-    body('type').optional().isIn(['image', 'video', 'audio', 'file']).withMessage('Invalid media type'),
+    body('type').optional().isIn(['image', 'video', 'audio', 'file', '3d']).withMessage('Invalid media type'),
+    body('modelFormat').optional().isIn(['', 'glb', 'gltf', 'obj', 'fbx', 'stl']).withMessage('Invalid model format'),
+    body('fileSize').optional().isInt({ min: 0 }).withMessage('fileSize must be a positive integer'),
     body('title').optional().isString().withMessage('Media title must be a string'),
     body('description').optional().isString().withMessage('Media description must be a string'),
   ],
@@ -624,6 +680,8 @@ router.post(
       capsule.mediaItems.push({
         type: req.body.type ?? 'image',
         url: req.body.url,
+        modelFormat: req.body.modelFormat ?? '',
+        fileSize: req.body.fileSize ?? 0,
         title: req.body.title ?? '',
         description: req.body.description ?? '',
         thumbnailUrl: req.body.thumbnailUrl ?? '',

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
@@ -16,7 +16,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const controlsRef = useRef<OrbitControls | null>(null);
+  const controlsRef = useRef<TrackballControls | null>(null);
   const modelRef = useRef<THREE.Group | null>(null);
   const initRef = useRef(false);
 
@@ -36,7 +36,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
 
     // ============ CÁMARA ============
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 2.2);
+    camera.position.set(0, 0, 5);
     camera.lookAt(0, 0, 0);
 
     // ============ RENDERER ============
@@ -52,12 +52,11 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enablePan = false;
-    controls.enableZoom = false;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.rotateSpeed = 0.85;
+    const controls = new TrackballControls(camera, renderer.domElement);
+    controls.noPan = true;
+    controls.noZoom = true;
+    controls.rotateSpeed = 2.4;
+    controls.dynamicDampingFactor = 0.12;
     controlsRef.current = controls;
 
     // ============ ILUMINACIÓN ============
@@ -101,7 +100,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
 
         // Escalar
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 18 / maxDim;
+        const scale = 4.5 / maxDim;
         modelGroup.scale.set(scale, scale, scale);
 
         modelGroup.position.y = -0.1;
@@ -131,6 +130,7 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
       camera.aspect = newWidth / newHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(newWidth, newHeight, false);
+      controls.handleResize();
     };
 
     resizeRenderer();
@@ -157,9 +157,8 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
       style={{
         width: '100%',
         height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: 'block',
+        overflow: 'hidden',
         position: 'relative',
         background: backgroundColor === 'transparent' ? 'transparent' : backgroundColor,
       }}
