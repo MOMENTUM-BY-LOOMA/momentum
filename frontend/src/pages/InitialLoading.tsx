@@ -8,12 +8,8 @@ function InitialLoading() {
   const [exiting, setExiting] = useState(false)
 
   useEffect(() => {
-    // Decidir ruta según si hay token
-    const token = localStorage.getItem('authToken')
-    const targetRoute = token ? '/inicio' : '/login'
-
     // auto-advance after 6 seconds
-    timeoutRef.current = window.setTimeout(() => handleAdvance(targetRoute), 6000)
+    timeoutRef.current = window.setTimeout(() => handleAdvance(), 6000)
 
     return () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
@@ -21,14 +17,14 @@ function InitialLoading() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function handleAdvance(targetRoute: string) {
+  function handleAdvance() {
     if (navigatingRef.current) return
     navigatingRef.current = true
 
     // add a small exit animation before navigating
     setExiting(true)
     // wait for animation (300ms) then navigate
-    setTimeout(() => navigate(targetRoute), 300)
+    setTimeout(() => navigate('/inicio-publico'), 300)
   }
 
   return (
@@ -36,23 +32,19 @@ function InitialLoading() {
       className={`onboarding-screen onboarding-screen--splash ${exiting ? 'fade-out' : ''}`}
       aria-label="Pantalla de carga inicial"
       onClick={() => {
-        const token = localStorage.getItem('authToken')
-        const targetRoute = token ? '/inicio' : '/login'
         if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-        handleAdvance(targetRoute)
+        handleAdvance()
       }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          const token = localStorage.getItem('authToken')
-          const targetRoute = token ? '/inicio' : '/login'
           if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-          handleAdvance(targetRoute)
+          handleAdvance()
         }
       }}
     >
-      <img className="onboarding-screen__splash-logo" src="/img/logo_momentum.png" alt="Momentum" />
+      <img src="/img/logo_momentum.png" alt="Momentum" className="onboarding-screen__splash-logo" />
     </section>
   )
 }

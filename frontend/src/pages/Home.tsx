@@ -23,7 +23,7 @@ function Home() {
 
       <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
 
-      <Link className="onboarding-screen__cta" to="/login">
+      <Link className="onboarding-screen__cta" to="/inicio-registro">
         Inicia sesión para empezar la experiencia
       </Link>
     </section>

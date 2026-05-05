@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchCapsules, fetchCurrentUser, fetchFriends, type ApiUser, type ApiCapsule } from '../services/api.ts'
-import { Model3DViewer } from '../3d/Model3DViewer.tsx'
 
 function ProfilePage() {
   const navigate = useNavigate()

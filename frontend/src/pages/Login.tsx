@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { loginUser } from '../services/api'
 
 function Login() {
@@ -8,7 +8,6 @@ function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<'choice' | 'login'>('choice')
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -30,89 +29,62 @@ function Login() {
     }
   }
 
-  if (mode === 'choice') {
-    return (
-      <section className="onboarding-screen onboarding-screen--entry" aria-label="Pantalla de acceso">
-        <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
-
-        <div className="onboarding-screen__entry-actions">
-          <button
-            type="button"
-            className="onboarding-screen__button onboarding-screen__button--light"
-            onClick={() => setMode('login')}
-          >
-            INICIA SESIÓN
-          </button>
-          <button
-            type="button"
-            className="onboarding-screen__button onboarding-screen__button--dark"
-            onClick={() => navigate('/registro')}
-          >
-            REGÍSTRATE
-          </button>
-        </div>
-
-        <div className="onboarding-screen__footer">
-          <p>Captura tus recuerdos</p>
-          <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
-        </div>
-      </section>
-    )
-  }
-
   return (
-    <section className="onboarding-screen onboarding-screen--entry" aria-label="Pantalla de login">
-      <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
+    <section className="auth-screen" aria-label="Pantalla de inicio de sesión">
+      <img className="auth-screen__brand auth-screen__brand-image" src="/img/logo_m.png" alt="M" />
 
-      <form onSubmit={handleLogin} className="onboarding-screen__form">
-        <h1 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Inicia Sesión</h1>
+      <article className="auth-screen__card">
+        <form className="auth-screen__form" onSubmit={handleLogin}>
+          <label className="field auth-field" htmlFor="login-email">
+            <span>Correo electrónico</span>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              placeholder="ejemplo@gmail.com"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
 
-        {error && (
-          <div style={{ color: '#d32f2f', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>
-            {error}
+          <label className="field auth-field" htmlFor="login-password">
+            <span>Contraseña</span>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              placeholder="**********"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+
+          <button type="button" className="auth-screen__forgot">
+            He olvidado mi contraseña
+          </button>
+
+          {error ? <p className="auth-screen__error">{error}</p> : null}
+
+          <div className="auth-screen__actions">
+            <Link to="/inicio-registro" className="auth-screen__back" aria-label="Volver a inicio">
+              ←
+            </Link>
+
+            <button type="submit" className="auth-screen__submit" disabled={loading}>
+              {loading ? 'Accediendo...' : 'Acceder'}
+            </button>
           </div>
-        )}
+        </form>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ marginBottom: '1rem', padding: '0.75rem', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ marginBottom: '1.5rem', padding: '0.75rem', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="onboarding-screen__button onboarding-screen__button--light"
-          style={{ width: '100%' }}
-        >
-          {loading ? 'Iniciando...' : 'Iniciar Sesión'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMode('choice')}
-          style={{ marginTop: '1rem', width: '100%', padding: '0.75rem', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer' }}
-        >
-          Volver
-        </button>
-      </form>
-
-      <div className="onboarding-screen__footer">
-        <p>Captura tus recuerdos</p>
-        <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
-      </div>
+        <div className="auth-screen__footer">
+          <p>Captura tus recuerdos</p>
+          <img className="auth-screen__looma-logo" src="/img/logo_looma.png" alt="looma" />
+        </div>
+      </article>
     </section>
   )
 }

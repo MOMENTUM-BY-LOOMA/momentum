@@ -1,13 +1,5 @@
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/font/PlayfairDisplay-VariableFont_wght.ttf') format('truetype');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
-  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-family: Georgia, 'Times New Roman', Times, serif;
   line-height: 1.5;
   font-weight: 400;
   color: #2f3747;
