@@ -13,7 +13,7 @@ function is3DMedia(type: string | undefined, fileName: string) {
 
 function resolveApiAssetUrl(url: string) {
   if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
-  const base = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+  const base = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
   if (!base) return url
   return `${base}${url.startsWith('/') ? url : `/${url}`}`
 }
