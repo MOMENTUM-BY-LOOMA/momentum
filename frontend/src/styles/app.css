@@ -4,6 +4,169 @@
   flex-direction: column;
 }
 
+.onboarding-screen {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #303849;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, #d4cfbf 0%, #f0ece3 52%, #d4cfbf 100%);
+}
+
+.onboarding-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 30%),
+    radial-gradient(circle at 50% 82%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 28%);
+  pointer-events: none;
+}
+
+.onboarding-screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+.onboarding-screen--splash {
+  cursor: pointer;
+}
+
+.onboarding-screen--splash .onboarding-screen__splash-logo {
+  width: min(72vw, 840px);
+  max-width: 840px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(47, 55, 71, 0.12));
+}
+
+.onboarding-screen--welcome {
+  justify-content: flex-start;
+  padding: 4.2rem 1.5rem 2.4rem;
+  gap: 1.8rem;
+}
+
+.onboarding-screen__mark {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin-top: 0.35rem;
+}
+
+.onboarding-screen__welcome-copy {
+  width: min(100%, 31rem);
+  margin-top: 0.35rem;
+  display: grid;
+  gap: 2rem;
+  justify-items: center;
+}
+
+.onboarding-screen__welcome-copy h1 {
+  margin: 0;
+  font-size: clamp(1.55rem, 2vw, 1.85rem);
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+.onboarding-screen__welcome-copy p {
+  margin: 0;
+  width: 100%;
+  font-size: clamp(1.04rem, 1.45vw, 1.22rem);
+  line-height: 1.5;
+  color: #55515b;
+}
+
+.onboarding-screen__wordmark {
+  width: 78px;
+  object-fit: contain;
+  opacity: 0.88;
+}
+
+.onboarding-screen__cta {
+  position: absolute;
+  left: 50%;
+  bottom: 1.6rem;
+  transform: translateX(-50%);
+  width: min(86vw, 330px);
+  border-radius: 999px;
+  background: #0f1c2c;
+  color: #ffffff;
+  text-decoration: none;
+  text-align: center;
+  padding: 0.98rem 1.4rem;
+  font-size: 0.95rem;
+  font: inherit;
+  box-shadow: 0 18px 38px rgba(15, 28, 44, 0.22);
+}
+
+.onboarding-screen--entry {
+  justify-content: flex-start;
+  padding: 4.2rem 1.5rem 2.4rem;
+}
+
+.onboarding-screen__entry-actions {
+  width: min(100%, 22rem);
+  margin-top: 7.2rem;
+  display: grid;
+  gap: 1.45rem;
+}
+
+.onboarding-screen__button {
+  display: block;
+  border-radius: 12px;
+  padding: 0.92rem 1rem;
+  text-decoration: none;
+  text-align: center;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(47, 55, 71, 0.18);
+  box-shadow: 0 12px 20px rgba(47, 55, 71, 0.05);
+  font: inherit;
+  cursor: pointer;
+}
+
+.onboarding-screen__button--light {
+  background: rgba(255, 255, 255, 0.88);
+  color: #50555f;
+}
+
+.onboarding-screen__button--dark {
+  background: #101e31;
+  color: #f6f7fb;
+}
+
+.onboarding-screen__footer {
+  position: absolute;
+  left: 50%;
+  bottom: 5rem;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  color: #57545f;
+}
+
+.onboarding-screen__footer p {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.fade-out {
+  animation: onboarding-fade-out 0.3s ease forwards;
+}
+
+@keyframes onboarding-fade-out {
+  to {
+    opacity: 0;
+    transform: scale(1.01);
+  }
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -716,4 +879,279 @@
   color: #334155;
   font-size: 1.2rem;
   pointer-events: none;
+}
+
+.auth-field select {
+  border: 2px solid #748ba7;
+  border-radius: 0.6rem;
+  background-color: #ecebe7;
+  color: #334155;
+  font-size: 1rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.private-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.app-content--private {
+  width: min(960px, 100%);
+  margin: 0 auto;
+  padding: 1rem 1rem 6.5rem;
+}
+
+.app-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+  padding: 0.55rem 0.5rem max(0.55rem, env(safe-area-inset-bottom));
+  border-top: 1px solid #d1d5db;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+}
+
+.app-bottom-nav__item {
+  text-decoration: none;
+  color: #475569;
+  text-align: center;
+  border-radius: 0.65rem;
+  padding: 0.6rem 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.app-bottom-nav__item.is-active {
+  color: #0f172a;
+  background: #e2e8f0;
+}
+
+.page-layout--module {
+  gap: 0.9rem;
+}
+
+.module-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #475569;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.capsule-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.capsule-list__item {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.8rem;
+  background: #f8fafc;
+  padding: 0.75rem;
+  text-align: left;
+  color: #0f172a;
+}
+
+.capsule-list__item--link {
+  text-decoration: none;
+}
+
+.capsule-list__item strong {
+  font-size: 1rem;
+}
+
+.capsule-list__item span,
+.capsule-list__item small {
+  color: #64748b;
+}
+
+@media (max-width: 700px) {
+  .app-content--private {
+    padding-inline: 0.65rem;
+    padding-top: 0.65rem;
+    padding-bottom: 6.6rem;
+  }
+
+  .app-bottom-nav__item {
+    font-size: 0.8rem;
+    padding-inline: 0.2rem;
+  }
+}
+
+/* Profile Page */
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 90px;
+  background: linear-gradient(180deg, #f0ece3 0%, #d4cfbf 100%);
+  min-height: 100vh;
+}
+
+.profile-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.profile-header__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #303849;
+  margin: 0;
+}
+
+.profile-header__logo {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #303849;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #303849;
+}
+
+.profile-header__settings {
+  background: none;
+  border: 2px solid #303849;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.profile-info__image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, #efebe1, #d5cfbf);
+}
+
+.profile-info__username {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #303849;
+}
+
+.profile-info__stats {
+  font-size: 0.9rem;
+  color: #667085;
+}
+
+.profile-memories {
+  padding: 1.5rem;
+}
+
+.profile-memories__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #303849;
+  margin: 0 0 1rem 0;
+}
+
+.profile-memories__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.profile-memory-card {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.profile-memory-card:active {
+  transform: scale(0.95);
+}
+
+.profile-memory-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-memory-card__3d-viewer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.profile-memory-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.profile-memory-card:hover .profile-memory-card__overlay {
+  opacity: 1;
+}
+
+.profile-memory-card__overlay p {
+  color: white;
+  font-size: 0.85rem;
+  text-align: center;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+.profile-memories__more {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 1px solid #303849;
+  border-radius: 6px;
+  color: #303849;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.profile-memories__empty {
+  text-align: center;
+  color: #667085;
+  padding: 2rem 1rem;
 }

@@ -8,8 +8,12 @@ function InitialLoading() {
   const [exiting, setExiting] = useState(false)
 
   useEffect(() => {
+    // Decidir ruta según si hay token
+    const token = localStorage.getItem('authToken')
+    const targetRoute = token ? '/inicio' : '/login'
+
     // auto-advance after 6 seconds
-    timeoutRef.current = window.setTimeout(() => handleAdvance(), 6000)
+    timeoutRef.current = window.setTimeout(() => handleAdvance(targetRoute), 6000)
 
     return () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
@@ -17,41 +21,38 @@ function InitialLoading() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function handleAdvance() {
+  function handleAdvance(targetRoute: string) {
     if (navigatingRef.current) return
     navigatingRef.current = true
 
     // add a small exit animation before navigating
     setExiting(true)
     // wait for animation (300ms) then navigate
-    setTimeout(() => navigate('/inicio-publico'), 300)
+    setTimeout(() => navigate(targetRoute), 300)
   }
 
   return (
     <section
-      className={`initial-loading ${exiting ? 'fade-out' : ''}`}
+      className={`onboarding-screen onboarding-screen--splash ${exiting ? 'fade-out' : ''}`}
       aria-label="Pantalla de carga inicial"
       onClick={() => {
+        const token = localStorage.getItem('authToken')
+        const targetRoute = token ? '/inicio' : '/login'
         if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-        handleAdvance()
+        handleAdvance(targetRoute)
       }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
+          const token = localStorage.getItem('authToken')
+          const targetRoute = token ? '/inicio' : '/login'
           if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
-          handleAdvance()
+          handleAdvance(targetRoute)
         }
       }}
     >
-      <div className="initial-loading__card">
-        <span className="initial-loading__badge">Momentum</span>
-        <h1>Preparando tu espacio</h1>
-        <p>Estamos cargando tu experiencia para que puedas entrar a tus capsulas.</p>
-        <div className="initial-loading__progress" aria-hidden="true">
-          <span />
-        </div>
-      </div>
+      <img className="onboarding-screen__splash-logo" src="/img/logo_momentum.png" alt="Momentum" />
     </section>
   )
 }

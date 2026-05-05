@@ -1,85 +1,118 @@
-import { type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { loginUser } from '../services/api.ts'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { loginUser } from '../services/api'
 
 function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<'choice' | 'login'>('choice')
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    if (!email.trim() || !password.trim()) {
-      setError('Completa correo y contraseña')
-      return
-    }
-
-    setIsSubmitting(true)
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
     setError('')
+    setLoading(true)
 
     try {
-      const result = await loginUser(email.trim(), password)
-      localStorage.setItem('authToken', result.token)
-      if (result.refreshToken) {
-        localStorage.setItem('refreshToken', result.refreshToken)
+      const response = await loginUser(email, password)
+      localStorage.setItem('authToken', response.token)
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken)
       }
-      localStorage.setItem('authUser', JSON.stringify(result.user))
-      navigate('/dashboard')
-    } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : 'Error de autenticación'
-      setError(message)
+      localStorage.setItem('authUser', JSON.stringify(response.user))
+      navigate('/inicio')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
     } finally {
-      setIsSubmitting(false)
+      setLoading(false)
     }
   }
 
+  if (mode === 'choice') {
+    return (
+      <section className="onboarding-screen onboarding-screen--entry" aria-label="Pantalla de acceso">
+        <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
+
+        <div className="onboarding-screen__entry-actions">
+          <button
+            type="button"
+            className="onboarding-screen__button onboarding-screen__button--light"
+            onClick={() => setMode('login')}
+          >
+            INICIA SESIÓN
+          </button>
+          <button
+            type="button"
+            className="onboarding-screen__button onboarding-screen__button--dark"
+            onClick={() => navigate('/registro')}
+          >
+            REGÍSTRATE
+          </button>
+        </div>
+
+        <div className="onboarding-screen__footer">
+          <p>Captura tus recuerdos</p>
+          <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <section className="auth-screen" aria-label="Pantalla de inicio de sesión">
-      <div className="auth-screen__brand" aria-hidden="true">M</div>
-      <article className="auth-screen__card">
+    <section className="onboarding-screen onboarding-screen--entry" aria-label="Pantalla de login">
+      <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
 
-        <form className="auth-screen__form" onSubmit={handleSubmit}>
-          <label className="field auth-field" htmlFor="login-email">
-            <span>Correo electrónico</span>
-            <input
-              id="login-email"
-              name="email"
-              type="email"
-              placeholder="ejemplo@gmail.com"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
+      <form onSubmit={handleLogin} className="onboarding-screen__form">
+        <h1 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Inicia Sesión</h1>
 
-          <label className="field auth-field" htmlFor="login-password">
-            <span>Contraseña</span>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              placeholder="**********"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-
-          {error ? <p className="auth-screen__error">{error}</p> : null}
-
-          <button type="button" className="auth-screen__forgot">He olvidado mi contraseña</button>
-
-          <div className="auth-screen__actions">
-            <Link to="/" className="auth-screen__back" aria-label="Volver a inicio">←</Link>
-            <button type="submit" className="auth-screen__submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Accediendo...' : 'Acceder'}
-            </button>
+        {error && (
+          <div style={{ color: '#d32f2f', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>
+            {error}
           </div>
-        </form>
-      </article>
+        )}
+
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{ marginBottom: '1rem', padding: '0.75rem', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
+        />
+
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{ marginBottom: '1.5rem', padding: '0.75rem', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="onboarding-screen__button onboarding-screen__button--light"
+          style={{ width: '100%' }}
+        >
+          {loading ? 'Iniciando...' : 'Iniciar Sesión'}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMode('choice')}
+          style={{ marginTop: '1rem', width: '100%', padding: '0.75rem', background: 'transparent', border: 'none', color: '#666', cursor: 'pointer' }}
+        >
+          Volver
+        </button>
+      </form>
+
+      <div className="onboarding-screen__footer">
+        <p>Captura tus recuerdos</p>
+        <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
+      </div>
     </section>
   )
 }

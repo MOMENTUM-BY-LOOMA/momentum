@@ -265,7 +265,7 @@ function UploadCapsule() {
           <button type="submit" className="button-primary" disabled={isSubmitting}>
             {isSubmitting ? 'Guardando...' : 'Guardar capsula'}
           </button>
-          <button type="button" className="button-secondary" onClick={() => navigate('/dashboard')}>
+          <button type="button" className="button-secondary" onClick={() => navigate('/inicio')}>
             Cancelar
           </button>
         </div>

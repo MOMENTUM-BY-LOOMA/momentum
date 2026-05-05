@@ -1,7 +1,5 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { registerUser } from '../services/api.ts'
-
 function Register() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
@@ -68,8 +66,14 @@ function Register() {
     setError('')
 
     try {
-      await registerUser(name.trim(), email.trim(), password, profilePhoto || undefined)
-      navigate('/login')
+      navigate('/registro/datos', {
+        state: {
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          avatar: profilePhoto || undefined,
+        },
+      })
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : 'Error en el registro'
       setError(message)

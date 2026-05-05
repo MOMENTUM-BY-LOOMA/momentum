@@ -57,7 +57,7 @@ function Dashboard() {
   return (
     <section className="page-layout">
       <div className="hero-panel">
-        <h1>Dashboard</h1>
+        <h1>Inicio</h1>
         <p>
           {user ? `Hola, ${user.name}.` : 'Vista general de actividad, recuerdos recientes y estado de tu coleccion.'}
         </p>
@@ -92,7 +92,7 @@ function Dashboard() {
                   key={capsule._id}
                   type="button"
                   className="capsule-list__item"
-                  onClick={() => navigate('/capsula', { state: { capsuleId: capsule._id } })}
+                  onClick={() => navigate(`/capsulas/${capsule._id}`)}
                 >
                   <strong>{capsule.title}</strong>
                   <span>{capsule.category || 'Sin categoria'}</span>
@@ -106,7 +106,7 @@ function Dashboard() {
           <h2>Proxima accion</h2>
           <p>Sube una nueva capsula con fotos, videos o documentos y deja todo guardado en el backend.</p>
           <div className="button-row">
-            <button type="button" className="button-primary" onClick={() => navigate('/subir')}>
+            <button type="button" className="button-primary" onClick={() => navigate('/capsulas/crear')}>
               Crear capsula
             </button>
           </div>

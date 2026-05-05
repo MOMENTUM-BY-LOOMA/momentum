@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Model3DViewer } from '../3d/Model3DViewer'
 import { fetchCapsuleById, fetchCapsules, fetchFriends, type ApiCapsule, type ApiFriendRelation, type ApiUser } from '../services/api.ts'
 
 type CapsuleLocationState = {
   capsuleId?: string
+  capsule?: ApiCapsule
 }
 
 const DEFAULT_MODEL_PATH = '/3d/statue of liberty 3d model.glb'
@@ -90,17 +91,27 @@ function friendFromRelation(relation: ApiFriendRelation, currentUserId?: string)
 function CapsuleView() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { capsuleId: capsuleIdFromParams } = useParams()
   const token = localStorage.getItem('authToken')
   const locationState = location.state as CapsuleLocationState | null
-  const capsuleId = locationState?.capsuleId
-  const [capsule, setCapsule] = useState<ApiCapsule | null>(null)
+  const capsuleId = locationState?.capsuleId ?? capsuleIdFromParams
+  const [capsule, setCapsule] = useState<ApiCapsule | null>(locationState?.capsule ?? null)
   const [friends, setFriends] = useState<ApiFriendRelation[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!locationState?.capsule)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!token) {
       navigate('/login')
+      return
+    }
+
+    // Si ya tenemos la cápsula en location.state, solo cargar amigos
+    if (locationState?.capsule) {
+      fetchFriends().catch(() => []).then((friendsResponse) => {
+        setFriends(friendsResponse)
+        setLoading(false)
+      })
       return
     }
 
@@ -126,7 +137,7 @@ function CapsuleView() {
     }
 
     loadCapsule()
-  }, [capsuleId, navigate, token])
+  }, [capsuleId, navigate, token, locationState?.capsule])
 
   if (!token) {
     return null

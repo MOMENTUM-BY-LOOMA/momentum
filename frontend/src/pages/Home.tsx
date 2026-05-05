@@ -1,34 +1,31 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 function Home() {
-  const navigate = useNavigate()
-
   return (
-    <section className="page-layout">
-      <div className="hero-panel">
-        <h1>Bienvenido a Momentum</h1>
-        <p>Captura tus recuerdos en capsulas, compartelos con tus amigos o quedatelos para ti.</p>
-        <p>Puedes acceder a ellos cuando quieras y traerlos al futuro.</p>
-        <div className="button-row">
-          <button type="button" className="button-primary" onClick={() => navigate('/login')}>Inicia sesion</button>
-          <button type="button" className="button-secondary" onClick={() => navigate('/registro')}>Registrate</button>
-        </div>
+    <section className="onboarding-screen onboarding-screen--welcome" aria-label="Pantalla de bienvenida">
+      <img className="onboarding-screen__mark" src="/img/logo_m.png" alt="M" />
+
+      <div className="onboarding-screen__welcome-copy">
+        <h1>BIENVENIDO A MOMENTUM</h1>
+        <p>
+          Captura tus recuerdos en cápsulas,
+          <br />
+          compártelas con tus amigos o
+          <br />
+          quédatelas para ti solo.
+        </p>
+        <p>
+          Puedes acceder a ellas cuando quieras, también puedes guardarlas
+          <br />
+          y traerlas en el futuro.
+        </p>
       </div>
 
-      <div className="panel-grid">
-        <article className="panel">
-          <h2>Recuerdos organizados</h2>
-          <p>Guarda fotos, mensajes, audio y contexto en un mismo lugar.</p>
-        </article>
-        <article className="panel">
-          <h2>Linea temporal</h2>
-          <p>Ordena tus momentos por fecha, tema o personas importantes.</p>
-        </article>
-        <article className="panel">
-          <h2>Privado y personal</h2>
-          <p>Decide que recuerdos son tuyos y cuales quieres compartir.</p>
-        </article>
-      </div>
+      <img className="onboarding-screen__wordmark" src="/img/logo_looma.png" alt="looma" />
+
+      <Link className="onboarding-screen__cta" to="/login">
+        Inicia sesión para empezar la experiencia
+      </Link>
     </section>
   )
 }

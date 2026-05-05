@@ -170,6 +170,11 @@ export async function registerUser(
   email: string,
   password: string,
   avatar?: string,
+  extra?: {
+    birthDate?: string
+    country?: string
+    gender?: 'male' | 'female' | 'other' | 'prefer_not_say'
+  },
 ): Promise<RegisterResponse> {
   return requestJson<RegisterResponse>('/api/users/register', {
     method: 'POST',
@@ -178,6 +183,9 @@ export async function registerUser(
       email,
       password,
       ...(avatar ? { avatar, profilePhoto: avatar } : {}),
+      ...(extra?.birthDate ? { birthDate: extra.birthDate } : {}),
+      ...(extra?.country ? { country: extra.country } : {}),
+      ...(extra?.gender ? { gender: extra.gender } : {}),
     }),
   }, false)
 }
