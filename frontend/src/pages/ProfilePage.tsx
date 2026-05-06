@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Fragment, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { logoMAsset } from '../img'
 import { fetchCapsules, fetchCurrentUser, fetchFriends, type ApiUser, type ApiCapsule } from '../services/api.ts'
 
 function ProfilePage() {
@@ -34,11 +35,30 @@ function ProfilePage() {
   const recentCapsules = capsules.slice(0, 3)
 
   if (loading) {
-    return <div className="page-layout"><p>Cargando...</p></div>
+    return (
+      <Fragment>
+        <header className="mobile-header" aria-label="Mi perfil">
+          <span className="mobile-header__left" aria-hidden="true" />
+          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+            <img src={logoMAsset} alt="Momentum" />
+          </Link>
+          <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label="Ajustes">⚙️</button>
+        </header>
+        <div className="page-layout"><p>Cargando...</p></div>
+      </Fragment>
+    )
   }
 
   return (
-    <div className="profile-page">
+    <Fragment>
+      <header className="mobile-header" aria-label="Mi perfil">
+        <span className="mobile-header__left" aria-hidden="true" />
+        <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+          <img src={logoMAsset} alt="Momentum" />
+        </Link>
+        <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label="Ajustes">⚙️</button>
+      </header>
+      <div className="profile-page">
       {/* Header */}
       <header className="profile-header">
         <h1 className="profile-header__title">MI PERFIL</h1>
@@ -107,6 +127,7 @@ function ProfilePage() {
         )}
       </section>
     </div>
+    </Fragment>
   )
 }
 

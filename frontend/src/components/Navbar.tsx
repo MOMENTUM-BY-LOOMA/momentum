@@ -77,7 +77,7 @@ function Navbar() {
         </nav>
       </div>
 
-      <NavLink to={token ? '/dashboard' : '/login'} className="navbar__center-btn" aria-label="Ir al dashboard">
+      <NavLink to={token ? '/inicio' : '/login'} className="navbar__center-btn" aria-label="Ir a inicio">
         <span className="navbar__center-btn-circle">M</span>
       </NavLink>
 

@@ -1,33 +1,27 @@
 import { useNavigate } from 'react-router-dom'
+import { logoMAsset } from '../img'
 
 function Dashboard() {
   const navigate = useNavigate()
 
   return (
-    <section className="dashboard-mobile" aria-label="Pantalla principal de Momentum">
-      <header className="dashboard-mobile__topbar">
-        <button
-          type="button"
-          className="dashboard-mobile__icon-btn"
-          aria-label="Cambiar brillo o contraste"
-          onClick={() => navigate('/ajustes')}
-        >
-          <span aria-hidden="true">☀</span>
+    <>
+      <header className="mobile-header" aria-label="Encabezado">
+        <span className="mobile-header__side" aria-hidden="true" />
+        <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
+          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
         </button>
-
-        <div className="dashboard-mobile__logo-wrap" aria-hidden="true">
-          <img className="dashboard-mobile__logo" src="/img/logo_m.svg" alt="" />
-        </div>
-
         <button
           type="button"
-          className="dashboard-mobile__icon-btn"
+          className="mobile-header__settings"
           aria-label="Abrir ajustes"
           onClick={() => navigate('/ajustes')}
         >
-          <span aria-hidden="true">⚙</span>
+          ⚙
         </button>
       </header>
+
+      <section className="dashboard-mobile" aria-label="Pantalla principal de Momentum">
 
       <section className="dashboard-mobile__profile-panel" aria-labelledby="mi-perfil-title">
         <div className="dashboard-mobile__profile-head">
@@ -99,6 +93,7 @@ function Dashboard() {
         </article>
       </section>
     </section>
+    </>
   )
 }
 

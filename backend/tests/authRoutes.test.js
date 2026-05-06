@@ -41,8 +41,8 @@ describe('Auth routes', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.theme).toContain('light');
-    expect(response.body.theme).toContain('dark');
+    expect(response.body.theme).toContain('claro');
+    expect(response.body.theme).toContain('oscuro');
     expect(response.body.defaults).toBeDefined();
   });
 
@@ -64,7 +64,7 @@ describe('Auth routes', () => {
       profilePhoto: '',
       avatar: '',
       preferences: {
-        theme: 'light',
+        theme: 'claro',
         language: 'es',
         textSize: 'normal',
         reduceAnimations: false,
@@ -95,7 +95,7 @@ describe('Auth routes', () => {
       profilePhoto: '',
       avatar: '',
       preferences: {
-        theme: 'light',
+        theme: 'claro',
         language: 'es',
         textSize: 'normal',
         reduceAnimations: false,
@@ -109,10 +109,10 @@ describe('Auth routes', () => {
     const response = await request(app)
       .patch('/api/users/me/preferences')
       .set('Authorization', `Bearer ${token}`)
-      .send({ theme: 'dark', textSize: 'large', reduceAnimations: true });
+      .send({ tema: 'oscuro', textSize: 'large', reduceAnimations: true });
 
     expect(response.status).toBe(200);
-    expect(response.body.preferences.theme).toBe('dark');
+    expect(response.body.preferences.theme).toBe('oscuro');
     expect(response.body.preferences.textSize).toBe('large');
     expect(response.body.preferences.reduceAnimations).toBe(true);
     expect(save).toHaveBeenCalled();
@@ -147,7 +147,7 @@ describe('Auth routes', () => {
       profilePhoto: '',
       avatar: '',
       preferences: {
-        theme: 'light',
+        theme: 'claro',
         language: 'es',
         textSize: 'normal',
         reduceAnimations: false,

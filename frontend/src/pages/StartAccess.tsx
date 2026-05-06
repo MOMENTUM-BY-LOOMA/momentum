@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom'
+import { logoMAsset } from '../img'
 
 function StartAccess() {
   return (
     <section className="onboarding-screen onboarding-screen--entry" aria-label="Pantalla de acceso">
-      <img className="onboarding-screen__mark" src="/img/logo_m.svg" alt="M" />
+      <header className="mobile-header" aria-label="Encabezado">
+        <span className="mobile-header__side" aria-hidden="true" />
+        <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
+          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+        </button>
+        <span className="mobile-header__side" aria-hidden="true" />
+      </header>
 
       <div className="onboarding-screen__entry-actions">
         <Link className="onboarding-screen__button onboarding-screen__button--light" to="/login">

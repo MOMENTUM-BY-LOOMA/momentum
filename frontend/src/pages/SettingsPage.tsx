@@ -1,31 +1,23 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import HeaderConAtras from '../components/HeaderConAtras'
 
 function SettingsPage() {
+  const navigate = useNavigate()
+
   return (
-    <section className="page-layout page-layout--module">
-      <article className="page-card">
-        <h1>Ajustes</h1>
-        <p>Cuenta, preferencias y sesion.</p>
-      </article>
+    <>
+      <HeaderConAtras onAtras={() => navigate(-1)} />
 
-      <article className="page-card">
-        <h2>Cuenta</h2>
-        <p>Editar datos personales, email, contrasena y foto.</p>
-        <Link to="/ajustes/cuenta" className="button-secondary">Abrir cuenta</Link>
-      </article>
+      <section className="settings-mobile settings-mobile--menu" aria-label="Pantalla de ajustes">
+        <h1 className="settings-title">AJUSTES</h1>
 
-      <article className="page-card">
-        <h2>Preferencias</h2>
-        <p>Intereses, contenido sugerido y filtros predefinidos.</p>
-        <Link to="/ajustes/preferencias" className="button-secondary">Abrir preferencias</Link>
-      </article>
-
-      <article className="page-card">
-        <h2>Sesion y seguridad</h2>
-        <p>Cerrar sesion y eliminar cuenta con confirmaciones.</p>
-        <Link to="/ajustes/sesion" className="button-secondary">Abrir seguridad</Link>
-      </article>
-    </section>
+        <div className="settings-menu settings-menu--lowered">
+          <Link to="/ajustes/cuenta" className="settings-menu__item">Cuenta</Link>
+          <Link to="/ajustes/preferencias" className="settings-menu__item">Preferencias</Link>
+          <Link to="/ajustes/sesion" className="settings-menu__item">Sesion y seguridad</Link>
+        </div>
+      </section>
+    </>
   )
 }
 

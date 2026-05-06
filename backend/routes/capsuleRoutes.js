@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const Capsule = require('../models/capsule');
 const User = require('../models/user');
+const FriendRelation = require('../models/friendRelation');
 const auth = require('../middleware/authMiddleware');
 const { notifyCommentAdded, notifyCollaboratorAdded } = require('../services/notificationService');
 
@@ -162,6 +163,44 @@ function resolvePrimary3DMedia(capsule) {
   const mediaItems = Array.isArray(capsule.mediaItems) ? capsule.mediaItems : [];
   return mediaItems.find((item) => item.type === '3d') || mediaItems.find(mediaLooks3D) || null;
 }
+
+async function areAcceptedFriends(userIdA, userIdB) {
+  const relation = await FriendRelation.findOne({
+    pairKey: [String(userIdA), String(userIdB)].sort().join(':'),
+    status: 'accepted',
+  });
+
+  return Boolean(relation);
+}
+
+router.get('/common/:friendId', auth, async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({ message: 'Database unavailable' });
+  }
+
+  if (!isValidObjectId(req.params.friendId)) {
+    return res.status(400).json({ message: 'Invalid user id' });
+  }
+
+  try {
+    const relationExists = await areAcceptedFriends(req.user.id, req.params.friendId);
+    if (!relationExists) {
+      return res.status(404).json({ message: 'Friendship not found' });
+    }
+
+    const capsules = await Capsule.find({
+      $and: [accessQuery(req.user.id), accessQuery(req.params.friendId)],
+    })
+      .sort({ updatedAt: -1 })
+      .populate('owner', 'name email avatar')
+      .populate('sharedWith', 'name email avatar')
+      .populate('collaborators.user', 'name email avatar');
+
+    res.json(capsules);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Get capsules that the user owns or has shared access to
 router.get('/', auth, async (req, res) => {

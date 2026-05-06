@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Fragment, useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Model3DViewer } from '../3d/Model3DViewer'
+import { logoMAsset } from '../img'
 import { fetchCapsuleById, fetchCapsules, fetchFriends, type ApiCapsule, type ApiFriendRelation, type ApiUser } from '../services/api.ts'
 
 type CapsuleLocationState = {
@@ -144,19 +145,50 @@ function CapsuleView() {
   }
 
   if (loading) {
-    return <section className="page-card"><p className="page-status">Cargando capsula...</p></section>
+    return (
+      <Fragment>
+        <header className="mobile-header" aria-label="Cargando capsula">
+          <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
+          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+            <img src={logoMAsset} alt="Momentum" />
+          </Link>
+          <span className="mobile-header__right" aria-hidden="true" />
+        </header>
+        <section className="page-card"><p className="page-status">Cargando capsula...</p></section>
+      </Fragment>
+    )
   }
 
   if (error) {
-    return <section className="page-card"><p className="page-status page-status--error">{error}</p></section>
+    return (
+      <Fragment>
+        <header className="mobile-header" aria-label="Error al cargar">
+          <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
+          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+            <img src={logoMAsset} alt="Momentum" />
+          </Link>
+          <span className="mobile-header__right" aria-hidden="true" />
+        </header>
+        <section className="page-card"><p className="page-status page-status--error">{error}</p></section>
+      </Fragment>
+    )
   }
 
   if (!capsule) {
     return (
-      <section className="page-card">
-        <h1>No hay capsulas disponibles</h1>
-        <p>Sube una capsula para verla aqui.</p>
-      </section>
+      <Fragment>
+        <header className="mobile-header" aria-label="Capsula no encontrada">
+          <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
+          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+            <img src={logoMAsset} alt="Momentum" />
+          </Link>
+          <span className="mobile-header__right" aria-hidden="true" />
+        </header>
+        <section className="page-card">
+          <h1>No hay capsulas disponibles</h1>
+          <p>Sube una capsula para verla aqui.</p>
+        </section>
+      </Fragment>
     )
   }
 
@@ -172,7 +204,15 @@ function CapsuleView() {
   const modelPath = resolveCapsuleModelPath(capsule)
 
   return (
-    <div className="capsule-view">
+    <Fragment>
+      <header className="mobile-header" aria-label="Ver capsula">
+        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
+        <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+          <img src={logoMAsset} alt="Momentum" />
+        </Link>
+        <span className="mobile-header__right" aria-hidden="true" />
+      </header>
+      <div className="capsule-view">
       <section className="page-layout">
         <div
           className="capsule-header capsule-header--plain"
@@ -256,7 +296,8 @@ function CapsuleView() {
           )}
         </section>
       </section>
-    </div>
+      </div>
+    </Fragment>
   )
 }
 

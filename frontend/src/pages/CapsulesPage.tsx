@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { logoMAsset } from '../img'
 import { fetchCapsules, type ApiCapsule } from '../services/api.ts'
 
 function CapsulesPage() {
+  const navigate = useNavigate()
   const [capsules, setCapsules] = useState<ApiCapsule[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -31,7 +33,15 @@ function CapsulesPage() {
   const friendCapsules = useMemo(() => capsules.filter((capsule) => (capsule.sharedWith?.length ?? 0) > 0).slice(0, 3), [capsules])
 
   return (
-    <section className="page-layout page-layout--module">
+    <Fragment>
+      <header className="mobile-header" aria-label="Mis capsulas">
+        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
+        <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+          <img src={logoMAsset} alt="Momentum" />
+        </Link>
+        <span className="mobile-header__right" aria-hidden="true" />
+      </header>
+      <section className="page-layout page-layout--module">
       <article className="page-card">
         <h1>Capsulas</h1>
         <p>Mis capsulas, recomendaciones y contenido de amigos.</p>
@@ -72,7 +82,8 @@ function CapsulesPage() {
           ))}
         </ul>
       </article>
-    </section>
+      </section>
+    </Fragment>
   )
 }
 

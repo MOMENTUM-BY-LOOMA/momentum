@@ -49,6 +49,25 @@ function relationResponse(relation, currentUserId, populated = false) {
   };
 }
 
+function normalizeUsername(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '');
+}
+
+async function findUserByUsernameOrName(username) {
+  const normalized = normalizeUsername(username);
+  if (!normalized) return null;
+
+  const users = await User.find({}, '_id name email avatar profilePhoto');
+  return users.find((user) => {
+    const userName = normalizeUsername(user.name);
+    const userEmail = normalizeUsername(user.email);
+    return userName === normalized || userEmail === normalized;
+  }) || null;
+}
+
 async function ensureNotBlocked(currentUserId, targetUserId) {
   const relation = await loadRelation(currentUserId, targetUserId);
   if (!relation) return null;
@@ -154,6 +173,97 @@ router.post(
       });
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
+    }
+  },
+);
+
+router.post(
+  '/request',
+  auth,
+  [body('username').notEmpty().withMessage('username is required')],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    if (!isDbConnected()) {
+      return res.status(503).json({ message: 'Database unavailable' });
+    }
+
+    try {
+      const targetUser = await findUserByUsernameOrName(req.body.username);
+      if (!targetUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const userId = String(targetUser._id);
+
+      if (String(userId) === String(req.user.id)) {
+        return res.status(400).json({ message: 'You cannot add yourself' });
+      }
+
+      const existing = await loadRelation(req.user.id, userId);
+      const reverseExisting = existing && String(existing.requester) !== String(req.user.id)
+        ? existing
+        : null;
+
+      if (existing?.status === 'blocked') {
+        return res.status(403).json({ message: 'This user is blocked' });
+      }
+
+      if (existing?.status === 'accepted') {
+        return res.status(409).json({ message: 'You are already friends' });
+      }
+
+      if (existing?.status === 'pending' && String(existing.requester) === String(req.user.id)) {
+        return res.status(409).json({ message: 'Friend request already sent' });
+      }
+
+      if (reverseExisting?.status === 'pending' && String(reverseExisting.recipient) === String(req.user.id)) {
+        reverseExisting.status = 'accepted';
+        await reverseExisting.save();
+
+        await notifyFriendAccepted(reverseExisting.requester, req.user.id, reverseExisting._id);
+
+        const populated = await FriendRelation.findById(reverseExisting._id)
+          .populate('requester', 'name email avatar profilePhoto')
+          .populate('recipient', 'name email avatar profilePhoto');
+
+        return res.status(200).json({
+          message: 'Friend request accepted automatically',
+          relation: relationResponse(populated, req.user.id, true),
+        });
+      }
+
+      const relation = existing || new FriendRelation({
+        requester: req.user.id,
+        recipient: userId,
+        pairKey: pairKeyFor(req.user.id, userId),
+        status: 'pending',
+        blockedBy: null,
+      });
+
+      relation.requester = req.user.id;
+      relation.recipient = userId;
+      relation.pairKey = pairKeyFor(req.user.id, userId);
+      relation.status = 'pending';
+      relation.blockedBy = null;
+
+      await relation.save();
+
+      await notifyFriendRequest(userId, req.user.id, relation._id);
+
+      const populated = await FriendRelation.findById(relation._id)
+        .populate('requester', 'name email avatar profilePhoto')
+        .populate('recipient', 'name email avatar profilePhoto');
+
+      return res.status(201).json({
+        message: 'Friend request sent',
+        relation: relationResponse(populated, req.user.id, true),
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Server error' });
     }
   },
 );

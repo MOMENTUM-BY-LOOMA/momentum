@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginUser } from '../services/api'
+import { logoMAsset } from '../img'
 
 function Login() {
   const navigate = useNavigate()
@@ -21,6 +22,7 @@ function Login() {
         localStorage.setItem('refreshToken', response.refreshToken)
       }
       localStorage.setItem('authUser', JSON.stringify(response.user))
+      window.dispatchEvent(new Event('authUserChanged'))
       navigate('/inicio')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
@@ -30,10 +32,19 @@ function Login() {
   }
 
   return (
-    <section className="auth-screen" aria-label="Pantalla de inicio de sesión">
-      <img className="auth-screen__brand auth-screen__brand-image" src="/img/logo_m.svg" alt="M" />
+    <>
+      <header className="mobile-header" aria-label="Encabezado">
+        <Link to="/inicio-registro" className="mobile-header__back" aria-label="Volver a inicio">
+          ←
+        </Link>
+        <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
+          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+        </button>
+        <span className="mobile-header__side" aria-hidden="true" />
+      </header>
 
-      <article className="auth-screen__card">
+      <section className="auth-screen" aria-label="Pantalla de inicio de sesión">
+        <article className="auth-screen__card">
         <form className="auth-screen__form" onSubmit={handleLogin}>
           <label className="field auth-field" htmlFor="login-email">
             <span>Correo electrónico</span>
@@ -70,9 +81,7 @@ function Login() {
           {error ? <p className="auth-screen__error">{error}</p> : null}
 
           <div className="auth-screen__actions">
-            <Link to="/inicio-registro" className="auth-screen__back" aria-label="Volver a inicio">
-              ←
-            </Link>
+            <span className="mobile-header__side" aria-hidden="true" />
 
             <button type="submit" className="auth-screen__submit" disabled={loading}>
               {loading ? 'Accediendo...' : 'Acceder'}
@@ -86,6 +95,7 @@ function Login() {
         </div>
       </article>
     </section>
+    </>
   )
 }
 

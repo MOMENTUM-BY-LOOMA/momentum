@@ -3,9 +3,25 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').r
 export type ApiUser = {
   _id: string
   name: string
+  username?: string
   email: string
   avatar?: string
   profilePhoto?: string
+  biography?: string
+  birthDate?: string | null
+  country?: string
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_say'
+  preferences?: ApiUserPreferences
+}
+
+export type ApiUserPreferences = {
+  theme?: 'claro' | 'oscuro' | 'altoContraste'
+  tema?: 'claro' | 'oscuro' | 'altoContraste'
+  language?: 'es' | 'en'
+  textSize?: 'small' | 'normal' | 'large'
+  reduceAnimations?: boolean
+  emphasizeFocus?: boolean
+  easyReadMode?: boolean
 }
 
 export type ApiMediaItem = {
@@ -47,6 +63,11 @@ export type ApiCapsule = {
   date?: string
   createdAt?: string
   updatedAt?: string
+}
+
+export type ApiFriendProfile = ApiUser & {
+  username: string
+  totalAmigos: number
 }
 
 export type ApiNotification = {
@@ -143,6 +164,16 @@ async function requestJson<T>(path: string, init: RequestInit = {}, authRequired
   const data = await response.json().catch(() => ({})) as Record<string, unknown>
 
   if (!response.ok) {
+    if (authRequired && response.status === 401) {
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('authUser')
+
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login')
+      }
+    }
+
     const message = typeof data.message === 'string' ? data.message : 'Request failed'
     throw new Error(message)
   }
@@ -194,6 +225,43 @@ export async function fetchCurrentUser(): Promise<ApiUser> {
   return requestJson<ApiUser>('/api/users/me')
 }
 
+export async function updateCurrentUser(payload: {
+  name?: string
+  email?: string
+  profilePhoto?: string
+  avatar?: string
+  biography?: string
+  birthDate?: string | null
+  country?: string
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_say'
+}): Promise<ApiUser> {
+  return requestJson<ApiUser>('/api/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function updateCurrentUserPreferences(payload: ApiUserPreferences): Promise<ApiUser> {
+  return requestJson<ApiUser>('/api/users/me/preferences', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function changeCurrentUserPassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+  return requestJson<{ message: string }>('/api/users/me/password', {
+    method: 'PATCH',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+}
+
+export async function deleteCurrentUser(password: string): Promise<{ message: string }> {
+  return requestJson<{ message: string }>('/api/users/me', {
+    method: 'DELETE',
+    body: JSON.stringify({ password }),
+  })
+}
+
 export async function fetchCapsules(): Promise<ApiCapsule[]> {
   return requestJson<ApiCapsule[]>('/api/capsules')
 }
@@ -202,8 +270,25 @@ export async function fetchCapsuleById(capsuleId: string): Promise<ApiCapsule> {
   return requestJson<ApiCapsule>(`/api/capsules/${capsuleId}`)
 }
 
+export async function fetchCommonCapsules(friendId: string): Promise<ApiCapsule[]> {
+  return requestJson<ApiCapsule[]>(`/api/capsules/common/${friendId}`)
+}
+
 export async function fetchFriends(): Promise<ApiFriendRelation[]> {
   return requestJson<ApiFriendRelation[]>('/api/friends')
+}
+
+export async function fetchUserById(userId: string): Promise<ApiFriendProfile> {
+  return requestJson<ApiFriendProfile>(`/api/users/${userId}`)
+}
+
+export async function requestFriendByUsername(username: string): Promise<ApiFriendRelation> {
+  const response = await requestJson<{ message: string; relation: ApiFriendRelation }>('/api/friends/request', {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+  })
+
+  return response.relation
 }
 
 export async function createCapsule(payload: {

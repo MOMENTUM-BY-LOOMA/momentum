@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     default: 'prefer_not_say',
   },
   preferences: {
-    theme: { type: String, enum: ['light', 'dark', 'system'], default: 'light' },
+    theme: { type: String, enum: ['claro', 'oscuro', 'altoContraste'], default: 'claro' },
     language: { type: String, enum: ['es', 'en'], default: 'es' },
     textSize: { type: String, enum: ['small', 'normal', 'large'], default: 'normal' },
     reduceAnimations: { type: Boolean, default: false },

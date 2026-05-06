@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/user');
 const RefreshToken = require('../models/refreshToken');
+const FriendRelation = require('../models/friendRelation');
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -22,9 +23,15 @@ function isDbConnected() {
 }
 
 function userResponse(user) {
+  const username = String(user.name || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '');
+
   return {
     _id: user._id,
     name: user.name,
+    username,
     email: user.email,
     profilePhoto: user.profilePhoto || user.avatar || '',
     avatar: user.avatar || user.profilePhoto || '',
@@ -131,12 +138,12 @@ router.get('/search', auth, async (req, res) => {
 // Available preferences catalog for settings screens
 router.get('/preferences/options', auth, (req, res) => {
   res.json({
-    theme: ['light', 'dark', 'system'],
+    theme: ['claro', 'oscuro', 'altoContraste'],
     language: ['es', 'en'],
     textSize: ['small', 'normal', 'large'],
     toggles: ['reduceAnimations', 'emphasizeFocus', 'easyReadMode'],
     defaults: {
-      theme: 'light',
+      theme: 'claro',
       language: 'es',
       textSize: 'normal',
       reduceAnimations: false,
@@ -226,7 +233,8 @@ router.patch(
   '/me/preferences',
   auth,
   [
-    body('theme').optional().isIn(['light', 'dark', 'system']).withMessage('Invalid theme'),
+    body('theme').optional().isIn(['claro', 'oscuro', 'altoContraste']).withMessage('Invalid theme'),
+    body('tema').optional().isIn(['claro', 'oscuro', 'altoContraste']).withMessage('Invalid theme'),
     body('language').optional().isIn(['es', 'en']).withMessage('Invalid language'),
     body('textSize').optional().isIn(['small', 'normal', 'large']).withMessage('Invalid text size'),
     body('reduceAnimations').optional().isBoolean().withMessage('reduceAnimations must be boolean'),
@@ -248,6 +256,10 @@ router.patch(
       if (!user) return res.status(404).json({ message: 'User not found' });
 
       if (!user.preferences) user.preferences = {};
+
+      if (req.body.tema !== undefined) {
+        user.preferences.theme = req.body.tema;
+      }
 
       const keys = ['theme', 'language', 'textSize', 'reduceAnimations', 'emphasizeFocus', 'easyReadMode'];
       keys.forEach((key) => {
@@ -605,5 +617,34 @@ router.post(
     }
   },
 );
+
+router.get('/:id', auth, async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({ message: 'Database unavailable' });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid user id' });
+  }
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const totalAmigos = await FriendRelation.countDocuments({
+      status: 'accepted',
+      $or: [{ requester: user._id }, { recipient: user._id }],
+    });
+
+    res.json({
+      ...userResponse(user),
+      totalAmigos,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

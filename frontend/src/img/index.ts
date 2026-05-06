@@ -1,0 +1,5 @@
+export const logoMAsset = '/img/logo_m.svg'
+export const loomaAsset = '/img/logo_looma.svg'
+export const defaultAvatarAsset = '/img/default-avatar.png'
+export const avatarMAsset = '/img/avatar-m.png'
+export { default as settingsIconAsset } from './icon_settings.svg'

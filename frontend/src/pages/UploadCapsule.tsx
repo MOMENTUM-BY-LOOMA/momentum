@@ -1,5 +1,6 @@
-import { type FormEvent, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Fragment, type FormEvent, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { logoMAsset } from '../img'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { createCapsule, uploadMediaFile } from '../services/api.ts'
@@ -171,7 +172,15 @@ function UploadCapsule() {
   }
 
   return (
-    <section className="page-card form-card">
+    <Fragment>
+      <header className="mobile-header" aria-label="Subir capsula">
+        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
+        <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+          <img src={logoMAsset} alt="Momentum" />
+        </Link>
+        <span className="mobile-header__right" aria-hidden="true" />
+      </header>
+      <section className="page-card form-card">
       <div>
         <h1>Subir capsula</h1>
         <p>Crea un nuevo recuerdo con datos reales y sube los archivos al backend.</p>
@@ -270,7 +279,8 @@ function UploadCapsule() {
           </button>
         </div>
       </form>
-    </section>
+      </section>
+    </Fragment>
   )
 }
 

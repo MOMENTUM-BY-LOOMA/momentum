@@ -1,5 +1,6 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { logoMAsset } from '../img'
 function Register() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
@@ -83,9 +84,19 @@ function Register() {
   }
 
   return (
-    <section className="auth-screen" aria-label="Pantalla de registro">
-      <img className="auth-screen__brand auth-screen__brand-image" src="/img/logo_m.svg" alt="M" />
-      <article className="auth-screen__card">
+    <>
+      <header className="mobile-header" aria-label="Encabezado">
+        <Link to="/" className="mobile-header__back" aria-label="Volver a inicio">
+          ←
+        </Link>
+        <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
+          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+        </button>
+        <span className="mobile-header__side" aria-hidden="true" />
+      </header>
+
+      <section className="auth-screen" aria-label="Pantalla de registro">
+        <article className="auth-screen__card">
         <form className="auth-screen__form" onSubmit={handleSubmit}>
           <label className="field auth-field" htmlFor="register-name">
             <span>Nombre de usuario</span>
@@ -166,7 +177,7 @@ function Register() {
           {error ? <p className="auth-screen__error">{error}</p> : null}
 
           <div className="auth-screen__actions">
-            <Link to="/" className="auth-screen__back" aria-label="Volver a inicio">←</Link>
+            <span className="mobile-header__side" aria-hidden="true" />
             <button type="submit" className="auth-screen__submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creando...' : 'Crear cuenta'}
             </button>
@@ -179,6 +190,7 @@ function Register() {
         </div>
       </article>
     </section>
+    </>
   )
 }
 

@@ -1,6 +1,7 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { registerUser } from '../services/api.ts'
+import { logoMAsset } from '../img'
 
 type RegisterDraft = {
   name: string
@@ -56,20 +57,41 @@ function RegisterDetails() {
 
   if (!hasDraft) {
     return (
-      <section className="auth-screen" aria-label="Datos adicionales de registro">
-        <article className="auth-screen__card page-card">
-          <h1>Falta informacion del paso anterior</h1>
-          <p>Para continuar, completa primero tu nombre, email y contrasena.</p>
-          <div className="button-row">
-            <Link to="/registro" className="button-secondary">Volver al registro</Link>
-          </div>
-        </article>
-      </section>
+      <>
+        <header className="mobile-header" aria-label="Encabezado">
+          <span className="mobile-header__side" aria-hidden="true" />
+          <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
+            <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+          </button>
+          <span className="mobile-header__side" aria-hidden="true" />
+        </header>
+
+        <section className="auth-screen" aria-label="Datos adicionales de registro">
+          <article className="auth-screen__card page-card">
+            <h1>Falta informacion del paso anterior</h1>
+            <p>Para continuar, completa primero tu nombre, email y contrasena.</p>
+            <div className="button-row">
+              <Link to="/registro" className="button-secondary">Volver al registro</Link>
+            </div>
+          </article>
+        </section>
+      </>
     )
   }
 
   return (
-    <section className="auth-screen" aria-label="Datos adicionales de registro">
+    <>
+      <header className="mobile-header" aria-label="Encabezado">
+        <Link to="/registro" className="mobile-header__back" aria-label="Volver a registro">
+          ←
+        </Link>
+        <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
+          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+        </button>
+        <span className="mobile-header__side" aria-hidden="true" />
+      </header>
+
+      <section className="auth-screen" aria-label="Datos adicionales de registro">
       <article className="auth-screen__card">
         <form className="auth-screen__form" onSubmit={handleSubmit}>
           <h1>Datos adicionales</h1>
@@ -116,7 +138,7 @@ function RegisterDetails() {
           {error ? <p className="auth-screen__error">{error}</p> : null}
 
           <div className="auth-screen__actions">
-            <Link to="/registro" className="auth-screen__back" aria-label="Volver a registro">←</Link>
+            <span className="mobile-header__side" aria-hidden="true" />
             <button type="submit" className="auth-screen__submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creando...' : 'Finalizar registro'}
             </button>
@@ -124,6 +146,7 @@ function RegisterDetails() {
         </form>
       </article>
     </section>
+    </>
   )
 }
 

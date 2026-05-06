@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
+import HeaderSimple from '../components/HeaderSimple'
 
 function Home() {
   return (
-    <section className="onboarding-screen onboarding-screen--welcome" aria-label="Pantalla de bienvenida">
+    <>
+      <HeaderSimple />
+      <section className="onboarding-screen onboarding-screen--welcome" aria-label="Pantalla de bienvenida">
       <img className="onboarding-screen__mark" src="/img/logo_m.svg" alt="M" />
 
       <div className="onboarding-screen__welcome-copy">
@@ -27,6 +30,7 @@ function Home() {
         Inicia sesión para empezar la experiencia
       </Link>
     </section>
+    </>
   )
 }
 

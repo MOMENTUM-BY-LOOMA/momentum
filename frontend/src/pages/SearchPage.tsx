@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import HeaderConAtras from '../components/HeaderConAtras'
 
 type CategoryCard = {
   title: string
@@ -53,17 +55,15 @@ function CategoryIcon({ icon }: { icon: CategoryCard['icon'] }) {
 }
 
 function SearchPage() {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const categories = useMemo(() => CATEGORIES, [])
 
   return (
-    <section className="search-screen" aria-label="Pantalla de búsqueda">
-      <header className="search-screen__header">
-        <div className="search-screen__brand" aria-hidden="true">
-          <img src="/img/logo_m.svg" alt="" />
-        </div>
-        <h1>BÚSQUEDA</h1>
-      </header>
+    <>
+      <HeaderConAtras onAtras={() => navigate(-1)} />
+
+      <section className="search-screen" aria-label="Pantalla de búsqueda">
 
       <section className="search-screen__search-bar" aria-label="Buscar cápsula por nombre">
         <input
@@ -91,6 +91,7 @@ function SearchPage() {
         ))}
       </section>
     </section>
+    </>
   )
 }
 

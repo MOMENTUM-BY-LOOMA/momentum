@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { logoMAsset } from '../img'
 import { fetchFriends, type ApiFriendRelation, type ApiUser } from '../services/api.ts'
 
 function relationToFriend(relation: ApiFriendRelation): ApiUser | null {
@@ -11,6 +12,7 @@ function relationToFriend(relation: ApiFriendRelation): ApiUser | null {
 }
 
 function FriendsPage() {
+  const navigate = useNavigate()
   const [relations, setRelations] = useState<ApiFriendRelation[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -28,7 +30,18 @@ function FriendsPage() {
   const friends = useMemo(() => relations.map((relation) => relationToFriend(relation)).filter((user): user is ApiUser => Boolean(user)), [relations])
 
   return (
-    <section className="page-layout page-layout--module">
+    <>
+      <header className="mobile-header" aria-label="Encabezado">
+        <button type="button" className="mobile-header__back" onClick={() => navigate(-1)} aria-label="Volver atrás">
+          ←
+        </button>
+        <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio" onClick={() => navigate('/inicio')}>
+          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+        </button>
+        <span className="mobile-header__side" aria-hidden="true" />
+      </header>
+
+      <section className="page-layout page-layout--module">
       <article className="page-card">
         <h1>Amigos</h1>
         <p>Lista, peticiones y sugerencias.</p>
@@ -56,6 +69,7 @@ function FriendsPage() {
         <p>Espacio reservado para recomendaciones sociales.</p>
       </article>
     </section>
+    </>
   )
 }
 
