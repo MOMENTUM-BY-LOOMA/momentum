@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { avatarMAsset } from '../img'
+import { logoMAsset } from '../img'
 
 type HeaderConTituloProps = {
   titulo: string
@@ -13,8 +13,8 @@ function HeaderConTitulo({ titulo, iconoDerecha, onIconoDerecha }: HeaderConTitu
     <header className="header-con-titulo" aria-label={titulo}>
       <h1 className="header-con-titulo__title">{titulo.toUpperCase()}</h1>
 
-      <Link to="/" className="header-con-titulo__avatar-button" aria-label="Ir a Home">
-        <img className="header-con-titulo__avatar" src={avatarMAsset} alt="Momentum" />
+      <Link to="/" className="header-con-titulo__logo-button" aria-label="Ir a Home">
+        <img className="header-con-titulo__logo" src={logoMAsset} alt="Momentum" />
       </Link>
 
       <button type="button" className="header-con-titulo__icon-button" onClick={onIconoDerecha} aria-label={`${titulo} acciones`}>

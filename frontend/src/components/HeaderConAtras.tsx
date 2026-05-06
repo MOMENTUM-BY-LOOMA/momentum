@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { avatarMAsset } from '../img'
+import { logoMAsset } from '../img'
 
 type HeaderConAtrasProps = {
   onAtras?: () => void
@@ -16,8 +16,8 @@ function HeaderConAtras({ onAtras }: HeaderConAtrasProps) {
         <span className="header-con-atras__back-text">ATRÁS</span>
       </button>
 
-      <Link to="/" className="header-con-atras__avatar-button" aria-label="Ir a Home">
-        <img className="header-con-atras__avatar" src={avatarMAsset} alt="Momentum" />
+      <Link to="/" className="header-con-atras__logo-button" aria-label="Ir a Home">
+        <img className="header-con-atras__logo" src={logoMAsset} alt="Momentum" />
       </Link>
     </header>
   )

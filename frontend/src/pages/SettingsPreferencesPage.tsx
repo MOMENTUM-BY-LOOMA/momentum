@@ -1,7 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeaderConAtras from '../components/HeaderConAtras'
-import { useTema } from '../context/TemaContext'
 import { fetchCurrentUser, updateCurrentUserPreferences, type ApiUserPreferences } from '../services/api'
 import { applyUserPreferences, normalizeUserPreferences, type NormalizedUserPreferences } from '../services/userPreferences'
 
@@ -16,7 +15,6 @@ const DEFAULT_PREFS: NormalizedUserPreferences = {
 
 function SettingsPreferencesPage() {
   const navigate = useNavigate()
-  const { cambiarTema, tema } = useTema()
   const [originalPrefs, setOriginalPrefs] = useState<NormalizedUserPreferences>(DEFAULT_PREFS)
   const [prefs, setPrefs] = useState<NormalizedUserPreferences>(DEFAULT_PREFS)
   const [loading, setLoading] = useState(false)
@@ -70,10 +68,6 @@ function SettingsPreferencesPage() {
         setOriginalPrefs(userPrefs)
         setPrefs(userPrefs)
         applyUserPreferences(userPrefs)
-
-        if (tema !== userPrefs.theme) {
-          await cambiarTema(userPrefs.theme)
-        }
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : ui.loadError)
       }
@@ -122,22 +116,6 @@ function SettingsPreferencesPage() {
       <h1 className="settings-title">{ui.title}</h1>
 
       <div className="settings-form settings-form--spacious">
-        <label className="settings-label" htmlFor="settings-theme">Tema</label>
-        <select
-          id="settings-theme"
-          className="settings-select"
-          value={prefs.theme}
-          onChange={async (event) => {
-            const nextTheme = event.target.value as NormalizedUserPreferences['theme']
-            setPrefs((prev) => ({ ...prev, theme: nextTheme }))
-            await cambiarTema(nextTheme)
-          }}
-        >
-          <option value="claro">Claro</option>
-          <option value="oscuro">Oscuro</option>
-          <option value="altoContraste">Alto contraste</option>
-        </select>
-
         <label className="settings-label" htmlFor="settings-language">{ui.language}</label>
         <select
           id="settings-language"

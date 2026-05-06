@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import IconoTema from '../components/IconoTema'
 import { logoMAsset } from '../img'
 
 function Dashboard() {
@@ -7,7 +8,9 @@ function Dashboard() {
   return (
     <>
       <header className="mobile-header" aria-label="Encabezado">
-        <span className="mobile-header__side" aria-hidden="true" />
+        <span className="mobile-header__side mobile-header__side--left" aria-hidden="true">
+          <IconoTema />
+        </span>
         <button type="button" className="mobile-header__logo-button" aria-label="Ir a inicio">
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
         </button>

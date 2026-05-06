@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CapsulaThumb, { type ThumbCapsule } from '../components/CapsulaThumb'
-import HeaderSimple from '../components/HeaderSimple'
-import { defaultAvatarAsset } from '../img'
+import { logoMAsset, settingsIconAsset } from '../img'
 import {
   fetchCurrentUser,
   fetchFriends,
@@ -45,10 +44,6 @@ function mapCapsule(capsule: ApiCapsule): ThumbCapsule {
     thumbnailUrl: imageThumb,
     modelUrl,
   }
-}
-
-function getAvatar(user?: ApiUser | null) {
-  return user?.profilePhoto || user?.avatar || defaultAvatarAsset
 }
 
 function getInitial(name: string) {
@@ -156,11 +151,17 @@ function MisAmigos() {
 
   return (
     <section className="mis-amigos-page" aria-label="Mis amigos">
-      <HeaderSimple />
+      <header className="mis-amigos-page__header" aria-label="Encabezado de amigos">
+        <span className="mis-amigos-page__header-spacer" aria-hidden="true" />
 
-      <button type="button" className="mis-amigos-page__avatar-btn" onClick={() => navigate('/perfil')} aria-label="Ir a mi perfil">
-        <img className="mis-amigos-page__avatar" src={getAvatar(currentUser)} alt={currentUser?.name || 'Mi perfil'} />
-      </button>
+        <a className="mis-amigos-page__logo-button" href="/inicio" aria-label="Ir a inicio">
+          <img className="mis-amigos-page__logo" src={logoMAsset} alt="Momentum" />
+        </a>
+
+        <button type="button" className="mis-amigos-page__settings-button" onClick={() => navigate('/ajustes')} aria-label="Abrir ajustes">
+          <img className="mis-amigos-page__settings-icon" src={settingsIconAsset} alt="" aria-hidden="true" />
+        </button>
+      </header>
 
       <h1 className="mis-amigos-page__title">MIS AMIGOS</h1>
 
