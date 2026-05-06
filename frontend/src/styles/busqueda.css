@@ -1,0 +1,229 @@
+/* Búsqueda Page Styles */
+
+.busqueda-page {
+  padding-top: 72px;
+  min-height: 100dvh;
+}
+
+.busqueda__title {
+  font-family: var(--title-font);
+  font-size: 22px;
+  text-align: center;
+  padding: 12px 20px 8px;
+  margin: 0;
+  color: var(--color-texto-principal);
+}
+
+.busqueda__pill-container {
+  padding: 0 20px 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.pill-categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-fondo-secundario);
+  border: 1px solid var(--color-borde);
+  border-radius: 99px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-texto-principal);
+}
+
+.pill-categoria__close {
+  background: none;
+  border: none;
+  color: var(--color-texto-principal);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.busqueda__search-box {
+  padding: 0 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.busqueda__search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  position: relative;
+}
+
+.busqueda__input {
+  flex: 1;
+  background: var(--color-fondo-secundario);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--color-texto-principal);
+  font-family: inherit;
+}
+
+.busqueda__input::placeholder {
+  color: var(--color-texto-secundario);
+}
+
+.busqueda__clear-btn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--color-texto-secundario);
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.busqueda__search-btn {
+  background: var(--color-boton-primario);
+  color: var(--color-boton-texto);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Categorías - Sin query */
+.busqueda__categorias-wrap {
+  animation: fadeIn 150ms ease;
+}
+
+.busqueda__categorias-hint {
+  font-size: 14px;
+  color: var(--color-texto-secundario);
+  padding: 0 20px 16px;
+  margin: 0;
+  text-align: center;
+}
+
+.busqueda__categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.busqueda__categoria-card {
+  background: var(--color-fondo-secundario);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 150ms ease;
+}
+
+.busqueda__categoria-card:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.busqueda__categoria-icono {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-texto-principal);
+}
+
+.busqueda__categoria-icono svg {
+  width: 100%;
+  height: 100%;
+}
+
+.busqueda__categoria-nombre {
+  font-family: var(--title-font);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-texto-principal);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Resultados - Con query */
+.busqueda__resultados-wrap {
+  animation: fadeIn 150ms ease;
+  padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 90px);
+}
+
+.busqueda__resultados-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.busqueda__skeleton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.busqueda__skeleton-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: var(--color-borde);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.busqueda__cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.busqueda__no-results {
+  font-size: 15px;
+  color: var(--color-texto-secundario);
+  text-align: center;
+  padding: 40px 20px;
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

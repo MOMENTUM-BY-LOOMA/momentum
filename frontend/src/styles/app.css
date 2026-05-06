@@ -429,7 +429,9 @@
 }
 
 .mobile-header__back,
-.mobile-header__settings {
+.mobile-header__settings,
+.mobile-header__left,
+.mobile-header__right {
   width: 44px;
   height: 44px;
   display: flex;
@@ -446,11 +448,17 @@
 }
 
 .mobile-header__back:hover,
-.mobile-header__settings:hover {
+.mobile-header__settings:hover,
+.mobile-header__left:hover,
+.mobile-header__right:hover {
   background-color: rgba(26, 26, 26, 0.08);
 }
 
-.mobile-header__logo-button {
+.mobile-header__logo-button,
+.logo-button,
+.header-simple__logo-button,
+.header-con-atras__logo-button,
+.header-con-titulo__logo-button {
   width: 44px;
   height: 44px;
   display: flex;
@@ -464,15 +472,25 @@
   transition: background-color 0.2s;
 }
 
-.mobile-header__logo-button:hover {
+.mobile-header__logo-button:hover,
+.logo-button:hover,
+.header-simple__logo-button:hover,
+.header-con-atras__logo-button:hover,
+.header-con-titulo__logo-button:hover {
   background-color: rgba(26, 26, 26, 0.08);
 }
 
-.mobile-header__logo {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+.mobile-header__logo,
+.header-simple__logo,
+.header-con-atras__logo,
+.header-con-titulo__logo,
+.logo-button img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
   display: block;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-texto-principal);
 }
 
 .button-row {
@@ -1212,17 +1230,6 @@
   color: var(--color-boton-texto);
 }
 
-.header-simple__logo,
-.header-con-titulo__logo,
-.header-con-atras__logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1.5px solid var(--color-texto-principal);
-  object-fit: cover;
-  display: block;
-}
-
 .header-con-titulo {
   position: relative;
   justify-content: space-between;
@@ -1390,6 +1397,134 @@
   object-fit: cover;
   display: block;
   border: 1.5px solid var(--color-texto-principal);
+}
+
+/* TodasMisCapsulas page styles */
+.todas-capsulas-page {
+  padding-top: 72px; /* account for fixed header */
+}
+.todas-capsulas__title {
+  font-family: var(--title-font);
+  font-size: 22px;
+  text-align: center;
+  padding: 16px 20px 12px;
+  margin: 0;
+}
+.todas-capsulas__search {
+  margin: 0 20px 12px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.todas-capsulas__input {
+  background: var(--color-fondo-secundario);
+  border: 1.5px solid #1A1A1A;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+}
+.todas-capsulas__search.is-active .todas-capsulas__input {
+  padding-right: 44px;
+}
+.search-clear {
+  position: absolute;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  color: #1A1A1A;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-fondo-secundario);
+  border: 1px solid var(--color-borde);
+  border-radius: 99px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.search-pill__clear {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  padding: 0 6px;
+  cursor: pointer;
+}
+.search-cancel {
+  background: var(--color-boton-primario);
+  color: var(--color-boton-texto);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+.todas-capsulas__grid-wrap {
+  padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 90px);
+}
+.todas-capsulas__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+.todas-capsulas__cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.thumb-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: inline-block;
+}
+.thumb-halo {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  filter: blur(6px);
+  z-index: 0;
+}
+.thumb-inner {
+  position: relative;
+  z-index: 1;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.todas-capsulas__empty {
+  text-align: center;
+  color: var(--color-texto-secundario);
+  font-size: 15px;
+  padding: 40px 20px;
+}
+.todas-capsulas__create {
+  margin-top: 12px;
+  background: var(--color-boton-primario);
+  color: var(--color-boton-texto);
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .mis-amigos-page__title {

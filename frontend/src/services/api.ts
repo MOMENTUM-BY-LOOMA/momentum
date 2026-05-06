@@ -124,11 +124,11 @@ export type UploadResponse = {
 }
 
 function getStoredToken() {
-  return localStorage.getItem('authToken')
+  return sessionStorage.getItem('authToken')
 }
 
 function getStoredRefreshToken() {
-  return localStorage.getItem('refreshToken')
+  return sessionStorage.getItem('refreshToken')
 }
 
 function buildHeaders(token?: string, isJsonBody = true) {
@@ -165,9 +165,9 @@ async function requestJson<T>(path: string, init: RequestInit = {}, authRequired
 
   if (!response.ok) {
     if (authRequired && response.status === 401) {
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('refreshToken')
-      localStorage.removeItem('authUser')
+      sessionStorage.removeItem('authToken')
+      sessionStorage.removeItem('refreshToken')
+      sessionStorage.removeItem('authUser')
 
       if (window.location.pathname !== '/login') {
         window.location.replace('/login')
@@ -182,9 +182,9 @@ async function requestJson<T>(path: string, init: RequestInit = {}, authRequired
 }
 
 export function clearSession() {
-  localStorage.removeItem('authToken')
-  localStorage.removeItem('refreshToken')
-  localStorage.removeItem('authUser')
+  sessionStorage.removeItem('authToken')
+  sessionStorage.removeItem('refreshToken')
+  sessionStorage.removeItem('authUser')
 }
 
 export async function loginUser(email: string, password: string): Promise<LoginResponse> {

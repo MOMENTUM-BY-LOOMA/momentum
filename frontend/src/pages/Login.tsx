@@ -17,11 +17,11 @@ function Login() {
 
     try {
       const response = await loginUser(email, password)
-      localStorage.setItem('authToken', response.token)
+      sessionStorage.setItem('authToken', response.token)
       if (response.refreshToken) {
-        localStorage.setItem('refreshToken', response.refreshToken)
+        sessionStorage.setItem('refreshToken', response.refreshToken)
       }
-      localStorage.setItem('authUser', JSON.stringify(response.user))
+      sessionStorage.setItem('authUser', JSON.stringify(response.user))
       window.dispatchEvent(new Event('authUserChanged'))
       navigate('/inicio')
     } catch (err) {
