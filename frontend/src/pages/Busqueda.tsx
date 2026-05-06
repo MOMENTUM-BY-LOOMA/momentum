@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { logoMAsset } from '../img'
 import CapsulaThumb from '../components/CapsulaThumb'
 import type { ApiCapsule } from '../services/api'
@@ -47,6 +47,7 @@ const categorias: Categoria[] = [
 ]
 
 export default function Busqueda() {
+  const location = useLocation()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
@@ -60,6 +61,15 @@ export default function Busqueda() {
     const token = sessionStorage.getItem('authToken')
     setToken(token || '')
   }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const categoryParam = params.get('category')
+    if (categoryParam) {
+      setCategoriaActiva(categoryParam.toUpperCase())
+      setQuery('')
+    }
+  }, [location.search])
 
   useEffect(() => {
     if (!hayFiltro || !token) {
@@ -104,9 +114,9 @@ export default function Busqueda() {
     <div className="busqueda-page">
       <header className="mobile-header" aria-label="Búsqueda">
         <span className="mobile-header__left" aria-hidden="true" />
-        <a href="/inicio" className="logo-button" aria-label="Ir a inicio">
+        <button type="button" className="logo-button" aria-label="Ir a inicio" onClick={() => navigate('/inicio')}>
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
-        </a>
+        </button>
         <span className="mobile-header__right" aria-hidden="true" />
       </header>
 

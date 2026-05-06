@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import AppBottomNav from './components/AppBottomNav.tsx'
 import CapsuleView from './pages/CapsuleView.tsx'
+import CapsuleInterior from './pages/CapsuleInterior.tsx'
 import Dashboard from './pages/Dashboard.tsx'
 import Home from './pages/Home.tsx'
 import InitialLoading from './pages/InitialLoading.tsx'
@@ -25,6 +26,10 @@ import { clearSession, fetchCurrentUser } from './services/api.ts'
 import { applyStoredUserPreferences } from './services/userPreferences.ts'
 import './styles/app.css'
 import './styles/busqueda.css'
+import './styles/home.css'
+import './styles/capsule-view.css'
+import './styles/capsule-interior.css'
+import './styles/capsule-edit.css'
 
 type GuardStatus = 'checking' | 'authenticated' | 'unauthenticated'
 
@@ -127,7 +132,7 @@ function AppLayout() {
     '/ajustes/cuenta',
     '/ajustes/preferencias',
     '/ajustes/sesion',
-  ].includes(location.pathname)
+  ].includes(location.pathname) || location.pathname.match(/^\/capsulas\/[^/]+(\/interior|\/editar)?$/)
 
   return (
     <div className="app-shell">
@@ -150,7 +155,9 @@ function AppLayout() {
             <Route path="/capsulas" element={<CapsulesPage />} />
             <Route path="/capsulas/crear" element={<CreateCapsuleFlowPage />} />
             <Route path="/capsulas/crear/editor" element={<CapsuleEditPage />} />
-            <Route path="/capsulas/:capsuleId" element={<CapsuleView />} />
+            <Route path="/capsulas/:id" element={<CapsuleView />} />
+            <Route path="/capsulas/:id/interior" element={<CapsuleInterior />} />
+            <Route path="/capsulas/:capsuleId/editar" element={<CapsuleEditPage />} />
             <Route path="/amigos" element={<MisAmigos />} />
             <Route path="/amigos/:amigoId" element={<PerfilAmigo />} />
             <Route path="/amigos/:friendId" element={<PerfilAmigo />} />

@@ -72,7 +72,9 @@ const capsuleSchema = new mongoose.Schema(
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     sharedWith: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     collaborators: [collaboratorSchema],
+    openedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     mediaItems: [mediaItemSchema],
+    comments: [commentSchema],
 
     // Legacy fields kept for compatibility with old payloads/UI
     type: { type: String, default: '' },

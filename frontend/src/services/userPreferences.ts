@@ -49,7 +49,7 @@ export function applyUserPreferences(rawPrefs?: ApiUserPreferences | null) {
 }
 
 export function applyStoredUserPreferences() {
-  const raw = localStorage.getItem('authUser')
+  const raw = sessionStorage.getItem('authUser')
 
   if (!raw) {
     applyUserPreferences(DEFAULT_USER_PREFERENCES)

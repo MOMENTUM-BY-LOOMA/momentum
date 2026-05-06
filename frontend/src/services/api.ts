@@ -46,6 +46,7 @@ export type ApiCapsule = {
   title: string
   description?: string
   category?: string
+  colorHalo?: string
   design?: {
     key?: string
     label?: string

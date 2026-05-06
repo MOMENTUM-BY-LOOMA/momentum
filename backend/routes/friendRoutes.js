@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const auth = require('../middleware/authMiddleware');
 const User = require('../models/user');
+const Capsule = require('../models/capsule');
 const FriendRelation = require('../models/friendRelation');
 const { notifyFriendRequest, notifyFriendAccepted } = require('../services/notificationService');
 
@@ -77,6 +78,15 @@ async function ensureNotBlocked(currentUserId, targetUserId) {
   }
 
   return relation;
+}
+
+function resolveUsername(user) {
+  const email = String(user?.email || '').trim();
+  if (email.includes('@')) {
+    return email.split('@')[0];
+  }
+
+  return String(user?.name || '').trim().toLowerCase().replace(/\s+/g, '.');
 }
 
 // Send a friend request or auto-accept reciprocal pending request
@@ -354,6 +364,67 @@ router.get('/', auth, async (req, res) => {
       ...relationResponse(relation, req.user.id, true),
       friend: String(relation.requester._id) === String(req.user.id) ? relation.recipient : relation.requester,
     })));
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/shared', auth, async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({ message: 'Database unavailable' });
+  }
+
+  try {
+    const relations = await FriendRelation.find({
+      status: 'accepted',
+      $or: [{ requester: req.user.id }, { recipient: req.user.id }],
+    })
+      .populate('requester', 'name email avatar profilePhoto')
+      .populate('recipient', 'name email avatar profilePhoto');
+
+    const friends = relations.map((relation) => {
+      const friend = String(relation.requester._id) === String(req.user.id)
+        ? relation.recipient
+        : relation.requester;
+
+      return {
+        _id: String(friend._id),
+        name: friend.name,
+        email: friend.email,
+        username: resolveUsername(friend),
+        avatar: friend.avatar || friend.profilePhoto || '',
+      };
+    });
+
+    if (friends.length === 0) {
+      return res.json([]);
+    }
+
+    const friendIds = friends.map((friend) => friend._id);
+    const capsules = await Capsule.find({
+      ...accessQuery(req.user.id),
+      sharedWith: { $in: friendIds },
+    })
+      .sort({ updatedAt: -1 })
+      .populate('owner', 'name email avatar profilePhoto')
+      .populate('sharedWith', 'name email avatar profilePhoto')
+      .populate('collaborators.user', 'name email avatar profilePhoto');
+
+    const grouped = friends
+      .map((friend) => {
+        const sharedCapsules = capsules.filter((capsule) => {
+          const sharedWithIds = (capsule.sharedWith || []).map((entry) => String(entry._id || entry));
+          return sharedWithIds.includes(friend._id);
+        });
+
+        return {
+          ...friend,
+          capsules: sharedCapsules,
+        };
+      })
+      .filter((friend) => friend.capsules.length > 0);
+
+    res.json(grouped);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

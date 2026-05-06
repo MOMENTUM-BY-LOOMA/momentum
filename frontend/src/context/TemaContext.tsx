@@ -32,7 +32,7 @@ function applyThemeToDocument(tema: TemaVisual) {
 }
 
 function updateStoredUserTheme(tema: TemaVisual) {
-  const rawUser = localStorage.getItem('authUser')
+  const rawUser = sessionStorage.getItem('authUser')
   if (!rawUser) return
 
   try {
@@ -46,14 +46,14 @@ function updateStoredUserTheme(tema: TemaVisual) {
       },
     }
 
-    localStorage.setItem('authUser', JSON.stringify(updatedUser))
+    sessionStorage.setItem('authUser', JSON.stringify(updatedUser))
   } catch {
-    localStorage.setItem('authUser', rawUser)
+    sessionStorage.setItem('authUser', rawUser)
   }
 }
 
 export function TemaProvider({ children }: { children: ReactNode }) {
-  const [tema, setTema] = useState<TemaVisual>(() => resolveStoredTheme(localStorage.getItem('authUser')))
+  const [tema, setTema] = useState<TemaVisual>(() => resolveStoredTheme(sessionStorage.getItem('authUser')))
 
   useEffect(() => {
     applyThemeToDocument(tema)
@@ -61,7 +61,7 @@ export function TemaProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const syncFromStorage = () => {
-      const storedTheme = resolveStoredTheme(localStorage.getItem('authUser'))
+      const storedTheme = resolveStoredTheme(sessionStorage.getItem('authUser'))
       setTema(storedTheme)
     }
 

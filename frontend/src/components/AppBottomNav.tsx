@@ -63,7 +63,7 @@ function AppBottomNav() {
 
     // Home behaves differently if user is authenticated
     if (tab.id === 'home') {
-      const isAuth = Boolean(localStorage.getItem('authToken'))
+      const isAuth = Boolean(sessionStorage.getItem('authToken'))
       const dest = isAuth ? '/inicio' : '/inicio-publico'
       sessionStorage.setItem(ACTIVE_KEY, 'home')
       navigate(dest)

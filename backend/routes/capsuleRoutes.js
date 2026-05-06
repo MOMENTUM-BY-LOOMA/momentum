@@ -211,6 +211,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const q = String(req.query.q || '').trim();
     const { category } = req.query;
+    const timeCapsule = String(req.query.timeCapsule || '').trim();
     const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom) : null;
     const dateTo = req.query.dateTo ? new Date(req.query.dateTo) : null;
 
@@ -218,6 +219,14 @@ router.get('/', auth, async (req, res) => {
     const offset = parsePositiveInteger(req.query.offset, 0);
 
     const mongoQuery = { ...accessQuery(req.user.id) };
+
+    if (timeCapsule === 'unlocked') {
+      mongoQuery.timeCapsule = {
+        enabled: true,
+        unlockAt: { $ne: null, $lte: new Date() },
+      };
+      mongoQuery.openedBy = { $ne: req.user.id };
+    }
 
     if (q.length >= 2) {
       const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -257,6 +266,7 @@ router.get('/search', auth, async (req, res) => {
   try {
     const q = String(req.query.q || '').trim();
     const { category } = req.query;
+    const timeCapsule = String(req.query.timeCapsule || '').trim();
     const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom) : null;
     const dateTo = req.query.dateTo ? new Date(req.query.dateTo) : null;
 
@@ -264,6 +274,14 @@ router.get('/search', auth, async (req, res) => {
     const offset = parsePositiveInteger(req.query.offset, 0);
 
     const mongoQuery = { ...accessQuery(req.user.id) };
+
+    if (timeCapsule === 'unlocked') {
+      mongoQuery.timeCapsule = {
+        enabled: true,
+        unlockAt: { $ne: null, $lte: new Date() },
+      };
+      mongoQuery.openedBy = { $ne: req.user.id };
+    }
 
     if (q.length >= 2) {
       const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -327,15 +345,27 @@ router.get('/:id', auth, async (req, res) => {
   }
 
   try {
-    const capsule = await findAccessibleCapsule(req.params.id, req.user.id);
+    let capsule = await Capsule.findOne({ _id: req.params.id, ...accessQuery(req.user.id) })
+      .populate('owner', 'name username email avatar')
+      .populate('sharedWith', 'name username email avatar')
+      .populate('collaborators.user', 'name username email avatar')
+      .populate('comments.author', 'name username email avatar')
+      .populate('mediaItems.comments.author', 'name username email avatar');
+
     if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
 
-    if (typeof capsule.populate === 'function') {
-      await capsule
-        .populate('owner', 'name email avatar')
-        .populate('sharedWith', 'name email avatar')
-        .populate('collaborators.user', 'name email avatar')
-        .populate('mediaItems.comments.author', 'name email avatar');
+    const unlockedTimeCapsule = Boolean(
+      capsule.timeCapsule?.enabled
+      && capsule.timeCapsule?.unlockAt
+      && new Date(capsule.timeCapsule.unlockAt) <= new Date(),
+    );
+
+    if (unlockedTimeCapsule) {
+      const openedBy = (capsule.openedBy || []).map((id) => String(id));
+      if (!openedBy.includes(String(req.user.id))) {
+        capsule.openedBy = Array.from(new Set([...(capsule.openedBy || []), req.user.id]));
+        await capsule.save();
+      }
     }
 
     const hasCommentPagination = req.query.commentsLimit !== undefined || req.query.commentsOffset !== undefined;
@@ -348,6 +378,7 @@ router.get('/:id', auth, async (req, res) => {
 
     res.json(sliceMediaComments(capsule, commentsLimit, commentsOffset));
   } catch (error) {
+    console.error('Error fetching capsule:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -734,6 +765,56 @@ router.post(
   },
 );
 
+// Add general comment to capsule (owner or shared users)
+router.post(
+  '/:id/comments',
+  auth,
+  [body('text').trim().notEmpty().withMessage('Comment text is required')],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    if (!isDbConnected()) {
+      return res.status(503).json({ message: 'Database unavailable' });
+    }
+
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid id' });
+    }
+
+    try {
+      const capsule = await findAccessibleCapsule(req.params.id, req.user.id);
+      if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
+
+      capsule.comments.push({
+        author: req.user.id,
+        text: req.body.text,
+      });
+
+      await capsule.save();
+
+      // Notify capsule owner about the new comment
+      if (String(capsule.owner) !== String(req.user.id)) {
+        const newComment = capsule.comments[capsule.comments.length - 1];
+        await notifyCommentAdded(capsule.owner, req.user.id, capsule._id, newComment._id);
+      }
+
+      const populated = await Capsule.findById(capsule._id)
+        .populate('owner', 'name email avatar')
+        .populate('sharedWith', 'name email avatar')
+        .populate('collaborators.user', 'name email avatar')
+        .populate('comments.author', 'name username email avatar')
+        .populate('mediaItems.comments.author', 'name username email avatar');
+
+      res.status(201).json(populated);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  },
+);
+
 // Add comment to a media item (owner or shared users)
 router.post(
   '/:id/media/:mediaId/comments',
@@ -774,7 +855,7 @@ router.post(
       }
 
       const populated = await Capsule.findById(capsule._id)
-        .populate('mediaItems.comments.author', 'name email avatar');
+        .populate('mediaItems.comments.author', 'name username email avatar');
 
       res.status(201).json(populated);
     } catch (error) {
