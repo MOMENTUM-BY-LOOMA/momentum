@@ -61,13 +61,12 @@ const capsuleSchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ['Point'],
-        default: 'Point',
       },
       coordinates: {
         type: [Number],
         default: undefined,
       },
-      label: { type: String, trim: true, default: '' },
+      label: { type: String, trim: true },
     },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     sharedWith: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

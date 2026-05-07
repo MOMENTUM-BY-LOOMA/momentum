@@ -488,6 +488,7 @@ router.post(
 
       res.status(201).json(capsule);
     } catch (error) {
+      console.error('Capsule create error:', error);
       res.status(500).json({ message: 'Server error' });
     }
   },

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { logoMAsset } from '../img'
 import CapsulaThumb from '../components/CapsulaThumb'
-import type { ApiCapsule } from '../services/api'
+import { getCapsuleThumb, type ApiCapsule } from '../services/api'
 
 interface Categoria {
   nombre: string
@@ -232,12 +232,7 @@ export default function Busqueda() {
                     />
                     <div className="thumb-inner">
                       <CapsulaThumb
-                        capsula={{
-                          id: capsula._id,
-                          nombre: capsula.title || '',
-                          thumbnailUrl: capsula.previewImage || (capsula.mediaItems && capsula.mediaItems[0] && capsula.mediaItems[0].thumbnailUrl),
-                          modelUrl: capsula.mediaItems && capsula.mediaItems[0] && capsula.mediaItems[0].url,
-                        }}
+                        capsula={{ id: capsula._id, nombre: capsula.title || '', ...getCapsuleThumb(capsula) }}
                         onOpen={(id) => navigate(`/capsulas/${id}`)}
                       />
                     </div>

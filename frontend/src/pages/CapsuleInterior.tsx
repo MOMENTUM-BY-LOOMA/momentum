@@ -1,8 +1,16 @@
-import { useEffect, useState, Fragment, useRef } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { logoMAsset } from '../img'
 import { fetchCapsuleById, type ApiCapsule } from '../services/api'
 import '../styles/capsule-interior.css'
+
+const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
+
+function resolveUrl(url: string) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
+  return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
+}
 
 interface Comment {
   _id?: string
@@ -14,8 +22,7 @@ interface Comment {
 function CapsuleInterior() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const carouselRef = useRef<HTMLDivElement>(null)
-  
+
   const [capsule, setCapsule] = useState<ApiCapsule | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -65,35 +72,8 @@ function CapsuleInterior() {
     }
   }, [id, navigate])
 
-  // Detectar cambios de slide por scroll
-  useEffect(() => {
-    const carousel = carouselRef.current
-    if (!carousel) return
-
-    const handleScroll = () => {
-      const scrollLeft = carousel.scrollLeft
-      const slideWidth = carousel.clientWidth
-      const index = Math.round(scrollLeft / slideWidth)
-      setActiveSlideIndex(Math.max(0, Math.min(index, mediaItems.length - 1)))
-    }
-
-    carousel.addEventListener('scroll', handleScroll, { passive: true })
-    return () => carousel.removeEventListener('scroll', handleScroll)
-  }, [mediaItems.length])
-
-  const scrollToSlide = (index: number) => {
-    if (carouselRef.current) {
-      const slideWidth = carouselRef.current.clientWidth
-      carouselRef.current.scrollLeft = index * slideWidth
-      setActiveSlideIndex(index)
-    }
-  }
-
-  const navigateSlide = (direction: 'prev' | 'next') => {
-    const newIndex = direction === 'prev' ? activeSlideIndex - 1 : activeSlideIndex + 1
-    if (newIndex >= 0 && newIndex < mediaItems.length) {
-      scrollToSlide(newIndex)
-    }
+  const goToSlide = (index: number) => {
+    if (index >= 0 && index < mediaItems.length) setActiveSlideIndex(index)
   }
 
   const handleSubmitGeneralComment = async () => {
@@ -222,105 +202,75 @@ function CapsuleInterior() {
         <span className="mobile-header__right" aria-hidden="true" />
       </header>
 
-      <section className="page-layout capsule-interior">
+      <section className="page-layout capsule-interior" style={{ paddingTop: '84px' }}>
         {/* Título + Botón Editar */}
         <div className="capsule-interior__header">
           <h1 className="capsule-interior__title">{capsule.title}</h1>
           {canEdit() && (
-            <button 
+            <button
               type="button"
               className="capsule-interior__edit-btn"
               onClick={() => navigate(`/capsulas/${id}/editar`)}
               aria-label="Editar cápsula"
-            >
-              ✏️ editar
-            </button>
+            >✏️ editar</button>
           )}
         </div>
 
         {/* Carrusel de fotos */}
         {mediaItems.length > 0 ? (
           <div className="capsule-interior__carousel-container">
-            <div 
-              ref={carouselRef}
-              className="capsule-interior__carousel"
-              role="region"
-              aria-label="Carrusel de fotos"
-            >
-              {mediaItems.map((media, idx) => {
-                const hasTimestamp = media && 'createdAt' in media && typeof media.createdAt === 'string' && media.createdAt
-                const timestamp = hasTimestamp ? (
+            <div className="capsule-interior__slide" role="region" aria-label="Foto actual">
+              {(() => {
+                const media = mediaItems[activeSlideIndex]
+                const src = resolveUrl(media.url)
+                return media.type === 'video' ? (
+                  <video src={src} className="capsule-interior__media" controls />
+                ) : (
+                  <img src={src} alt={`Foto ${activeSlideIndex + 1}`} className="capsule-interior__media" />
+                )
+              })()}
+
+              {/* Timestamp */}
+              {(() => {
+                const media = mediaItems[activeSlideIndex]
+                const ts = (media as any).createdAt
+                return ts ? (
                   <div className="capsule-interior__timestamp">
-                    {new Date(media.createdAt as string).toLocaleDateString('es-ES', { 
-                      month: '2-digit', 
-                      year: 'numeric' 
-                    })}
+                    {new Date(ts).toLocaleDateString('es-ES', { month: '2-digit', year: 'numeric' })}
                   </div>
                 ) : null
+              })()}
 
-                return (
-                  <div key={media._id || idx} className="capsule-interior__slide">
-                    {media.type === 'video' ? (
-                      <video 
-                        src={media.url} 
-                        className="capsule-interior__media"
-                        controls
-                      />
-                    ) : (
-                      <img 
-                        src={media.url} 
-                        alt={`Slide ${idx + 1}`}
-                        className="capsule-interior__media"
-                      />
-                    )}
-
-                    {/* Avatares de autor */}
-                    <div className="capsule-interior__media-authors">
-                      {typeof media.url === 'string' && (
-                        <div className="capsule-interior__author-avatar" title="Subido por">👤</div>
-                      )}
-                    </div>
-
-                    {/* Timestamp */}
-                    {timestamp}
-
-                    {/* Flechas de navegación */}
-                    {mediaItems.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          className="capsule-interior__arrow capsule-interior__arrow--left"
-                          onClick={() => navigateSlide('prev')}
-                          disabled={activeSlideIndex === 0}
-                          aria-label="Foto anterior"
-                        >
-                          ‹
-                        </button>
-                        <button
-                          type="button"
-                          className="capsule-interior__arrow capsule-interior__arrow--right"
-                          onClick={() => navigateSlide('next')}
-                          disabled={activeSlideIndex === mediaItems.length - 1}
-                          aria-label="Foto siguiente"
-                        >
-                          ›
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )
-              })}
+              {/* Flechas */}
+              {mediaItems.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className="capsule-interior__arrow capsule-interior__arrow--left"
+                    onClick={() => goToSlide(activeSlideIndex - 1)}
+                    disabled={activeSlideIndex === 0}
+                    aria-label="Foto anterior"
+                  >‹</button>
+                  <button
+                    type="button"
+                    className="capsule-interior__arrow capsule-interior__arrow--right"
+                    onClick={() => goToSlide(activeSlideIndex + 1)}
+                    disabled={activeSlideIndex === mediaItems.length - 1}
+                    aria-label="Foto siguiente"
+                  >›</button>
+                </>
+              )}
             </div>
 
-            {/* Indicadores de slide */}
+            {/* Dots */}
             {mediaItems.length > 1 && (
               <div className="capsule-interior__dots">
                 {mediaItems.map((_, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    className={`capsule-interior__dot ${idx === activeSlideIndex ? 'active' : ''}`}
-                    onClick={() => scrollToSlide(idx)}
+                    className={`capsule-interior__dot${idx === activeSlideIndex ? ' active' : ''}`}
+                    onClick={() => goToSlide(idx)}
                     aria-label={`Ir a foto ${idx + 1}`}
                   />
                 ))}

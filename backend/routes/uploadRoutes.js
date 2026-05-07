@@ -1,7 +1,9 @@
 const express = require('express');
 const path = require('path');
 const auth = require('../middleware/authMiddleware');
-const { upload, useS3, S3_BUCKET } = require('../config/upload');
+const {
+  upload, uploadsDir, useS3, S3_BUCKET, useCloudinary, cloudinaryInstance,
+} = require('../config/upload');
 
 const router = express.Router();
 const DEFAULT_PRESIGN_EXPIRES = 900;
@@ -23,7 +25,6 @@ if (useS3) {
     };
     Sharp = require('sharp');
   } catch (e) {
-    // if dependencies missing, fall back to disk behavior
     s3Client = null;
   }
 }
@@ -79,6 +80,17 @@ function publicS3Url(bucket, key) {
   return `https://${bucket}.s3.${AWS_REGION}.amazonaws.com/${encodedKey}`;
 }
 
+// Upload a buffer to Cloudinary via upload_stream
+function uploadToCloudinary(buffer, options) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinaryInstance.uploader.upload_stream(options, (error, result) => {
+      if (error) reject(error);
+      else resolve(result);
+    });
+    stream.end(buffer);
+  });
+}
+
 // Generate a presigned URL for direct S3 upload (PUT)
 router.post('/media/presign-upload', auth, async (req, res) => {
   if (!useS3 || !s3Client || !S3_BUCKET) {
@@ -123,7 +135,6 @@ router.post('/media/presign-upload', auth, async (req, res) => {
 });
 
 // Generate a dedicated presigned URL for large 3D model uploads (PUT)
-// Always stores objects under 3d-models/ to keep catalog assets separated.
 router.post('/media/model3d/presign-upload', auth, async (req, res) => {
   if (!useS3 || !s3Client || !S3_BUCKET) {
     return res.status(400).json({ message: 'S3 is not configured' });
@@ -211,7 +222,72 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
     return res.status(400).json({ message: 'File is required' });
   }
 
-  // If S3 enabled and client available, upload buffer
+  const mediaType = mimeToType(req.file.mimetype, req.file.originalname);
+  const is3D = mediaType === '3d';
+  const modelFormat = is3D ? extractModelFormat(req.file.originalname) : '';
+
+  // 3D models always go to local disk — Cloudinary free tier caps at 10 MB
+  if (is3D && req.file.buffer) {
+    try {
+      const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const uniquePrefix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
+      const fileName = `${uniquePrefix}_${safeName}`;
+      const filePath = path.join(uploadsDir, fileName);
+      await require('fs/promises').writeFile(filePath, req.file.buffer);
+      return res.status(201).json({
+        fileUrl: `/uploads/${fileName}`,
+        fileName,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        type: '3d',
+        modelFormat,
+      });
+    } catch (err) {
+      console.error('3D disk save error', err);
+      return res.status(500).json({ message: 'Upload failed' });
+    }
+  }
+
+  // Cloudinary upload (images, videos, audio — small files)
+  if (useCloudinary && cloudinaryInstance && req.file.buffer) {
+    try {
+      const result = await uploadToCloudinary(req.file.buffer, {
+        resource_type: 'auto',
+        folder: 'media',
+        use_filename: true,
+        unique_filename: true,
+      });
+
+      let thumbnailUrl = null;
+      if (mediaType === 'image' && result.public_id) {
+        thumbnailUrl = cloudinaryInstance.url(result.public_id, {
+          width: 400,
+          height: 400,
+          crop: 'fill',
+          quality: 75,
+          format: 'jpg',
+          secure: true,
+        });
+      }
+
+      return res.status(201).json({
+        fileUrl: result.secure_url,
+        fileName: result.public_id,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        type: mediaType,
+        modelFormat,
+        thumbnailUrl,
+      });
+    } catch (err) {
+      console.error('Cloudinary upload error', err);
+      return res.status(500).json({ message: 'Upload failed' });
+    }
+  }
+
+  // S3 upload
   if (useS3 && s3Client && req.file.buffer) {
     try {
       const originalName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -240,12 +316,8 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
         thumbUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${thumbKey}`;
       }
 
-      const fileUrl = `https://${S3_BUCKET}.s3.amazonaws.com/${key}`;
-      const mediaType = mimeToType(req.file.mimetype, req.file.originalname);
-      const modelFormat = mediaType === '3d' ? extractModelFormat(req.file.originalname) : '';
-
       return res.status(201).json({
-        fileUrl,
+        fileUrl: `https://${S3_BUCKET}.s3.amazonaws.com/${key}`,
         fileName: key,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
@@ -260,15 +332,11 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
     }
   }
 
-  // Fallback: disk storage (existing behavior)
+  // Disk storage fallback (no cloud configured)
   if (req.file.path || req.file.filename) {
     const fileName = req.file.filename || path.basename(req.file.path);
-    const fileUrl = `/uploads/${fileName}`;
-    const mediaType = mimeToType(req.file.mimetype, req.file.originalname);
-    const modelFormat = mediaType === '3d' ? extractModelFormat(req.file.originalname) : '';
-
     return res.status(201).json({
-      fileUrl,
+      fileUrl: `/uploads/${fileName}`,
       fileName,
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
@@ -283,6 +351,20 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
 
 router.delete('/media/:fileName', auth, async (req, res) => {
   const safeName = path.basename(req.params.fileName);
+
+  if (useCloudinary && cloudinaryInstance) {
+    try {
+      // Determine resource type from extension
+      const ext = safeName.split('.').pop()?.toLowerCase() || '';
+      const is3D = ['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext);
+      const resourceType = is3D ? 'raw' : 'image';
+      await cloudinaryInstance.uploader.destroy(safeName, { resource_type: resourceType });
+      return res.json({ message: 'File deleted' });
+    } catch (error) {
+      console.error('Cloudinary delete error', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  }
 
   if (useS3 && s3Client) {
     try {

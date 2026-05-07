@@ -6,6 +6,7 @@ import {
   fetchCurrentUser,
   fetchFriends,
   fetchCommonCapsules,
+  getCapsuleThumb,
   requestFriendByUsername,
   type ApiCapsule,
   type ApiFriendRelation,
@@ -32,18 +33,8 @@ function relationToFriend(relation: ApiFriendRelation): ApiUser | null {
 }
 
 function mapCapsule(capsule: ApiCapsule): ThumbCapsule {
-  const imageThumb = capsule.previewImage
-    || capsule.mediaItems?.find((item) => item.thumbnailUrl)?.thumbnailUrl
-    || capsule.mediaItems?.find((item) => item.type === 'image')?.url
-
-  const modelUrl = capsule.mediaItems?.find((item) => item.type === '3d')?.url
-
-  return {
-    id: capsule._id,
-    nombre: capsule.title || 'Capsula',
-    thumbnailUrl: imageThumb,
-    modelUrl,
-  }
+  const { thumbnailUrl, modelUrl } = getCapsuleThumb(capsule)
+  return { id: capsule._id, nombre: capsule.title || 'Capsula', thumbnailUrl, modelUrl }
 }
 
 function getInitial(name: string) {

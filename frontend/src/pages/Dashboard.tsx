@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import IconoTema from '../components/IconoTema'
 import CapsulaThumb from '../components/CapsulaThumb'
 import { logoMAsset, settingsIconAsset } from '../img'
-import { clearSession, type ApiCapsule } from '../services/api'
+import { clearSession, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import '../styles/home.css'
 
 type SharedCapsuleFriend = {
@@ -197,12 +197,7 @@ function Dashboard() {
                     />
                     <div className="home-thumb__inner">
                       <CapsulaThumb
-                        capsula={{
-                          id: capsula._id,
-                          nombre: capsula.title || '',
-                          thumbnailUrl: capsula.previewImage || capsula.mediaItems?.[0]?.thumbnailUrl,
-                          modelUrl: capsula.mediaItems?.[0]?.url,
-                        }}
+                        capsula={{ id: capsula._id, nombre: capsula.title || '', ...getCapsuleThumb(capsula) }}
                         onOpen={(id) => navigate(`/capsulas/${id}`)}
                       />
                     </div>
@@ -280,12 +275,7 @@ function Dashboard() {
                         />
                         <div className="home-thumb__inner">
                           <CapsulaThumb
-                            capsula={{
-                              id: capsula._id,
-                              nombre: capsula.title || '',
-                              thumbnailUrl: capsula.previewImage || capsula.mediaItems?.[0]?.thumbnailUrl,
-                              modelUrl: capsula.mediaItems?.[0]?.url,
-                            }}
+                            capsula={{ id: capsula._id, nombre: capsula.title || '', ...getCapsuleThumb(capsula) }}
                             onOpen={(id) => navigate(`/capsulas/${id}`)}
                           />
                         </div>

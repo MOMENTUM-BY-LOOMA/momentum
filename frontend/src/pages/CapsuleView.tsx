@@ -1,8 +1,22 @@
 import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { logoMAsset } from '../img'
-import { fetchCapsuleById, type ApiCapsule } from '../services/api'
+import { fetchCapsuleById, type ApiCapsule, type ApiMediaItem } from '../services/api'
+import { Model3DViewer } from '../3d/Model3DViewer'
 import '../styles/capsule-view.css'
+
+const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
+const FALLBACK_MODEL = '/3d/statue%20of%20liberty%203d%20model.glb'
+
+function resolveUrl(url: string) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
+  return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
+}
+
+function find3DModel(items: ApiMediaItem[] | undefined) {
+  return items?.find((m) => m.type === '3d') ?? null
+}
 
 function CapsuleView() {
   const { id } = useParams<{ id: string }>()
@@ -12,77 +26,43 @@ function CapsuleView() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!id) {
-      setError('ID de cápsula no encontrado')
-      setLoading(false)
-      return
-    }
-
+    if (!id) { setError('ID de cápsula no encontrado'); setLoading(false); return }
     const token = sessionStorage.getItem('authToken')
-    if (!token) {
-      navigate('/login', { replace: true })
-      return
-    }
+    if (!token) { navigate('/login', { replace: true }); return }
 
     let active = true
-
-    const fetchData = async () => {
-      try {
-        const data = await fetchCapsuleById(id)
-        if (active) {
-          setCapsule(data)
-          setLoading(false)
-        }
-      } catch (err) {
-        if (active) {
-          setError('No se pudo cargar la cápsula')
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchData()
-    return () => {
-      active = false
-    }
+    fetchCapsuleById(id)
+      .then((data) => { if (active) { setCapsule(data); setLoading(false) } })
+      .catch(() => { if (active) { setError('No se pudo cargar la cápsula'); setLoading(false) } })
+    return () => { active = false }
   }, [id, navigate])
 
-  if (loading) {
-    return (
-      <Fragment>
-        <header className="mobile-header" aria-label="Cargar cápsula">
-          <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
-          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
-            <img src={logoMAsset} alt="Momentum" />
-          </Link>
-          <span className="mobile-header__right" aria-hidden="true" />
-        </header>
-        <section className="page-layout">
-          <p>Cargando...</p>
-        </section>
-      </Fragment>
-    )
-  }
+  if (loading) return (
+    <Fragment>
+      <header className="mobile-header">
+        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)}>←</button>
+        <Link to="/inicio" className="logo-button"><img src={logoMAsset} alt="Momentum" /></Link>
+        <span className="mobile-header__right" />
+      </header>
+      <section className="page-layout"><p>Cargando...</p></section>
+    </Fragment>
+  )
 
-  if (error || !capsule) {
-    return (
-      <Fragment>
-        <header className="mobile-header" aria-label="Error">
-          <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
-          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
-            <img src={logoMAsset} alt="Momentum" />
-          </Link>
-          <span className="mobile-header__right" aria-hidden="true" />
-        </header>
-        <section className="page-layout">
-          <p>{error}</p>
-        </section>
-      </Fragment>
-    )
-  }
+  if (error || !capsule) return (
+    <Fragment>
+      <header className="mobile-header">
+        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)}>←</button>
+        <Link to="/inicio" className="logo-button"><img src={logoMAsset} alt="Momentum" /></Link>
+        <span className="mobile-header__right" />
+      </header>
+      <section className="page-layout"><p>{error}</p></section>
+    </Fragment>
+  )
 
-  const isShared = (capsule.sharedWith?.length || 0) > 0
-  
+  const model3D = find3DModel(capsule.mediaItems)
+  const modelPath = model3D ? resolveUrl(model3D.url) : FALLBACK_MODEL
+  const sharedUsers = capsule.sharedWith ?? []
+
   return (
     <Fragment>
       <header className="mobile-header" aria-label="Vista previa de cápsula">
@@ -93,55 +73,51 @@ function CapsuleView() {
         <span className="mobile-header__right" aria-hidden="true" />
       </header>
 
-      <section className="page-layout capsule-view">
-        {/* 3D Model / Thumbnail */}
+      <section className="page-layout capsule-view" style={{ paddingTop: '84px' }}>
+
+        {/* Título */}
+        <h1 className="capsule-view__title">{capsule.title}</h1>
+
+        {/* Viewer 3D */}
         <div className="capsule-view__model-wrapper">
-          {capsule.previewImage ? (
-            <img src={capsule.previewImage} alt={capsule.title} className="capsule-view__thumbnail" />
-          ) : (
-            <div className="capsule-view__placeholder">
-              {capsule.title.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <Model3DViewer modelPath={modelPath} backgroundColor="transparent" />
         </div>
 
-        {/* Title */}
-        <h1 className="capsule-view__title">
-          {capsule.title}
-          {isShared && <span className="capsule-view__shared-icon" title="Cápsula compartida">👥</span>}
-        </h1>
-
-        {/* Ver Cápsula Button */}
-        <button 
+        {/* Botón ver interior */}
+        <button
           type="button"
           className="capsule-view__button"
           onClick={() => navigate(`/capsulas/${id}/interior`)}
-          aria-label="Ver cápsula interior"
         >
           Ver Cápsula
         </button>
 
-        {/* Shared Section */}
-        {isShared && (
-          <section className="capsule-view__shared-section">
-            <div className="capsule-view__shared-badge">
-              <span className="capsule-view__shared-icon-inline">👥</span>
-              <span>Cápsula compartida</span>
-            </div>
-
+        {/* Amigos con los que se comparte — siempre visible */}
+        <section className="capsule-view__shared-section">
+          <p className="capsule-view__shared-label">Compartida con</p>
+          {sharedUsers.length === 0 ? (
+            <p className="capsule-view__shared-empty">No compartida con ningún amigo</p>
+          ) : (
             <div className="capsule-view__shared-users">
-              {(capsule.sharedWith || []).map((user) => {
-                const username = typeof user === 'string' ? user : (user.username || user.name || 'Usuario')
+              {sharedUsers.map((user) => {
+                const u = typeof user === 'string' ? null : user
+                const name = u?.name ?? u?.username ?? (typeof user === 'string' ? user : 'Usuario')
+                const key = u?._id ?? (typeof user === 'string' ? user : Math.random().toString())
+                const initials = name.charAt(0).toUpperCase()
                 return (
-                  <div key={typeof user === 'string' ? user : user._id} className="capsule-view__shared-user">
-                    <span className="capsule-view__group-icon">👥</span>
-                    <span className="capsule-view__username">@{username}</span>
+                  <div key={key} className="capsule-view__friend-chip">
+                    {u?.avatar
+                      ? <img src={u.avatar} alt={name} className="capsule-view__friend-avatar" />
+                      : <span className="capsule-view__friend-initial">{initials}</span>
+                    }
+                    <span className="capsule-view__friend-name">{name}</span>
                   </div>
                 )
               })}
             </div>
-          </section>
-        )}
+          )}
+        </section>
+
       </section>
     </Fragment>
   )

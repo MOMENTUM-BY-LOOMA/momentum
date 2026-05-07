@@ -160,7 +160,6 @@ function AppLayout() {
             <Route path="/capsulas/:capsuleId/editar" element={<CapsuleEditPage />} />
             <Route path="/amigos" element={<MisAmigos />} />
             <Route path="/amigos/:amigoId" element={<PerfilAmigo />} />
-            <Route path="/amigos/:friendId" element={<PerfilAmigo />} />
             <Route path="/perfil" element={<MiPerfil />} />
             <Route path="/mis-capsulas" element={<TodasMisCapsulas />} />
             <Route path="/ajustes" element={<SettingsPage />} />

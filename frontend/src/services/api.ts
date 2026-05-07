@@ -124,6 +124,17 @@ export type UploadResponse = {
   thumbnailUrl?: string
 }
 
+export function getCapsuleThumb(capsule: ApiCapsule): { thumbnailUrl?: string; modelUrl?: string } {
+  const model3D = capsule.mediaItems?.find((m) => m.type === '3d')
+  return {
+    thumbnailUrl: model3D?.thumbnailUrl
+      || capsule.mediaItems?.find((m) => m.type === 'image')?.thumbnailUrl
+      || capsule.previewImage
+      || undefined,
+    modelUrl: model3D?.url,
+  }
+}
+
 function getStoredToken() {
   return sessionStorage.getItem('authToken')
 }

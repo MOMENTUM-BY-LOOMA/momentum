@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import CapsulaThumb, { type ThumbCapsule } from '../components/CapsulaThumb'
 import HeaderConTitulo from '../components/HeaderConTitulo'
 import { defaultAvatarAsset } from '../img'
-import { fetchCapsules, fetchCurrentUser, fetchFriends, type ApiCapsule, type ApiUser } from '../services/api'
+import { fetchCapsules, fetchCurrentUser, fetchFriends, getCapsuleThumb, type ApiCapsule, type ApiUser } from '../services/api'
 
 function ownerId(capsule: ApiCapsule) {
   if (!capsule.owner) return ''
@@ -11,18 +11,8 @@ function ownerId(capsule: ApiCapsule) {
 }
 
 function mapToThumb(capsule: ApiCapsule): ThumbCapsule {
-  const imageThumb = capsule.previewImage
-    || capsule.mediaItems?.find((item) => item.thumbnailUrl)?.thumbnailUrl
-    || capsule.mediaItems?.find((item) => item.type === 'image')?.url
-
-  const modelUrl = capsule.mediaItems?.find((item) => item.type === '3d')?.url
-
-  return {
-    id: capsule._id,
-    nombre: capsule.title || 'Capsula',
-    thumbnailUrl: imageThumb,
-    modelUrl,
-  }
+  const { thumbnailUrl, modelUrl } = getCapsuleThumb(capsule)
+  return { id: capsule._id, nombre: capsule.title || 'Capsula', thumbnailUrl, modelUrl }
 }
 
 function MiPerfil() {

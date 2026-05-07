@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCapsules, type ApiCapsule } from '../services/api'
+import { fetchCapsules, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import { logoMAsset } from '../img'
 import CapsulaThumb from '../components/CapsulaThumb'
 
@@ -100,7 +100,7 @@ export default function TodasMisCapsulas() {
 
                   <div className="thumb-inner">
                     <CapsulaThumb
-                      capsula={{ id: capsula._id, nombre: capsula.title || '', thumbnailUrl: capsula.previewImage || (capsula.mediaItems && capsula.mediaItems[0] && capsula.mediaItems[0].thumbnailUrl), modelUrl: capsula.mediaItems && capsula.mediaItems[0] && capsula.mediaItems[0].url }}
+                      capsula={{ id: capsula._id, nombre: capsula.title || '', ...getCapsuleThumb(capsula) }}
                       onOpen={(id) => navigate(`/capsulas/${id}`)}
                     />
                   </div>

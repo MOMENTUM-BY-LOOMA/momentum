@@ -3,21 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import CapsulaThumb, { type ThumbCapsule } from '../components/CapsulaThumb'
 import HeaderConAtras from '../components/HeaderConAtras'
 import { defaultAvatarAsset } from '../img'
-import { fetchCommonCapsules, fetchUserById, type ApiCapsule, type ApiFriendProfile } from '../services/api'
+import { fetchCommonCapsules, fetchUserById, getCapsuleThumb, type ApiCapsule, type ApiFriendProfile } from '../services/api'
 
 function mapCapsule(capsule: ApiCapsule): ThumbCapsule {
-  const imageThumb = capsule.previewImage
-    || capsule.mediaItems?.find((item) => item.thumbnailUrl)?.thumbnailUrl
-    || capsule.mediaItems?.find((item) => item.type === 'image')?.url
-
-  const modelUrl = capsule.mediaItems?.find((item) => item.type === '3d')?.url
-
-  return {
-    id: capsule._id,
-    nombre: capsule.title || 'Capsula',
-    thumbnailUrl: imageThumb,
-    modelUrl,
-  }
+  const { thumbnailUrl, modelUrl } = getCapsuleThumb(capsule)
+  return { id: capsule._id, nombre: capsule.title || 'Capsula', thumbnailUrl, modelUrl }
 }
 
 function getInitial(name: string) {
