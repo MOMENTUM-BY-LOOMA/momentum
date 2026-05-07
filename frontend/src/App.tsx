@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import AppBottomNav from './components/AppBottomNav.tsx'
+import NotificationBell from './components/NotificationBell.tsx'
 import CapsuleView from './pages/CapsuleView.tsx'
 import CapsuleInterior from './pages/CapsuleInterior.tsx'
 import Dashboard from './pages/Dashboard.tsx'
@@ -15,6 +16,7 @@ import CapsulesPage from './pages/CapsulesPage.tsx'
 import TodasMisCapsulas from './pages/TodasMisCapsulas.tsx'
 import CreateCapsuleFlowPage from './pages/CreateCapsuleFlowPage.tsx'
 import CapsuleEditPage from './pages/CapsuleEditPage.tsx'
+import SharedCapsuleView from './pages/SharedCapsuleView.tsx'
 import MisAmigos from './pages/MisAmigos.tsx'
 import PerfilAmigo from './pages/PerfilAmigo.tsx'
 import MiPerfil from './pages/MiPerfil.tsx'
@@ -30,6 +32,8 @@ import './styles/home.css'
 import './styles/capsule-view.css'
 import './styles/capsule-interior.css'
 import './styles/capsule-edit.css'
+import './styles/shared-capsule-view.css'
+import './styles/notification-bell.css'
 
 type GuardStatus = 'checking' | 'authenticated' | 'unauthenticated'
 
@@ -132,11 +136,26 @@ function AppLayout() {
     '/ajustes/cuenta',
     '/ajustes/preferencias',
     '/ajustes/sesion',
-  ].includes(location.pathname) || location.pathname.match(/^\/capsulas\/[^/]+(\/interior|\/editar)?$/)
+  ].includes(location.pathname) || location.pathname.match(/^\/capsulas\/[^/]+(\/interior|\/compartida|\/editar)?$/)
+
+  const token = sessionStorage.getItem('authToken')
+
+  // AppBottomNav is hidden on these paths — only add padding when it's visible
+  const bottomNavHidden = ['/', '/inicio-publico', '/registro', '/login', '/inicio-registro'].includes(location.pathname)
+    || location.pathname.startsWith('/capsulas/crear/')
+  const bottomNavPadding = !bottomNavHidden
+    ? 'calc(env(safe-area-inset-bottom, 16px) + 90px)'
+    : undefined
 
   return (
     <div className="app-shell">
-      <main className={`app-content ${hideNavbar ? 'app-content--auth' : ''}`}>
+      {token && (
+        <NotificationBell token={token} />
+      )}
+      <main
+        className={`app-content ${hideNavbar ? 'app-content--auth' : ''}`}
+        style={bottomNavPadding ? { paddingBottom: bottomNavPadding } : undefined}
+      >
         <Routes>
           <Route element={<RequireGuest />}>
             <Route path="/" element={<InitialLoading />} />
@@ -157,6 +176,7 @@ function AppLayout() {
             <Route path="/capsulas/crear/editor" element={<CapsuleEditPage />} />
             <Route path="/capsulas/:id" element={<CapsuleView />} />
             <Route path="/capsulas/:id/interior" element={<CapsuleInterior />} />
+            <Route path="/capsulas/:id/compartida" element={<SharedCapsuleView />} />
             <Route path="/capsulas/:capsuleId/editar" element={<CapsuleEditPage />} />
             <Route path="/amigos" element={<MisAmigos />} />
             <Route path="/amigos/:amigoId" element={<PerfilAmigo />} />

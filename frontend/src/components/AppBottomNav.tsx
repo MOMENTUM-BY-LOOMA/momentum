@@ -1,36 +1,49 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import iconHome from '../img/icon_home.svg'
+import iconSearch from '../img/icon_search.svg'
+import iconCreate from '../img/icon_create.svg'
+import iconFriends from '../img/icon_friends.svg'
+import iconProfile from '../img/icon_profile.svg'
 
 type Tab = {
   id: string
   to: string
   aria: string
+  icon: string
 }
 
 const TABS: Tab[] = [
-  { id: 'home', to: '/inicio-publico', aria: 'Ir a Home' },
-  { id: 'search', to: '/buscar', aria: 'Buscar' },
-  { id: 'create', to: '/capsulas/crear', aria: 'Crear capsula' },
-  { id: 'friends', to: '/amigos', aria: 'Ir a Amigos' },
-  { id: 'profile', to: '/perfil', aria: 'Ir a Mi Perfil' },
+  { id: 'home',    to: '/inicio',          aria: 'Ir a Home',      icon: iconHome    },
+  { id: 'search',  to: '/buscar',          aria: 'Buscar',         icon: iconSearch  },
+  { id: 'create',  to: '/capsulas/crear',  aria: 'Crear capsula',  icon: iconCreate  },
+  { id: 'friends', to: '/amigos',          aria: 'Ir a Amigos',    icon: iconFriends },
+  { id: 'profile', to: '/perfil',          aria: 'Ir a Mi Perfil', icon: iconProfile },
 ]
 
 const ACTIVE_KEY = 'app.bottomNav.active'
+
+function isTabActive(id: string, pathname: string): boolean {
+  switch (id) {
+    case 'home':    return pathname === '/inicio' || pathname === '/dashboard'
+    case 'search':  return pathname === '/buscar'
+    case 'friends': return pathname.startsWith('/amigos')
+    case 'profile': return pathname === '/perfil' || pathname === '/mis-capsulas' || pathname.startsWith('/ajustes')
+    default:        return false
+  }
+}
 
 function AppBottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Ensure a default active tab
     const current = sessionStorage.getItem(ACTIVE_KEY)
     if (!current) sessionStorage.setItem(ACTIVE_KEY, 'home')
   }, [])
 
-  // When user is exactly on a top-level tab route, update active.
   useEffect(() => {
     const pathname = location.pathname
-    // Map inicio/dashboard -> home so authenticated start maps to Home tab
     let matchedId: string | undefined
     if (pathname === '/inicio' || pathname === '/dashboard' || pathname === '/inicio-publico') matchedId = 'home'
     else if (pathname.startsWith('/ajustes')) matchedId = 'profile'
@@ -39,29 +52,23 @@ function AppBottomNav() {
       const match = TABS.find((t) => t.to === pathname)
       if (match) matchedId = match.id
     }
-
     if (matchedId && matchedId !== 'create') {
       sessionStorage.setItem(ACTIVE_KEY, matchedId)
     }
   }, [location.pathname])
 
-  const active = sessionStorage.getItem(ACTIVE_KEY) || 'home'
-
-  // Hide rules: splash '/', registro, login, onboarding intro '/inicio-registro',
-  // and any create flow steps that start with '/capsulas/crear'
   const hidePaths = ['/', '/inicio-publico', '/registro', '/login', '/inicio-registro']
-  const shouldHide = hidePaths.includes(location.pathname) || location.pathname.startsWith('/capsulas/crear')
+  const shouldHide =
+    hidePaths.includes(location.pathname) ||
+    location.pathname.startsWith('/capsulas/crear/')
 
   if (shouldHide) return null
 
   function onTabClick(tab: Tab) {
     if (tab.id === 'create') {
-      // create button: never becomes active
       navigate(tab.to)
       return
     }
-
-    // Home behaves differently if user is authenticated
     if (tab.id === 'home') {
       const isAuth = Boolean(sessionStorage.getItem('authToken'))
       const dest = isAuth ? '/inicio' : '/inicio-publico'
@@ -69,7 +76,6 @@ function AppBottomNav() {
       navigate(dest)
       return
     }
-
     sessionStorage.setItem(ACTIVE_KEY, tab.id)
     navigate(tab.to)
   }
@@ -79,40 +85,40 @@ function AppBottomNav() {
       <nav className="navbar-pill app-bottom-nav" role="navigation" aria-label="Navegación inferior">
         {TABS.map((tab) => {
           const isCreate = tab.id === 'create'
-          const isActive = !isCreate && active === tab.id
+          const isActive = !isCreate && isTabActive(tab.id, location.pathname)
+
+          if (isCreate) {
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                aria-label={tab.aria}
+                className="app-bottom-nav__item app-bottom-nav__item--create"
+                onClick={() => onTabClick(tab)}
+              >
+                <img src={tab.icon} alt="" width={20} height={20} aria-hidden="true" />
+              </button>
+            )
+          }
 
           return (
             <button
               key={tab.id}
-              aria-label={tab.aria}
-              className={`app-bottom-nav__item ${isActive ? 'is-active' : ''} ${isCreate ? 'is-create' : ''}`}
-              onClick={() => onTabClick(tab)}
               type="button"
+              aria-label={tab.aria}
+              className={`app-bottom-nav__item${isActive ? ' is-active' : ''}`}
+              onClick={() => onTabClick(tab)}
             >
-              {tab.id === 'create' ? (
-                <span className="app-bottom-nav__create">+</span>
-              ) : tab.id === 'home' ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 11.5L12 4l9 7.5" />
-                  <path d="M9 21V12h6v9" />
-                </svg>
-              ) : tab.id === 'search' ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="11" cy="11" r="6" />
-                  <path d="M21 21l-4.35-4.35" />
-                </svg>
-              ) : tab.id === 'friends' ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M7 21v-2a4 4 0 0 1 3-3.87" />
-                  <path d="M12 7a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" />
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
-                  <circle cx="9" cy="7" r="4" />
-                </svg>
-              )}
+              <span className={`app-bottom-nav__icon-wrap${isActive ? ' is-active' : ''}`}>
+                <img
+                  src={tab.icon}
+                  alt=""
+                  width={20}
+                  height={20}
+                  aria-hidden="true"
+                  className={isActive ? 'app-bottom-nav__icon' : 'app-bottom-nav__icon app-bottom-nav__icon--inactive'}
+                />
+              </span>
             </button>
           )
         })}
@@ -122,4 +128,3 @@ function AppBottomNav() {
 }
 
 export default AppBottomNav
-

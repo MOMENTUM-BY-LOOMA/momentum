@@ -5,130 +5,158 @@
 .capsule-view {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 84px 16px calc(env(safe-area-inset-bottom, 16px) + 90px);
+  align-items: center;
+  gap: 20px;
+  padding: 84px 20px calc(env(safe-area-inset-bottom, 16px) + 80px);
 }
 
-/* Título */
+/* ── Title row ── */
+.capsule-view__title-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .capsule-view__title {
-  font-family: 'Playfair Display', serif;
-  font-size: 24px;
+  font-family: var(--title-font, 'Playfair Display', serif);
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-texto-principal);
-  text-align: center;
   margin: 0;
-  padding: 4px 0;
+  line-height: 1.25;
+  text-align: center;
 }
 
-/* Contenedor del viewer 3D */
+/* ── Avatar stack ── */
+.cv-avatar-stack {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-shrink: 0;
+}
+
+.cv-avatar-stack__item {
+  border-radius: 50%;
+  border: 2px solid var(--color-fondo);
+  overflow: hidden;
+  margin-left: -8px;
+  background: var(--color-fondo-secundario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-texto-principal);
+  flex-shrink: 0;
+}
+
+.cv-avatar-stack__item:last-child {
+  margin-left: 0;
+}
+
+.cv-avatar-stack__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── 3D model — clean, no halo ── */
 .capsule-view__model-wrapper {
   width: 100%;
-  height: 62vh;
-  min-height: 380px;
-  background: transparent;
-  position: relative;
+  flex: 1;
+  min-height: 300px;
+  height: 52vh;
 }
 
-/* Desktop */
-@media (min-width: 768px) {
-  .capsule-view {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .capsule-view__model-wrapper {
-    height: 70vh;
-    min-height: 480px;
-  }
-
-  .capsule-view__title {
-    font-size: 28px;
-  }
-}
-
-/* Botón ver interior */
+/* ── "Ver Cápsula" pill button ── */
 .capsule-view__button {
-  background-color: var(--color-boton-primario);
+  display: block;
+  width: 100%;
+  background: var(--color-boton-primario);
   color: var(--color-boton-texto);
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 14px 32px;
   font-size: 15px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  display: block;
-  width: 100%;
-  transition: opacity 0.2s ease;
+  text-align: center;
+  transition: opacity 0.18s ease;
 }
 
 .capsule-view__button:active {
   opacity: 0.8;
 }
 
-/* Sección de amigos compartidos */
+/* ── Shared section ── */
 .capsule-view__shared-section {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-separador, #2a2a3a);
+  align-items: flex-start;
+  gap: 14px;
 }
 
-.capsule-view__shared-label {
+.capsule-view__shared-pill {
+  display: inline-block;
+  background: var(--color-boton-primario);
+  color: var(--color-boton-texto);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-texto-secundario, #888);
-  margin: 0;
+  border-radius: 999px;
+  padding: 6px 16px;
 }
 
 .capsule-view__shared-users {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
-.capsule-view__friend-chip {
+.capsule-view__friend-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--color-fondo-secundario, #1e1e2e);
-  border: 1px solid var(--color-borde, #333);
-  border-radius: 99px;
-  padding: 6px 14px 6px 8px;
+  gap: 10px;
 }
 
 .capsule-view__friend-avatar {
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  object-fit: cover;
+  overflow: hidden;
   flex-shrink: 0;
-}
-
-.capsule-view__friend-initial {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--color-accent, #7c3aed);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  background: var(--color-fondo-secundario);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-texto-principal);
+}
+
+.capsule-view__friend-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .capsule-view__friend-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--color-texto-principal);
 }
 
-.capsule-view__shared-empty {
-  font-size: 13px;
-  color: var(--color-texto-secundario, #888);
-  margin: 0;
+@media (min-width: 768px) {
+  .capsule-view {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .capsule-view__model-wrapper {
+    height: 60vh;
+    min-height: 380px;
+  }
 }

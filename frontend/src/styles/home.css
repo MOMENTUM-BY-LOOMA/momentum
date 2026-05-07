@@ -172,7 +172,11 @@
   background: var(--color-fondo-secundario);
   padding: 0 14px;
   font-size: 16px;
+  font: inherit;
   color: var(--color-texto-principal);
+  box-sizing: border-box;
+  cursor: pointer;
+  outline: none;
 }
 
 .home-search__button {

@@ -21,13 +21,13 @@ function getCapsuleOwnerId(capsule: ApiCapsule) {
   return owner._id || ''
 }
 
-const CATEGORY_OPTIONS = ['VIAJES', 'ESTUDIO', 'AMIGOS', 'OTROS']
-
-function normalizeCategoryInput(value: string) {
-  const normalized = value.trim().toUpperCase()
-  if (!normalized) return ''
-  return CATEGORY_OPTIONS.find((category) => category.startsWith(normalized) || normalized.startsWith(category)) || normalized
-}
+const CATEGORIAS = [
+  { label: 'Viajes', valor: 'viajes' },
+  { label: 'Familia', valor: 'familia' },
+  { label: 'Amistad', valor: 'amistad' },
+  { label: 'Trabajo', valor: 'trabajo' },
+  { label: 'Otros', valor: 'otros' },
+]
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -218,27 +218,21 @@ function Dashboard() {
             className="home-search__form"
             onSubmit={(event) => {
               event.preventDefault()
-              const category = normalizeCategoryInput(categoriaSeleccionada)
-              navigate(`/buscar${category ? `?category=${encodeURIComponent(category)}` : ''}`)
+              navigate(`/buscar${categoriaSeleccionada ? `?category=${encodeURIComponent(categoriaSeleccionada)}` : ''}`)
             }}
           >
             <div className="home-search__field">
-              <input
-                id="home-category-input"
+              <select
                 className="home-search__input"
-                type="text"
-                list="home-category-options"
                 value={categoriaSeleccionada}
                 onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-                placeholder="Buscar por categoría"
                 aria-label="Buscar por categoría"
-              />
-              <datalist id="home-category-options">
-                <option value="Viajes" />
-                <option value="Estudio" />
-                <option value="Amigos" />
-                <option value="Otros" />
-              </datalist>
+              >
+                <option value="">Selecciona una categoría</option>
+                {CATEGORIAS.map((cat) => (
+                  <option key={cat.valor} value={cat.valor}>{cat.label}</option>
+                ))}
+              </select>
             </div>
 
             <button type="submit" className="home-search__button">

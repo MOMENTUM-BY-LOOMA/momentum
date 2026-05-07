@@ -865,6 +865,36 @@ router.post(
   },
 );
 
+// Delete a media item (owner/admin/edit)
+router.delete('/:id/media/:mediaId', auth, async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({ message: 'Database unavailable' });
+  }
+
+  if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.mediaId)) {
+    return res.status(400).json({ message: 'Invalid id' });
+  }
+
+  try {
+    const capsule = await Capsule.findById(req.params.id);
+    if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
+
+    if (!canEdit(capsule, req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const mediaItem = capsule.mediaItems.id(req.params.mediaId);
+    if (!mediaItem) return res.status(404).json({ message: 'Media item not found' });
+
+    mediaItem.deleteOne();
+    await capsule.save();
+
+    res.json({ message: 'Media deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Delete a comment from a media item (comment author, owner or admin)
 router.delete('/:id/media/:mediaId/comments/:commentId', auth, async (req, res) => {
   if (!isDbConnected()) {

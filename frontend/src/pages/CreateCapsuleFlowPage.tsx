@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { logoMAsset } from '../img'
-import { createCapsule, uploadMediaFile } from '../services/api.ts'
+import { createCapsule, uploadMediaFile, type ApiMediaItem } from '../services/api.ts'
 
 const MODEL_THUMB_SIZE = 640
 const MODEL_EXTS = new Set(['glb', 'gltf', 'obj', 'fbx', 'stl'])
@@ -111,7 +111,7 @@ function CreateCapsuleFlowPage() {
     setProgress('')
 
     try {
-      const mediaItems = []
+      const mediaItems: ApiMediaItem[] = []
 
       // 1. Subir fotos y vídeos
       for (let i = 0; i < mediaFiles.length; i++) {
@@ -119,9 +119,9 @@ function CreateCapsuleFlowPage() {
         setProgress(`Subiendo foto/vídeo ${i + 1} de ${mediaFiles.length}…`)
         const uploaded = await uploadMediaFile(file)
         mediaItems.push({
-          type: uploaded.type,
+          type: uploaded.type as ApiMediaItem['type'],
           url: uploaded.fileUrl,
-          modelFormat: '',
+          modelFormat: undefined,
           fileSize: uploaded.size,
           title: file.name,
           description: '',
@@ -152,7 +152,7 @@ function CreateCapsuleFlowPage() {
         mediaItems.push({
           type: '3d',
           url: uploaded.fileUrl,
-          modelFormat: uploaded.modelFormat ?? '',
+          modelFormat: (uploaded.modelFormat ?? '') as ApiMediaItem['modelFormat'],
           fileSize: uploaded.size,
           title: model3DFile.name,
           description: '',
@@ -195,9 +195,7 @@ function CreateCapsuleFlowPage() {
       </header>
 
       <section className="page-card form-card">
-        <div>
-          <h1>Nueva cápsula</h1>
-        </div>
+        <h1 className="create-capsule__title">CREA TU CÁPSULA</h1>
 
         <form className="upload-form" onSubmit={handleSubmit}>
 
@@ -249,7 +247,11 @@ function CreateCapsuleFlowPage() {
                 disabled={isSubmitting}
                 style={{ display: 'none' }}
               />
-              <span className="create-capsule__upload-label">+ Añadir fotos o vídeos</span>
+              <svg className="create-capsule__upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 16V8M12 8L9 11M12 8L15 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 20H16M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="create-capsule__upload-label">Añadir fotos o vídeos</span>
             </label>
 
             {mediaFiles.length > 0 && (
@@ -291,8 +293,13 @@ function CreateCapsuleFlowPage() {
                 disabled={isSubmitting}
                 style={{ display: 'none' }}
               />
+              <svg className="create-capsule__upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 3L2 7.5L12 12L22 7.5L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 16.5L12 21L22 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12L12 16.5L22 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               <span className="create-capsule__upload-label">
-                {model3DFile ? 'Cambiar modelo 3D' : '+ Seleccionar modelo 3D'}
+                {model3DFile ? 'Cambiar modelo 3D' : 'Seleccionar modelo 3D'}
               </span>
             </label>
 

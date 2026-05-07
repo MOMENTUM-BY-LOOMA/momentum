@@ -1,136 +1,159 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { logoMAsset } from '../img'
+import iconTripN from '../img/icon_trip_n.svg'
+import iconFamilyN from '../img/icon_family_n.svg'
+import iconLoveN from '../img/icon_love_n.svg'
+import iconWorkN from '../img/icon_work_n.svg'
 import CapsulaThumb from '../components/CapsulaThumb'
 import { getCapsuleThumb, type ApiCapsule } from '../services/api'
 
 interface Categoria {
-  nombre: string
-  icono: React.ReactNode
+  label: string
+  valor: string
+  icono: string
 }
 
 const categorias: Categoria[] = [
-  {
-    nombre: 'VIAJES',
-    icono: (
-      <svg viewBox="0 0 48 48" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M8 12H40V36H8V12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M16 12V8C16 6.9 16.9 6 18 6H30C31.1 6 32 6.9 32 8V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M24 24L32 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    nombre: 'ESTUDIO',
-    icono: (
-      <svg viewBox="0 0 48 48" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M8 14L24 6L40 14V28C40 36 24 42 24 42C24 42 8 36 8 28V14Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M24 24C27.3137 24 30 21.3137 30 18C30 14.6863 27.3137 12 24 12C20.6863 12 18 14.6863 18 18C18 21.3137 20.6863 24 24 24Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    nombre: 'AMIGOS',
-    icono: (
-      <svg viewBox="0 0 48 48" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M8 36C8 32 14 30 18 30C22 30 28 32 28 36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M20 24C23.3137 24 26 21.3137 26 18C26 14.6863 23.3137 12 20 12C16.6863 12 14 14.6863 14 18C14 21.3137 16.6863 24 20 24Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M32 36C32 32 36 30 40 30C44 30 48 32 48 36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M40 24C42.7614 24 45 21.7614 45 19C45 16.2386 42.7614 14 40 14C37.2386 14 35 16.2386 35 19C35 21.7614 37.2386 24 40 24Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    nombre: 'OTROS',
-    icono: null,
-  },
+  { label: 'VIAJES',   valor: 'viajes',   icono: iconTripN   },
+  { label: 'FAMILIA',  valor: 'familia',  icono: iconFamilyN },
+  { label: 'AMISTAD',  valor: 'amistad',  icono: iconLoveN   },
+  { label: 'TRABAJO',  valor: 'trabajo',  icono: iconWorkN   },
 ]
 
 export default function Busqueda() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  const [categoriaActiva, setCategoriaActiva] = useState<string | null>(null)
+
+  // inputQuery: lo que el usuario escribe en el input (no lanza búsqueda automática)
+  const [inputQuery, setInputQuery] = useState('')
   const [resultados, setResultados] = useState<ApiCapsule[]>([])
   const [buscando, setBuscando] = useState(false)
   const [token, setToken] = useState('')
 
-  const hayFiltro = query.trim() !== '' || categoriaActiva !== null
+  // Los filtros activos se derivan siempre de la URL, no del input
+  const urlParams = new URLSearchParams(location.search)
+  const activeQ = urlParams.get('q')?.trim() ?? ''
+  const rawCategory = urlParams.get('category')?.toLowerCase() ?? ''
+  const activeCategory = categorias.some((c) => c.valor === rawCategory) ? rawCategory : ''
+  const hayFiltro = activeQ !== '' || activeCategory !== ''
+  const categoriaLabel = categorias.find((c) => c.valor === activeCategory)?.label
 
   useEffect(() => {
-    const token = sessionStorage.getItem('authToken')
-    setToken(token || '')
+    setToken(sessionStorage.getItem('authToken') || '')
   }, [])
 
+  // Sincronizar el input con el param q de la URL (al navegar de vuelta etc.)
   useEffect(() => {
-    const params = new URLSearchParams(location.search)
-    const categoryParam = params.get('category')
-    if (categoryParam) {
-      setCategoriaActiva(categoryParam.toUpperCase())
-      setQuery('')
-    }
+    setInputQuery(urlParams.get('q')?.trim() ?? '')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search])
 
+  // Buscar solo cuando cambia la URL (no al escribir)
   useEffect(() => {
-    if (!hayFiltro || !token) {
+    if (!token) return
+    if (!hayFiltro) {
       setResultados([])
       return
     }
+    setBuscando(true)
+    const params = new URLSearchParams()
+    if (activeQ) params.set('q', activeQ)
+    if (activeCategory) params.set('category', activeCategory)
+    fetch(`/api/capsules?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setResultados(Array.isArray(data) ? data : []))
+      .catch(() => setResultados([]))
+      .finally(() => setBuscando(false))
+  }, [activeQ, activeCategory, token, hayFiltro])
 
-    const timer = setTimeout(async () => {
-      setBuscando(true)
-      try {
-        let url = '/api/capsules?'
-        const params = []
-        if (query.trim()) params.push(`q=${encodeURIComponent(query)}`)
-        if (categoriaActiva) params.push(`category=${encodeURIComponent(categoriaActiva)}`)
-        url += params.join('&')
+  function handleBuscar() {
+    const q = inputQuery.trim()
+    if (q) {
+      navigate(`/buscar?q=${encodeURIComponent(q)}`)
+    }
+  }
 
-        console.log('Buscando:', url, 'Token:', token.substring(0, 10) + '...')
-
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        
-        if (res.ok) {
-          const data = await res.json()
-          setResultados(Array.isArray(data) ? data : [])
-        } else {
-          console.error('Error en búsqueda:', res.status, res.statusText, 'URL:', url)
-          setResultados([])
-        }
-      } catch (e) {
-        console.error('Error buscando cápsulas:', e)
-        setResultados([])
-      } finally {
-        setBuscando(false)
-      }
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [query, categoriaActiva, token])
+  function handleCategoriaClick(valor: string) {
+    navigate(`/buscar?category=${encodeURIComponent(valor)}`)
+  }
 
   return (
     <div className="busqueda-page">
       <header className="mobile-header" aria-label="Búsqueda">
-        <span className="mobile-header__left" aria-hidden="true" />
-        <button type="button" className="logo-button" aria-label="Ir a inicio" onClick={() => navigate('/inicio')}>
+        {hayFiltro ? (
+          <button
+            type="button"
+            className="mobile-header__left"
+            onClick={() => navigate('/buscar')}
+            aria-label="Volver a búsqueda"
+          >
+            ←
+          </button>
+        ) : (
+          <span className="mobile-header__left" aria-hidden="true" />
+        )}
+        <button
+          type="button"
+          className="logo-button"
+          aria-label="Ir a inicio"
+          onClick={() => navigate('/inicio')}
+        >
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
         </button>
         <span className="mobile-header__right" aria-hidden="true" />
       </header>
 
-      <h2 className="busqueda__title">BÚSQUEDA</h2>
+      <h2 className="busqueda__title">
+        {hayFiltro ? 'RESULTADOS' : 'BÚSQUEDA'}
+      </h2>
 
-      {categoriaActiva && (
+      {/* Input siempre visible — solo se oculta cuando hay filtro de categoría activo sin texto */}
+      {!activeCategory && (
+        <div className="busqueda__search-wrapper">
+          <div className="busqueda__search-row">
+            <input
+              className="busqueda__input"
+              type="text"
+              placeholder="Introduce el nombre de la cápsula"
+              value={inputQuery}
+              onChange={(e) => setInputQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
+              aria-label="Buscar cápsulas"
+            />
+            {inputQuery && (
+              <button
+                type="button"
+                className="busqueda__clear-btn"
+                onClick={() => { setInputQuery(''); if (hayFiltro) navigate('/buscar') }}
+                aria-label="Limpiar texto"
+              >
+                ×
+              </button>
+            )}
+            <button
+              type="button"
+              className="busqueda__buscar-btn"
+              onClick={handleBuscar}
+            >
+              Buscar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Pill de categoría activa */}
+      {activeCategory && (
         <div className="busqueda__pill-container">
           <div className="pill-categoria">
-            <span>{categoriaActiva}</span>
+            <span>{categoriaLabel}</span>
             <button
               type="button"
               className="pill-categoria__close"
-              onClick={() => setCategoriaActiva(null)}
-              aria-label={`Quitar filtro ${categoriaActiva}`}
+              onClick={() => navigate('/buscar')}
+              aria-label={`Quitar filtro ${categoriaLabel}`}
             >
               ×
             </button>
@@ -138,67 +161,31 @@ export default function Busqueda() {
         </div>
       )}
 
-      <div className="busqueda__search-box">
-        <div className="busqueda__search-row">
-          <input
-            className="busqueda__input"
-            type="text"
-            placeholder="Busca cápsulas..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Buscar cápsulas"
-          />
-          {hayFiltro && (
-            <button
-              type="button"
-              className="busqueda__clear-btn"
-              onClick={() => {
-                setQuery('')
-                setCategoriaActiva(null)
-                setResultados([])
-              }}
-              aria-label="Limpiar búsqueda"
-            >
-              ×
-            </button>
-          )}
-        </div>
-
-        {hayFiltro && (
-          <button
-            type="button"
-            className="busqueda__search-btn"
-            onClick={() => {
-              // La búsqueda ya se dispara automáticamente en el useEffect
-            }}
-          >
-            Buscar
-          </button>
-        )}
-      </div>
-
-      {!hayFiltro ? (
+      {/* Grid de categorías: solo cuando no hay filtro activo */}
+      {!hayFiltro && (
         <div className="busqueda__categorias-wrap">
           <p className="busqueda__categorias-hint">Elige una categoría y encuentra tu cápsula</p>
           <div className="busqueda__categorias-grid">
             {categorias.map((cat) => (
               <button
-                key={cat.nombre}
+                key={cat.valor}
                 type="button"
                 className="busqueda__categoria-card"
-                onClick={() => {
-                  setCategoriaActiva(cat.nombre)
-                  setQuery('')
-                }}
-                aria-label={`Buscar por categoría ${cat.nombre}`}
+                onClick={() => handleCategoriaClick(cat.valor)}
+                aria-label={`Filtrar por ${cat.label}`}
               >
-                {cat.icono && <div className="busqueda__categoria-icono">{cat.icono}</div>}
-                <span className="busqueda__categoria-nombre">{cat.nombre}</span>
+                <div className="busqueda__categoria-icono">
+                  <img src={cat.icono} alt="" width={32} height={32} aria-hidden="true" />
+                </div>
+                <span className="busqueda__categoria-nombre">{cat.label}</span>
               </button>
             ))}
           </div>
         </div>
-      ) : (
+      )}
+
+      {/* Resultados */}
+      {hayFiltro && (
         <div className="busqueda__resultados-wrap">
           {buscando ? (
             <div className="busqueda__resultados-grid">
@@ -242,7 +229,9 @@ export default function Busqueda() {
             </section>
           ) : (
             <p className="busqueda__no-results">
-              No se encontraron cápsulas{query && ` para '${query}'`}{categoriaActiva && ` en ${categoriaActiva}`}
+              No se encontraron cápsulas
+              {activeQ && ` para "${activeQ}"`}
+              {activeCategory && categoriaLabel && ` en ${categoriaLabel}`}
             </p>
           )}
         </div>

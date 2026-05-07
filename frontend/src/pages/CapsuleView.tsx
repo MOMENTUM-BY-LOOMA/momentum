@@ -18,6 +18,28 @@ function find3DModel(items: ApiMediaItem[] | undefined) {
   return items?.find((m) => m.type === '3d') ?? null
 }
 
+function AvatarStack({ users, max = 4, size = 28 }: { users: any[]; max?: number; size?: number }) {
+  if (!users.length) return null
+  const visible = users.slice(0, max)
+  return (
+    <div className="cv-avatar-stack" aria-hidden="true">
+      {visible.map((u, i) => {
+        const name = typeof u === 'string' ? u : (u?.name || u?.username || '?')
+        const avatar = typeof u === 'string' ? null : u?.avatar
+        return (
+          <div
+            key={i}
+            className="cv-avatar-stack__item"
+            style={{ width: size, height: size, zIndex: max - i }}
+          >
+            {avatar ? <img src={avatar} alt={name} /> : <span>{name.charAt(0).toUpperCase()}</span>}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function CapsuleView() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -29,7 +51,6 @@ function CapsuleView() {
     if (!id) { setError('ID de cápsula no encontrado'); setLoading(false); return }
     const token = sessionStorage.getItem('authToken')
     if (!token) { navigate('/login', { replace: true }); return }
-
     let active = true
     fetchCapsuleById(id)
       .then((data) => { if (active) { setCapsule(data); setLoading(false) } })
@@ -37,11 +58,20 @@ function CapsuleView() {
     return () => { active = false }
   }, [id, navigate])
 
+  const header = (
+    <header className="mobile-header" aria-label="Vista previa de cápsula">
+      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
+      <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+        <img src={logoMAsset} alt="Momentum" />
+      </Link>
+      <span className="mobile-header__right" aria-hidden="true" />
+    </header>
+  )
+
   if (loading) return (
     <Fragment>
       <header className="mobile-header">
-        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)}>←</button>
-        <Link to="/inicio" className="logo-button"><img src={logoMAsset} alt="Momentum" /></Link>
+        <span className="mobile-header__left" />
         <span className="mobile-header__right" />
       </header>
       <section className="page-layout"><p>Cargando...</p></section>
@@ -50,11 +80,7 @@ function CapsuleView() {
 
   if (error || !capsule) return (
     <Fragment>
-      <header className="mobile-header">
-        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)}>←</button>
-        <Link to="/inicio" className="logo-button"><img src={logoMAsset} alt="Momentum" /></Link>
-        <span className="mobile-header__right" />
-      </header>
+      {header}
       <section className="page-layout"><p>{error}</p></section>
     </Fragment>
   )
@@ -65,25 +91,22 @@ function CapsuleView() {
 
   return (
     <Fragment>
-      <header className="mobile-header" aria-label="Vista previa de cápsula">
-        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
-        <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
-          <img src={logoMAsset} alt="Momentum" />
-        </Link>
-        <span className="mobile-header__right" aria-hidden="true" />
-      </header>
+      {header}
 
-      <section className="page-layout capsule-view" style={{ paddingTop: '84px' }}>
+      <section className="capsule-view">
 
-        {/* Título */}
-        <h1 className="capsule-view__title">{capsule.title}</h1>
+        {/* Título + avatares */}
+        <div className="capsule-view__title-row">
+          <h1 className="capsule-view__title">{capsule.title}</h1>
+          <AvatarStack users={sharedUsers} />
+        </div>
 
-        {/* Viewer 3D */}
+        {/* Viewer 3D — limpio, sin halo */}
         <div className="capsule-view__model-wrapper">
           <Model3DViewer modelPath={modelPath} backgroundColor="transparent" />
         </div>
 
-        {/* Botón ver interior */}
+        {/* Botón Ver Cápsula */}
         <button
           type="button"
           className="capsule-view__button"
@@ -92,31 +115,31 @@ function CapsuleView() {
           Ver Cápsula
         </button>
 
-        {/* Amigos con los que se comparte — siempre visible */}
-        <section className="capsule-view__shared-section">
-          <p className="capsule-view__shared-label">Compartida con</p>
-          {sharedUsers.length === 0 ? (
-            <p className="capsule-view__shared-empty">No compartida con ningún amigo</p>
-          ) : (
+        {/* Sección compartida */}
+        {sharedUsers.length > 0 && (
+          <section className="capsule-view__shared-section" aria-label="Cápsula compartida con">
+            <span className="capsule-view__shared-pill">Cápsula compartida</span>
             <div className="capsule-view__shared-users">
               {sharedUsers.map((user) => {
                 const u = typeof user === 'string' ? null : user
                 const name = u?.name ?? u?.username ?? (typeof user === 'string' ? user : 'Usuario')
-                const key = u?._id ?? (typeof user === 'string' ? user : Math.random().toString())
-                const initials = name.charAt(0).toUpperCase()
+                const key = u?._id ?? (typeof user === 'string' ? user : String(Math.random()))
+                const avatar = u?.avatar ?? null
+                const username = u?.username ?? name
                 return (
-                  <div key={key} className="capsule-view__friend-chip">
-                    {u?.avatar
-                      ? <img src={u.avatar} alt={name} className="capsule-view__friend-avatar" />
-                      : <span className="capsule-view__friend-initial">{initials}</span>
-                    }
-                    <span className="capsule-view__friend-name">{name}</span>
+                  <div key={key} className="capsule-view__friend-row">
+                    <div className="capsule-view__friend-avatar">
+                      {avatar
+                        ? <img src={avatar} alt={name} />
+                        : <span>{name.charAt(0).toUpperCase()}</span>}
+                    </div>
+                    <span className="capsule-view__friend-name">@{username}</span>
                   </div>
                 )
               })}
             </div>
-          )}
-        </section>
+          </section>
+        )}
 
       </section>
     </Fragment>
