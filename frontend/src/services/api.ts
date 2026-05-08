@@ -423,7 +423,7 @@ export async function logoutUser() {
 }
 
 export async function pingServer() {
-  const response = await fetch(`${API_BASE_URL}/health`)
+  const response = await fetch(`${API_BASE}/health`)
 
   if (!response.ok) {
     throw new Error('No se pudo conectar con el servidor')
