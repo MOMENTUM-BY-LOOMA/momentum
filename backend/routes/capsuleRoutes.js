@@ -202,6 +202,37 @@ router.get('/common/:friendId', auth, async (req, res) => {
   }
 });
 
+// Get available 3D models for capsule creation
+router.get('/models', auth, async (req, res) => {
+  try {
+    // Sample 3D models - in production, these could come from a database or file system
+    const models = [
+      {
+        id: 'model-cube',
+        nombre: 'Cubo Moderno',
+        thumbnailUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzNjZjYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkN1YmU8L3RleHQ+PC9zdmc+',
+        modelUrl: '/3d/cube.glb',
+      },
+      {
+        id: 'model-pyramid',
+        nombre: 'Pirámide Clásica',
+        thumbnailUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzY2MzM5OSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkN0PSQoPy5Qb3I8L3RleHQ+PC9zdmc+',
+        modelUrl: '/3d/pyramid.glb',
+      },
+      {
+        id: 'model-sphere',
+        nombre: 'Esfera Brillante',
+        thumbnailUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzY2M2NiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkVzZmVyYTwvdGV4dD48L3N2Zz4=',
+        modelUrl: '/3d/sphere.glb',
+      },
+    ];
+
+    res.json(models);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get capsules that the user owns or has shared access to
 router.get('/', auth, async (req, res) => {
   if (!isDbConnected()) {

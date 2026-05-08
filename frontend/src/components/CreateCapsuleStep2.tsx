@@ -1,0 +1,283 @@
+import { Fragment, useEffect, useRef, useState } from 'react'
+import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
+import type { ApiUser } from '../services/api'
+import CreateCapsuleStep3 from './CreateCapsuleStep3'
+
+interface CreateCapsuleStep2Props {
+  form: CreateCapsuleFormState
+  updateForm: (updates: Partial<CreateCapsuleFormState>) => void
+  onContinue: () => void
+  onBack: () => void
+  currentUser: ApiUser
+  isLoading: boolean
+}
+
+const CATEGORIES = ['Viajes', 'Estudio', 'Amigos', 'Familia', 'Otros']
+
+function CreateCapsuleStep2({
+  form,
+  updateForm,
+  onContinue,
+  onBack,
+  currentUser,
+  isLoading,
+}: CreateCapsuleStep2Props) {
+  const topRef = useRef<HTMLDivElement>(null)
+  const sharingSectionRef = useRef<HTMLDivElement>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (form.compartirConAmigos) {
+      window.requestAnimationFrame(() => {
+        sharingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }, [form.compartirConAmigos])
+
+  const getTodayDate = () => {
+    const today = new Date()
+    return today.toISOString().split('T')[0]
+  }
+
+  const handleContinue = () => {
+    setError('')
+    onContinue()
+  }
+
+  const handlePrimaryAction = () => {
+    if (form.compartirConAmigos) {
+      sharingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    handleContinue()
+  }
+
+  return (
+    <Fragment>
+      <div ref={topRef} />
+
+      <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
+          Descripción
+        </label>
+        <textarea
+          placeholder="De cuando fuimos a Lanzarote."
+          value={form.descripcion}
+          onChange={(e) => updateForm({ descripcion: e.target.value })}
+          disabled={isLoading}
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '16px',
+            minHeight: '120px',
+            resize: 'none',
+            backgroundColor: 'var(--color-fondo-secundario)',
+            border: '1px solid var(--color-borde)',
+            borderRadius: '8px',
+            color: 'var(--color-texto-principal)',
+            boxSizing: 'border-box',
+            fontFamily: 'inherit',
+          }}
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', padding: '0 20px', marginBottom: '20px', alignItems: 'center' }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
+            Categoría
+          </label>
+          <select
+            value={form.categoria}
+            onChange={(e) => updateForm({ categoria: e.target.value })}
+            disabled={isLoading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '14px',
+              backgroundColor: 'var(--color-fondo-secundario)',
+              border: '1px solid var(--color-borde)',
+              borderRadius: '8px',
+              color: 'var(--color-texto-principal)',
+              boxSizing: 'border-box',
+            }}
+          >
+            <option value="">Selecciona categoría</option>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat.toLowerCase()}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginTop: '24px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={form.timeCapsule.enabled}
+              onChange={(e) =>
+                updateForm({
+                  timeCapsule: { ...form.timeCapsule, enabled: e.target.checked },
+                })
+              }
+              disabled={isLoading}
+              style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '14px', fontWeight: 500 }}>Cápsula del tiempo</span>
+          </label>
+        </div>
+      </div>
+
+      {form.timeCapsule.enabled && (
+        <div
+          style={{
+            backgroundColor: 'var(--color-fondo-secundario)',
+            borderRadius: '10px',
+            padding: '14px 16px',
+            margin: '10px 20px',
+            marginBottom: '20px',
+            maxHeight: '500px',
+            transition: 'max-height 0.3s ease',
+            overflow: 'hidden',
+          }}
+        >
+          <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>Ajustes cápsula del tiempo</p>
+          <p style={{ fontSize: '12px', color: 'var(--color-texto-secundario)', marginBottom: '12px' }}>Abrir</p>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <select
+              value={form.timeCapsule.type}
+              onChange={(e) =>
+                updateForm({
+                  timeCapsule: { ...form.timeCapsule, type: e.target.value as 'partir_de' | 'despues_de' },
+                })
+              }
+              disabled={isLoading}
+              style={{
+                flex: 0.5,
+                padding: '10px',
+                fontSize: '14px',
+                backgroundColor: 'var(--color-fondo-principal)',
+                border: '1px solid var(--color-borde)',
+                borderRadius: '6px',
+                color: 'var(--color-texto-principal)',
+              }}
+            >
+              <option value="partir_de">A partir de</option>
+              <option value="despues_de">Después de</option>
+            </select>
+
+            <input
+              type="date"
+              min={getTodayDate()}
+              value={form.timeCapsule.date || ''}
+              onChange={(e) =>
+                updateForm({
+                  timeCapsule: { ...form.timeCapsule, date: e.target.value },
+                })
+              }
+              disabled={isLoading}
+              style={{
+                flex: 1,
+                padding: '10px',
+                fontSize: '14px',
+                backgroundColor: 'var(--color-fondo-principal)',
+                border: '1px solid var(--color-borde)',
+                borderRadius: '6px',
+                color: 'var(--color-texto-principal)',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--color-separador)',
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
+          <span style={{ fontSize: '15px', fontWeight: 500 }}>Compartir con amigos</span>
+        </label>
+        <input
+          type="checkbox"
+          checked={form.compartirConAmigos}
+          onChange={(e) =>
+            updateForm({
+              compartirConAmigos: e.target.checked,
+              sharingDecision: e.target.checked ? 'pending' : 'none',
+            })
+          }
+          disabled={isLoading}
+          style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+        />
+      </div>
+
+      {form.compartirConAmigos && (
+        <div ref={sharingSectionRef} style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-separador)' }}>
+          <CreateCapsuleStep3
+            form={form}
+            updateForm={updateForm}
+            onFinish={handleContinue}
+            onBack={() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            currentUser={currentUser}
+            isLoading={isLoading}
+          />
+        </div>
+      )}
+
+      {error && (
+        <p style={{ color: '#8B2020', fontSize: '14px', padding: '0 20px', marginBottom: '16px' }}>
+          {error}
+        </p>
+      )}
+
+      {!form.compartirConAmigos && (
+        <div style={{ display: 'flex', gap: '12px', padding: '20px', justifyContent: 'space-between' }}>
+          <button
+            type="button"
+            onClick={onBack}
+            disabled={isLoading}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: 'var(--color-fondo-secundario)',
+              color: 'var(--color-texto-principal)',
+              border: '1px solid var(--color-borde)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 500,
+            }}
+          >
+            Atrás
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePrimaryAction}
+            disabled={isLoading || !form.title.trim() || !form.categoria.trim()}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: isLoading || !form.title.trim() || !form.categoria.trim() ? 'var(--color-borde)' : 'var(--color-boton-primario)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: isLoading || !form.title.trim() || !form.categoria.trim() ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
+              fontWeight: 500,
+            }}
+          >
+            Finalizar
+          </button>
+        </div>
+      )}
+    </Fragment>
+  )
+}
+
+export default CreateCapsuleStep2

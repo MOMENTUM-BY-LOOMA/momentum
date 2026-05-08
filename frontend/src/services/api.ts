@@ -124,6 +124,19 @@ export type UploadResponse = {
   thumbnailUrl?: string
 }
 
+export type UploadModel3DResponse = {
+  fileUrl: string
+  thumbnailUrl?: string
+  modelFormat?: '' | 'glb' | 'gltf' | 'obj' | 'fbx' | 'stl'
+}
+
+export type ApiCapsuleModel = {
+  id: string
+  nombre: string
+  thumbnailUrl: string
+  modelUrl: string
+}
+
 export function getCapsuleThumb(capsule: ApiCapsule): { thumbnailUrl?: string; modelUrl?: string } {
   const model3D = capsule.mediaItems?.find((m) => m.type === '3d')
   return {
@@ -286,6 +299,10 @@ export async function fetchCommonCapsules(friendId: string): Promise<ApiCapsule[
   return requestJson<ApiCapsule[]>(`/api/capsules/common/${friendId}`)
 }
 
+export async function fetchCapsuleModels(): Promise<ApiCapsuleModel[]> {
+  return requestJson<ApiCapsuleModel[]>('/api/capsules/models')
+}
+
 export async function fetchFriends(): Promise<ApiFriendRelation[]> {
   return requestJson<ApiFriendRelation[]>('/api/friends')
 }
@@ -316,6 +333,7 @@ export async function createCapsule(payload: {
     unlockAt?: string | null
   }
   mediaItems?: ApiMediaItem[]
+  previewImage?: string
   collaborators?: Array<{ userId?: string; email?: string; role?: 'admin' | 'edit' | 'view' }>
 }) {
   return requestJson<ApiCapsule>('/api/capsules', {
@@ -332,6 +350,47 @@ export async function uploadMediaFile(file: File): Promise<UploadResponse> {
     method: 'POST',
     body: formData,
   })
+}
+
+export async function uploadModel3DFile(file: File): Promise<UploadModel3DResponse> {
+  const modelFormat = (file.name.split('.').pop()?.toLowerCase() ?? '') as UploadModel3DResponse['modelFormat']
+
+  try {
+    const presign = await requestJson<{
+      uploadUrl: string
+      fileUrl: string
+      thumbnailUrl?: string
+      modelFormat?: UploadModel3DResponse['modelFormat']
+    }>('/api/uploads/media/model3d/presign-upload', {
+      method: 'POST',
+      body: JSON.stringify({ fileName: file.name, modelFormat }),
+    })
+
+    const uploadResponse = await fetch(presign.uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+      body: file,
+    })
+
+    if (!uploadResponse.ok) {
+      throw new Error('No se pudo subir el modelo 3D')
+    }
+
+    return {
+      fileUrl: presign.fileUrl,
+      thumbnailUrl: presign.thumbnailUrl,
+      modelFormat: presign.modelFormat ?? modelFormat,
+    }
+  } catch (error) {
+    const fallback = await uploadMediaFile(file)
+    return {
+      fileUrl: fallback.fileUrl,
+      thumbnailUrl: fallback.thumbnailUrl,
+      modelFormat: fallback.modelFormat,
+    }
+  }
 }
 
 export async function fetchNotifications(): Promise<ApiNotification[]> {

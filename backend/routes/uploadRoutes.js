@@ -80,6 +80,26 @@ function publicS3Url(bucket, key) {
   return `https://${bucket}.s3.${AWS_REGION}.amazonaws.com/${encodedKey}`;
 }
 
+function buildModelThumbnailDataUrl(label = '3D') {
+  const safeLabel = String(label || '3D').replace(/[^a-zA-Z0-9 ]/g, '').slice(0, 18) || '3D';
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stop-color="#17324d"/>
+          <stop offset="100%" stop-color="#0f1d2d"/>
+        </linearGradient>
+      </defs>
+      <rect width="100" height="100" rx="12" fill="url(#g)"/>
+      <rect x="16" y="16" width="68" height="68" rx="10" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2"/>
+      <text x="50" y="49" fill="#fff" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" font-weight="700">3D</text>
+      <text x="50" y="66" fill="#fff" fill-opacity="0.78" font-family="Arial, sans-serif" font-size="8" text-anchor="middle">${safeLabel}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
 // Upload a buffer to Cloudinary via upload_stream
 function uploadToCloudinary(buffer, options) {
   return new Promise((resolve, reject) => {
@@ -176,6 +196,7 @@ router.post('/media/model3d/presign-upload', auth, async (req, res) => {
       folder,
       uploadUrl,
       fileUrl: publicS3Url(S3_BUCKET, key),
+      thumbnailUrl: buildModelThumbnailDataUrl(fileName),
       modelFormat,
       mimeType,
       expiresIn,
@@ -242,6 +263,7 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
         size: req.file.size,
         type: '3d',
         modelFormat,
+        thumbnailUrl: buildModelThumbnailDataUrl(req.file.originalname),
       });
     } catch (err) {
       console.error('3D disk save error', err);
@@ -324,7 +346,7 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
         size: req.file.size,
         type: mediaType,
         modelFormat,
-        thumbnailUrl: thumbUrl,
+        thumbnailUrl: is3D ? buildModelThumbnailDataUrl(req.file.originalname) : thumbUrl,
       });
     } catch (err) {
       console.error('S3 upload error', err);
@@ -343,6 +365,7 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
       size: req.file.size,
       type: mediaType,
       modelFormat,
+      thumbnailUrl: is3D ? buildModelThumbnailDataUrl(req.file.originalname) : undefined,
     });
   }
 

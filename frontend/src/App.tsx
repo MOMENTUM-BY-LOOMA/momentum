@@ -34,6 +34,7 @@ import './styles/capsule-interior.css'
 import './styles/capsule-edit.css'
 import './styles/shared-capsule-view.css'
 import './styles/notification-bell.css'
+import './styles/create-capsule.css'
 
 type GuardStatus = 'checking' | 'authenticated' | 'unauthenticated'
 
@@ -172,6 +173,7 @@ function AppLayout() {
             <Route path="/subir" element={<UploadCapsule />} />
             <Route path="/buscar" element={<Busqueda />} />
             <Route path="/capsulas" element={<CapsulesPage />} />
+            <Route path="/crear-capsula" element={<CreateCapsuleFlowPage />} />
             <Route path="/capsulas/crear" element={<CreateCapsuleFlowPage />} />
             <Route path="/capsulas/crear/editor" element={<CapsuleEditPage />} />
             <Route path="/capsulas/:id" element={<CapsuleView />} />
