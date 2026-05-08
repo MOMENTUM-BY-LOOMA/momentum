@@ -589,6 +589,12 @@ router.post(
 
     const { email, password } = req.body;
 
+    console.log('Login attempt:', {
+      email,
+      passwordLength: password?.length,
+      userFound: !!(await User.findOne({ email })),
+    });
+
     if (!isDbConnected()) {
       return res.status(503).json({ message: 'Database unavailable' });
     }
