@@ -16,6 +16,10 @@
   padding: 16px 20px;
 }
 
+.home-header__left {
+  position: relative;
+}
+
 .home-header__left,
 .home-header__settings,
 .home-header__logo-button {
@@ -35,8 +39,8 @@
 }
 
 .home-header__settings img {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: block;
 }
 
@@ -44,6 +48,50 @@
   border: 0;
   background: transparent;
   padding: 0;
+}
+
+.home-header__right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Campana dentro del header — misma forma que settings */
+.home-header__right .notification-bell__button {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.home-header__right .notification-bell__icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.home-header__right .notification-bell__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  line-height: 1;
 }
 
 .home-card,

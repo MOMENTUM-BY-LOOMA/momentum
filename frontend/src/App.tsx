@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import AppBottomNav from './components/AppBottomNav.tsx'
-import NotificationBell from './components/NotificationBell.tsx'
 import CapsuleView from './pages/CapsuleView.tsx'
 import CapsuleInterior from './pages/CapsuleInterior.tsx'
 import Dashboard from './pages/Dashboard.tsx'
@@ -139,8 +138,6 @@ function AppLayout() {
     '/ajustes/sesion',
   ].includes(location.pathname) || location.pathname.match(/^\/capsulas\/[^/]+(\/interior|\/compartida|\/editar)?$/)
 
-  const token = sessionStorage.getItem('authToken')
-
   // AppBottomNav is hidden on these paths — only add padding when it's visible
   const bottomNavHidden = ['/', '/inicio-publico', '/registro', '/login', '/inicio-registro'].includes(location.pathname)
     || location.pathname.startsWith('/capsulas/crear/')
@@ -150,9 +147,6 @@ function AppLayout() {
 
   return (
     <div className="app-shell">
-      {token && (
-        <NotificationBell token={token} />
-      )}
       <main
         className={`app-content ${hideNavbar ? 'app-content--auth' : ''}`}
         style={bottomNavPadding ? { paddingBottom: bottomNavPadding } : undefined}

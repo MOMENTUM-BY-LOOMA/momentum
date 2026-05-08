@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   fetchNotifications,
@@ -12,6 +12,7 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').repla
 
 type NotificationBellProps = {
   token: string | null
+  iconSrc?: string
 }
 
 function resolveUrl(url: string) {
@@ -38,8 +39,9 @@ function formatDate(value?: string) {
   }).format(new Date(value))
 }
 
-function NotificationBell({ token }: NotificationBellProps) {
+function NotificationBell({ token, iconSrc }: NotificationBellProps) {
   const navigate = useNavigate()
+  const containerRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<ApiNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -65,6 +67,17 @@ function NotificationBell({ token }: NotificationBellProps) {
       setUnreadCount(0)
     }
   }
+
+  useEffect(() => {
+    if (!open) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
 
   useEffect(() => {
     if (!token) {
@@ -147,7 +160,7 @@ function NotificationBell({ token }: NotificationBellProps) {
 
   return (
     <>
-      <div className="notification-bell">
+      <div className="notification-bell" ref={containerRef}>
         <button
           type="button"
           className="notification-bell__button"
@@ -155,7 +168,9 @@ function NotificationBell({ token }: NotificationBellProps) {
           aria-label="Abrir notificaciones"
           aria-expanded={open}
         >
-          <span aria-hidden="true">🔔</span>
+          {iconSrc
+            ? <img src={iconSrc} alt="" aria-hidden="true" className="notification-bell__icon" />
+            : <span aria-hidden="true">🔔</span>}
           {unreadCount > 0 && <span className="notification-bell__badge">{unreadCount}</span>}
         </button>
 

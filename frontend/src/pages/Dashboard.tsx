@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import IconoTema from '../components/IconoTema'
 import CapsulaThumb from '../components/CapsulaThumb'
-import { logoMAsset, settingsIconAsset } from '../img'
+import NotificationBell from '../components/NotificationBell'
+import { logoMAsset, settingsIconAsset, notificationIconAsset } from '../img'
 import { clearSession, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import '../styles/home.css'
 
@@ -140,9 +141,12 @@ function Dashboard() {
         <button type="button" className="home-header__logo-button" aria-label="Recargar inicio" onClick={() => navigate('/inicio')}>
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
         </button>
-        <button type="button" className="home-header__settings" aria-label="Abrir ajustes" onClick={() => navigate('/ajustes')}>
-          <img src={settingsIconAsset} alt="" aria-hidden="true" />
-        </button>
+        <div className="home-header__right">
+          <NotificationBell token={sessionStorage.getItem('authToken')} iconSrc={notificationIconAsset} />
+          <button type="button" className="home-header__settings" aria-label="Abrir ajustes" onClick={() => navigate('/ajustes')}>
+            <img src={settingsIconAsset} alt="" aria-hidden="true" />
+          </button>
+        </div>
       </header>
 
       <section className="home-page" aria-label="Pantalla principal de Momentum">

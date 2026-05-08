@@ -3,10 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .notification-bell {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 150;
+  position: relative;
 }
 
 .notification-bell__button {
