@@ -8,6 +8,8 @@ import iconWorkN from '../img/icon_work_n.svg'
 import CapsulaThumb from '../components/CapsulaThumb'
 import { getCapsuleThumb, type ApiCapsule } from '../services/api'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'https://momentum-hc2x.onrender.com'
+
 interface Categoria {
   label: string
   valor: string
@@ -60,7 +62,7 @@ export default function Busqueda() {
     const params = new URLSearchParams()
     if (activeQ) params.set('q', activeQ)
     if (activeCategory) params.set('category', activeCategory)
-    fetch(`/api/capsules?${params}`, {
+    fetch(`${API_BASE}/api/capsules?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => (res.ok ? res.json() : []))

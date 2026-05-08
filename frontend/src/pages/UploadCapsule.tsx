@@ -14,7 +14,7 @@ function is3DMedia(type: string | undefined, fileName: string) {
 
 function resolveApiAssetUrl(url: string) {
   if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
-  const base = import.meta.env.VITE_API_URL
+  const base = import.meta.env.VITE_API_URL || 'https://momentum-hc2x.onrender.com'
   if (!base) return url
   return `${base}${url.startsWith('/') ? url : `/${url}`}`
 }

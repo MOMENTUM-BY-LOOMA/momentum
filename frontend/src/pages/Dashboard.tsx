@@ -6,6 +6,8 @@ import { logoMAsset, settingsIconAsset } from '../img'
 import { clearSession, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import '../styles/home.css'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'https://momentum-hc2x.onrender.com'
+
 type SharedCapsuleFriend = {
   _id: string
   name: string
@@ -61,7 +63,7 @@ function Dashboard() {
     }
 
     const requestJson = async (path: string) => {
-      const response = await fetch(path, {
+      const response = await fetch(`${API_BASE}${path}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 

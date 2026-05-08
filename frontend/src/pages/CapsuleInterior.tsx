@@ -5,7 +5,7 @@ import iconEdit from '../img/icon_edit.svg'
 import { fetchCapsuleById, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import '../styles/capsule-interior.css'
 
-const API_BASE = import.meta.env.VITE_API_URL
+const API_BASE = import.meta.env.VITE_API_URL || 'https://momentum-hc2x.onrender.com'
 
 function resolveUrl(url: string) {
   if (!url) return ''
@@ -115,7 +115,7 @@ function CapsuleInterior() {
     try {
       const token = sessionStorage.getItem('authToken')
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/capsules/${id}/comments`,
+        `${API_BASE}/api/capsules/${id}/comments`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -143,7 +143,7 @@ function CapsuleInterior() {
     try {
       const token = sessionStorage.getItem('authToken')
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/capsules/${id}/media/${mediaId}/comments`,
+        `${API_BASE}/api/capsules/${id}/media/${mediaId}/comments`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
