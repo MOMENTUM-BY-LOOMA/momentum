@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createCapsule, uploadMediaFile, type ApiMediaItem, fetchCurrentUser, type ApiUser, fetchFriends } from '../services/api.ts'
+import { createCapsule, uploadMediaFile, type ApiMediaItem, fetchCurrentUser, type ApiUser } from '../services/api.ts'
 import CreateCapsuleStep1 from '../components/CreateCapsuleStep1'
 import CreateCapsuleStep2 from '../components/CreateCapsuleStep2'
 import HeaderSimple from '../components/HeaderSimple'
@@ -8,6 +8,8 @@ import HeaderSimple from '../components/HeaderSimple'
 function getModelFormatFromUrl(url: string) {
   return (url.split('?')[0].split('.').pop()?.toLowerCase() || '') as ApiMediaItem['modelFormat']
 }
+
+type CreateCapsuleCollaboratorPayload = NonNullable<Parameters<typeof createCapsule>[0]['collaborators']>[number]
 
 export interface CreateCapsuleFormState {
   // Paso 1
@@ -124,7 +126,7 @@ function CreateCapsuleFlowPage() {
       }
 
       // 3. Crear cápsula
-      const collaborators = form.colaboradores.map(col => ({
+      const collaborators: CreateCapsuleCollaboratorPayload[] = form.colaboradores.map(col => ({
         userId: col.userId,
         role: col.rol === 'editar' ? 'edit' : col.rol === 'admin' ? 'admin' : 'view',
       }))

@@ -15,8 +15,8 @@ interface CreateCapsuleStep3Props {
 interface FriendSearch {
   userId: string
   username: string
-  avatar?: string
-  name?: string
+  avatar: string | undefined
+  name: string
 }
 
 function CreateCapsuleStep3({
@@ -29,10 +29,9 @@ function CreateCapsuleStep3({
 }: CreateCapsuleStep3Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<FriendSearch[]>([])
-  const [isSearching, setIsSearching] = useState(false)
   const [openRoleSelect, setOpenRoleSelect] = useState<string | null>(null)
   const [shareButtonText, setShareButtonText] = useState('Compartir')
-  const searchTimeoutRef = useRef<NodeJS.Timeout>()
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const performSearch = async () => {
@@ -41,7 +40,6 @@ function CreateCapsuleStep3({
         return
       }
 
-      setIsSearching(true)
       try {
         const friends = await fetchFriends()
         // Filter friends based on search query
@@ -50,14 +48,12 @@ function CreateCapsuleStep3({
             const friend = typeof rel.friend === 'object' ? rel.friend : typeof rel.otherUser === 'object' ? rel.otherUser : null
             return friend ? { userId: friend._id, username: friend.username || '', avatar: friend.avatar, name: friend.name } : null
           })
-          .filter((f): f is FriendSearch => f !== null && (f.username?.includes(searchQuery) || f.name?.includes(searchQuery)))
+          .filter((f): f is FriendSearch => f !== null && (f.username.includes(searchQuery) || f.name.includes(searchQuery)))
 
         setSearchResults(filtered)
       } catch (err) {
         console.error('Error searching friends:', err)
         setSearchResults([])
-      } finally {
-        setIsSearching(false)
       }
     }
 
@@ -141,7 +137,7 @@ function CreateCapsuleStep3({
           title: 'Únete a Momentum',
           url: profileUrl,
         })
-        .catch((err) => {
+        .catch(() => {
           // Si el usuario cancela, usar el fallback
           navigator.clipboard.writeText(profileUrl)
           setShareButtonText('¡Enlace copiado!')
