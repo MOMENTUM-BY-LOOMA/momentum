@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 
 type CapsulaThumb3DProps = {
