@@ -320,6 +320,42 @@ export async function requestFriendByUsername(username: string): Promise<ApiFrie
   return response.relation
 }
 
+export async function requestFriendByUserId(userId: string): Promise<ApiFriendRelation> {
+  const response = await requestJson<{ message: string; relation: ApiFriendRelation }>('/api/friends/requests', {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  })
+
+  return response.relation
+}
+
+export async function searchUsers(query: string): Promise<ApiUser[]> {
+  const encoded = encodeURIComponent(query)
+  return requestJson<ApiUser[]>(`/api/users/search?q=${encoded}`)
+}
+
+export async function fetchIncomingFriendRequests(): Promise<ApiFriendRelation[]> {
+  return requestJson<ApiFriendRelation[]>('/api/friends/requests/incoming')
+}
+
+export async function fetchOutgoingFriendRequests(): Promise<ApiFriendRelation[]> {
+  return requestJson<ApiFriendRelation[]>('/api/friends/requests/outgoing')
+}
+
+export async function acceptFriendRequest(requestId: string): Promise<ApiFriendRelation> {
+  const response = await requestJson<{ message: string; relation: ApiFriendRelation }>(`/api/friends/requests/${requestId}/accept`, {
+    method: 'POST',
+  })
+
+  return response.relation
+}
+
+export async function rejectFriendRequest(requestId: string): Promise<{ message: string }> {
+  return requestJson<{ message: string }>(`/api/friends/requests/${requestId}/reject`, {
+    method: 'POST',
+  })
+}
+
 export async function createCapsule(payload: {
   title: string
   description?: string

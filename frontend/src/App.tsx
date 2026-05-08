@@ -8,6 +8,8 @@ import Home from './pages/Home.tsx'
 import InitialLoading from './pages/InitialLoading.tsx'
 import Login from './pages/Login.tsx'
 import Register from './pages/Register.tsx'
+import RegisterDetails from './pages/RegisterDetails.tsx'
+import RegisterConfirmation from './pages/RegisterConfirmation.tsx'
 import StartAccess from './pages/StartAccess.tsx'
 import UploadCapsule from './pages/UploadCapsule.tsx'
 import Busqueda from './pages/Busqueda.tsx'
@@ -158,6 +160,8 @@ function AppLayout() {
             <Route path="/inicio-registro" element={<StartAccess />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
+            <Route path="/registro/datos" element={<RegisterDetails />} />
+            <Route path="/registro/confirmacion" element={<RegisterConfirmation />} />
           </Route>
 
           <Route element={<RequireAuth />}>
@@ -201,8 +205,17 @@ function App() {
       }
     }
 
+    const onAuthUserChanged = () => {
+      applyStoredUserPreferences()
+    }
+
     window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
+    window.addEventListener('authUserChanged', onAuthUserChanged as EventListener)
+
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('authUserChanged', onAuthUserChanged as EventListener)
+    }
   }, [])
 
   return (

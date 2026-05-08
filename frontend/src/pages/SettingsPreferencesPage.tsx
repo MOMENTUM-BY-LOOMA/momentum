@@ -95,7 +95,7 @@ function SettingsPreferencesPage() {
         const updatedPrefs = normalizeUserPreferences(updatedUser.preferences)
         setOriginalPrefs(updatedPrefs)
         setPrefs(updatedPrefs)
-        localStorage.setItem('authUser', JSON.stringify(updatedUser))
+        sessionStorage.setItem('authUser', JSON.stringify(updatedUser))
         applyUserPreferences(updatedPrefs)
         window.dispatchEvent(new Event('authUserChanged'))
       }

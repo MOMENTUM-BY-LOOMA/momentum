@@ -1534,6 +1534,79 @@
   display: grid;
 }
 
+.mis-amigos-page__requests {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px 14px;
+}
+
+.mis-amigos-panel {
+  background: #f3ece1;
+  border: 1px solid #ddd2c4;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+.mis-amigos-request-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 2px;
+  border-bottom: 0.5px solid #d5ccc0;
+}
+
+.mis-amigos-request-row:last-child {
+  border-bottom: none;
+}
+
+.mis-amigos-request-row__identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mis-amigos-request-row__photo,
+.mis-amigos-request-row__photo-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+}
+
+.mis-amigos-request-row__photo-fallback {
+  background: #d5ccc0;
+  color: #1a1a1a;
+  font-family: var(--title-font);
+  font-size: 16px;
+}
+
+.mis-amigos-request-row__name {
+  font-size: 15px;
+  color: #1a1a1a;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.mis-amigos-request-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.mis-amigos-request-row__pending {
+  font-size: 13px;
+  color: #7a746a;
+}
+
 .mis-amigos-page__empty {
   margin: 0;
   padding: 0 20px 12px;
@@ -1598,7 +1671,7 @@
 }
 
 .mis-amigos-page__add-title {
-  margin: 0;
+  margin: 0 0 6px;
   font-family: var(--title-font);
   font-size: 17px;
 }
@@ -1609,8 +1682,14 @@
   align-items: center;
 }
 
+.mis-amigos-page__search {
+  position: relative;
+  width: 100%;
+}
+
 .mis-amigos-page__input {
   flex: 1;
+  width: 100%;
   min-width: 0;
   border: 1px solid #cccccc;
   border-radius: 8px;
@@ -1634,6 +1713,113 @@
 .mis-amigos-page__button:disabled {
   opacity: 0.75;
   cursor: not-allowed;
+}
+
+.mis-amigos-page__button--ghost {
+  background: #efe8dc;
+  color: #1a1a1a;
+}
+
+.mis-amigos-page__button--icon {
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.mis-amigos-page__search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  border: 1px solid var(--color-separador);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-fondo-secundario);
+}
+
+.mis-amigos-page__search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--color-fondo-secundario);
+  border-bottom: 0.5px solid var(--color-separador);
+}
+
+.mis-amigos-page__search-item:last-child {
+  border-bottom: none;
+}
+
+.mis-amigos-page__search-main {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mis-amigos-page__search-avatar,
+.mis-amigos-page__search-avatar-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+}
+
+.mis-amigos-page__search-avatar-fallback {
+  background: #d5ccc0;
+  color: #1a1a1a;
+  font-family: var(--title-font);
+  font-size: 15px;
+}
+
+.mis-amigos-page__search-username {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1a1a1a;
+}
+
+.mis-amigos-page__search-add {
+  margin-left: auto;
+  border: none;
+  border-radius: 8px;
+  min-height: 30px;
+  padding: 6px 10px;
+  background: #1a1a1a;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.mis-amigos-page__search-add:disabled {
+  background: #d0c8bc;
+  color: #5d5a54;
+  cursor: not-allowed;
+}
+
+.mis-amigos-page__search-empty {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #5d5a54;
+  background: var(--color-fondo-secundario);
 }
 
 .mis-amigos-page__message {

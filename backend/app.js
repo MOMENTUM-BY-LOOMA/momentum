@@ -3,8 +3,8 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json({ limit: '10mb' }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -24,6 +24,10 @@ app.use((err, req, res, next) => {
 
   if (res.headersSent) {
     return next(err);
+  }
+
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ message: 'Payload too large' });
   }
 
   res.status(500).json({ message: 'Internal server error' });

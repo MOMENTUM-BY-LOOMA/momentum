@@ -198,7 +198,7 @@ function CapsuleInterior() {
     <Fragment>{header}<section className="page-layout"><p>{error}</p></section></Fragment>
   )
 
-  const generalComments: Comment[] = (capsule as any)?.generalComments || []
+  const generalComments: Comment[] = (capsule as any)?.comments || []
   const sharedUsers = capsule.sharedWith ?? []
 
   const owner = capsule.owner
