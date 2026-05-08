@@ -5,7 +5,7 @@ import { fetchCapsuleById, type ApiCapsule, type ApiMediaItem } from '../service
 import { Model3DViewer } from '../3d/Model3DViewer'
 import '../styles/capsule-view.css'
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
+const API_BASE = import.meta.env.VITE_API_URL
 const FALLBACK_MODEL = '/3d/statue%20of%20liberty%203d%20model.glb'
 
 function resolveUrl(url: string) {

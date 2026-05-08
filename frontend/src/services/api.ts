@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
+const API_BASE = import.meta.env.VITE_API_URL
 
 export type ApiUser = {
   _id: string
@@ -181,7 +181,7 @@ async function requestJson<T>(path: string, init: RequestInit = {}, authRequired
     })
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers,
   })

@@ -12,7 +12,7 @@ import {
 } from '../services/api'
 import '../styles/capsule-edit.css'
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
+const API_BASE = import.meta.env.VITE_API_URL
 const SLIDE_REDUCTION = 92
 const SLIDE_GAP = 12
 
