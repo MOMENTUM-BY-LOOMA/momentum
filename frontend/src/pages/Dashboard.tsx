@@ -42,6 +42,11 @@ function Dashboard() {
   const [loadingCompartidas, setLoadingCompartidas] = useState(false)
 
   useEffect(() => {
+    console.log('VITE_API_URL en Dashboard:', import.meta.env.VITE_API_URL)
+    console.log('window.location.origin:', window.location.origin)
+  }, [])
+
+  useEffect(() => {
     const token = sessionStorage.getItem('authToken')
     if (!token) {
       navigate('/login', { replace: true })
@@ -63,6 +68,8 @@ function Dashboard() {
     }
 
     const requestJson = async (path: string) => {
+      console.log('API_BASE:', import.meta.env.VITE_API_URL)
+      console.log('URL completa de la llamada:', `${API_BASE}${path}`)
       const response = await fetch(`${API_BASE}${path}`, {
         headers: { Authorization: `Bearer ${token}` },
       })

@@ -62,6 +62,8 @@ export default function Busqueda() {
     const params = new URLSearchParams()
     if (activeQ) params.set('q', activeQ)
     if (activeCategory) params.set('category', activeCategory)
+    console.log('API_BASE:', import.meta.env.VITE_API_URL)
+    console.log('URL completa de la llamada:', `${API_BASE}/api/capsules?${params}`)
     fetch(`${API_BASE}/api/capsules?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
