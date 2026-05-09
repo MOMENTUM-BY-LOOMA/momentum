@@ -4,6 +4,7 @@ import CapsulaThumb, { type ThumbCapsule } from '../components/CapsulaThumb'
 import HeaderConTitulo from '../components/HeaderConTitulo'
 import { defaultAvatarAsset } from '../img'
 import { fetchCapsules, fetchCurrentUser, fetchFriends, getCapsuleThumb, type ApiCapsule, type ApiUser } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 
 function ownerId(capsule: ApiCapsule) {
   if (!capsule.owner) return ''
@@ -17,6 +18,8 @@ function mapToThumb(capsule: ApiCapsule): ThumbCapsule {
 
 function MiPerfil() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [user, setUser] = useState<ApiUser | null>(null)
   const [friendsCount, setFriendsCount] = useState(0)
   const [capsules, setCapsules] = useState<ApiCapsule[]>([])
@@ -67,14 +70,14 @@ function MiPerfil() {
 
   return (
     <>
-      <HeaderConTitulo titulo="Mi perfil" iconoDerecha="⚙" onIconoDerecha={() => navigate('/ajustes')} />
+      <HeaderConTitulo titulo={txt('Mi perfil', 'My profile')} iconoDerecha="⚙" onIconoDerecha={() => navigate('/ajustes')} />
 
-      <section className="mi-perfil" aria-label="Pantalla de mi perfil">
+      <section className="mi-perfil" aria-label={txt('Pantalla de mi perfil', 'My profile screen')}>
 
       {loading ? (
         <div className="mi-perfil__photo-fallback"><span>...</span></div>
       ) : profilePhoto ? (
-        <img src={profilePhoto} alt={user?.name || 'Usuario'} className="mi-perfil__photo" />
+        <img src={profilePhoto} alt={user?.name || txt('Usuario', 'User')} className="mi-perfil__photo" />
       ) : (
         <div className="mi-perfil__photo-fallback">
           <span>{(user?.name || 'U').charAt(0).toUpperCase()}</span>
@@ -83,15 +86,15 @@ function MiPerfil() {
 
       <section className="mi-perfil__info-row">
         <span>@{username}</span>
-        <span>{friendsCount} amigos</span>
+        <span>{friendsCount} {txt('amigos', 'friends')}</span>
       </section>
 
       <section className="mi-perfil__recuerdos">
-        <h2>Ultimos recuerdos</h2>
+        <h2>{txt('Ultimos recuerdos', 'Latest memories')}</h2>
 
-        <div className="mi-perfil__thumbs-row" role="list" aria-label="Ultimas capsulas">
+        <div className="mi-perfil__thumbs-row" role="list" aria-label={txt('Ultimas capsulas', 'Latest capsules')}>
           {latestCapsules.length === 0 ? (
-            <div className="mi-perfil__empty">Sin recuerdos todavia</div>
+            <div className="mi-perfil__empty">{txt('Sin recuerdos todavia', 'No memories yet')}</div>
           ) : (
             latestCapsules.map((capsula) => (
               <div key={capsula.id} role="listitem">
@@ -104,7 +107,7 @@ function MiPerfil() {
 
       <div className="mi-perfil__more-wrap">
         <button type="button" className="mi-perfil__more" onClick={() => navigate('/mis-capsulas')}>
-          Ver mas {'>'}
+          {txt('Ver mas', 'See more')} {'>'}
         </button>
       </div>
     </section>

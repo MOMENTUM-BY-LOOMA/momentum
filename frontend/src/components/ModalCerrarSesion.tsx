@@ -1,3 +1,5 @@
+import { useTranslate } from '../services/useTranslate'
+
 type ModalCerrarSesionProps = {
   show: boolean
   onClose: () => void
@@ -6,19 +8,21 @@ type ModalCerrarSesionProps = {
 }
 
 function ModalCerrarSesion({ show, onClose, onConfirm, loading = false }: ModalCerrarSesionProps) {
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   if (!show) return null
 
   return (
-    <div className="settings-modal__overlay" role="dialog" aria-modal="true" aria-label="Confirmar cierre de sesion">
+    <div className="settings-modal__overlay" role="dialog" aria-modal="true" aria-label={txt('Confirmar cierre de sesion', 'Confirm logout')}>
       <article className="settings-modal__card">
-        <p className="settings-modal__text">ESTAS SEGURO DE QUE QUIERES CERRAR SESION?</p>
+        <p className="settings-modal__text">{txt('ESTAS SEGURO DE QUE QUIERES CERRAR SESION?', 'ARE YOU SURE YOU WANT TO LOG OUT?')}</p>
 
         <div className="settings-modal__actions">
           <button type="button" className="settings-btn settings-btn--danger" onClick={onConfirm} disabled={loading}>
-            {loading ? 'CERRANDO...' : 'Si, cerrar sesion'}
+            {loading ? txt('CERRANDO...', 'LOGGING OUT...') : txt('Si, cerrar sesion', 'Yes, log out')}
           </button>
           <button type="button" className="settings-btn settings-btn--ghost" onClick={onClose} disabled={loading}>
-            No, mantener sesion abierta
+            {txt('No, mantener sesion abierta', 'No, keep session open')}
           </button>
         </div>
       </article>

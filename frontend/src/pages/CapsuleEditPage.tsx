@@ -10,6 +10,7 @@ import {
   type ApiUser,
   type ApiFriendRelation,
 } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 import '../styles/capsule-edit.css'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
@@ -45,6 +46,8 @@ function AvatarStack({ users, max = 4, size = 26 }: { users: any[]; max?: number
 function CapsuleEditPage() {
   const { capsuleId: id } = useParams<{ capsuleId: string }>()
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
@@ -80,7 +83,7 @@ function CapsuleEditPage() {
   }, [loading])
 
   useEffect(() => {
-    if (!id) { setError('ID de cápsula no encontrado'); setLoading(false); return }
+    if (!id) { setError(txt('ID de capsula no encontrado', 'Capsule ID not found')); setLoading(false); return }
     const token = sessionStorage.getItem('authToken')
     if (!token) { navigate('/login', { replace: true }); return }
     let active = true
@@ -107,7 +110,7 @@ function CapsuleEditPage() {
         ) ?? false
 
         if (!isOwner && !isAdmin && !isEditor) {
-          throw new Error('No tienes permiso para editar esta cápsula')
+          throw new Error(txt('No tienes permiso para editar esta capsula', 'You do not have permission to edit this capsule'))
         }
 
         const alreadySharedIds = new Set([
@@ -137,7 +140,7 @@ function CapsuleEditPage() {
         }
       } catch (err) {
         if (active) {
-          setError(err instanceof Error ? err.message : 'No se pudo cargar la cápsula')
+          setError(err instanceof Error ? err.message : txt('No se pudo cargar la capsula', 'Could not load capsule'))
           setLoading(false)
         }
       }
@@ -145,7 +148,7 @@ function CapsuleEditPage() {
 
     load()
     return () => { active = false }
-  }, [id, navigate])
+  }, [id, navigate, language])
 
   const patchCapsule = useCallback(async (body: Record<string, unknown>) => {
     if (!id) return
@@ -209,10 +212,10 @@ function CapsuleEditPage() {
       if (res.ok) {
         navigate('/mis-capsulas', { replace: true })
       } else {
-        setError('No se pudo eliminar la cápsula')
+        setError(txt('No se pudo eliminar la capsula', 'Could not delete capsule'))
       }
     } catch {
-      setError('Error al eliminar')
+      setError(txt('Error al eliminar', 'Delete error'))
     } finally {
       setShowDeleteModal(false)
     }
@@ -285,9 +288,9 @@ function CapsuleEditPage() {
     : `calc(${slideIndex} * -1 * (min(100vw, 600px) - ${SLIDE_REDUCTION - SLIDE_GAP}px))`
 
   const header = (
-    <header className="mobile-header" aria-label="Editar cápsula">
-      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
-      <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+    <header className="mobile-header" aria-label={txt('Editar capsula', 'Edit capsule')}>
+      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver', 'Back')}>←</button>
+      <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
         <img src={logoMAsset} alt="Momentum" />
       </Link>
       <span className="mobile-header__right" aria-hidden="true" />
@@ -297,14 +300,14 @@ function CapsuleEditPage() {
   if (loading) return (
     <Fragment>
       {header}
-      <section className="page-layout"><p>Cargando...</p></section>
+      <section className="page-layout"><p>{txt('Cargando...', 'Loading...')}</p></section>
     </Fragment>
   )
 
   if (error || !capsule) return (
     <Fragment>
       {header}
-      <section className="page-layout"><p>{error || 'No se pudo cargar la cápsula'}</p></section>
+      <section className="page-layout"><p>{error || txt('No se pudo cargar la capsula', 'Could not load capsule')}</p></section>
     </Fragment>
   )
 
@@ -341,7 +344,7 @@ function CapsuleEditPage() {
                   type="button"
                   className="ce-title-edit__cancel"
                   onMouseDown={(e) => { e.preventDefault(); setEditingTitle(false) }}
-                  aria-label="Cancelar edición"
+                  aria-label={txt('Cancelar edicion', 'Cancel editing')}
                 >×</button>
               </div>
             ) : (
@@ -358,14 +361,14 @@ function CapsuleEditPage() {
           </div>
 
           <button type="button" className="ce-header__cancel" onClick={() => navigate(-1)}>
-            Cancelar
+            {txt('Cancelar', 'Cancel')}
           </button>
         </div>
 
         {/* Add friend — owner/admin only */}
         {canManage && (
           <button type="button" className="ce-add-friend-btn" onClick={() => setShowAddFriend(true)}>
-            + añadir amigo
+            + {txt('anadir amigo', 'add friend')}
           </button>
         )}
 
@@ -392,7 +395,7 @@ function CapsuleEditPage() {
                       type="button"
                       className="ce-slide__delete"
                       onClick={() => media._id && handleDeleteMedia(media._id)}
-                      aria-label="Eliminar foto"
+                      aria-label={txt('Eliminar foto', 'Delete photo')}
                     >
                       <img src={iconDeleteN} alt="" width={16} height={16} aria-hidden="true" />
                     </button>
@@ -409,7 +412,7 @@ function CapsuleEditPage() {
                     className="ce-slide__add-btn"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingMedia}
-                    aria-label="Añadir foto"
+                    aria-label={txt('Anadir foto', 'Add photo')}
                   >
                     {uploadingMedia
                       ? '…'
@@ -425,7 +428,7 @@ function CapsuleEditPage() {
                 className="ce-carousel__arrow"
                 onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
                 disabled={slideIndex === 0}
-                aria-label="Anterior"
+                aria-label={txt('Anterior', 'Previous')}
               >‹</button>
               <div className="ce-dots">
                 {Array.from({ length: totalSlides + 1 }, (_, i) => (
@@ -434,7 +437,7 @@ function CapsuleEditPage() {
                     type="button"
                     className={`ce-dot${slideIndex === i ? ' ce-dot--active' : ''}`}
                     onClick={() => setSlideIndex(i)}
-                    aria-label={`Ir a slide ${i + 1}`}
+                    aria-label={`${txt('Ir a slide', 'Go to slide')} ${i + 1}`}
                   />
                 ))}
               </div>
@@ -443,7 +446,7 @@ function CapsuleEditPage() {
                 className="ce-carousel__arrow"
                 onClick={() => setSlideIndex((i) => Math.min(totalSlides, i + 1))}
                 disabled={slideIndex >= totalSlides}
-                aria-label="Siguiente"
+                aria-label={txt('Siguiente', 'Next')}
               >›</button>
             </div>
           </div>
@@ -454,7 +457,7 @@ function CapsuleEditPage() {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingMedia}
           >
-            {uploadingMedia ? 'Subiendo…' : '+ Añadir fotos'}
+            {uploadingMedia ? txt('Subiendo...', 'Uploading...') : `+ ${txt('Anadir fotos', 'Add photos')}`}
           </button>
         )}
 
@@ -469,25 +472,25 @@ function CapsuleEditPage() {
 
         {/* Description */}
         <section className="ce-description">
-          <h3 className="ce-description__label">Descripción</h3>
+          <h3 className="ce-description__label">{txt('Descripcion', 'Description')}</h3>
           <textarea
             ref={descriptionRef}
             className="ce-description__textarea"
             defaultValue={capsule.description || ''}
             onBlur={(e) => handleDescriptionBlur(e.target.value)}
-            placeholder="Escribe la descripción de tu cápsula…"
+            placeholder={txt('Escribe la descripcion de tu capsula...', 'Write your capsule description...')}
           />
         </section>
 
         {/* Guardar */}
         <button type="button" className="ce-save-btn" onClick={handleSave}>
-          Guardar
+          {txt('Guardar', 'Save')}
         </button>
 
         {/* Delete capsule — owner/admin only */}
         {canManage && (
           <button type="button" className="ce-delete-capsule-btn" onClick={() => setShowDeleteModal(true)}>
-            Eliminar cápsula
+            {txt('Eliminar capsula', 'Delete capsule')}
           </button>
         )}
       </section>
@@ -496,14 +499,14 @@ function CapsuleEditPage() {
       {showDeleteModal && (
         <div className="ce-modal-overlay" onClick={() => setShowDeleteModal(false)}>
           <div className="ce-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Confirmar eliminación</h2>
-            <p>¿Estás seguro de que deseas eliminar esta cápsula? Esta acción no se puede deshacer.</p>
+            <h2>{txt('Confirmar eliminacion', 'Confirm deletion')}</h2>
+            <p>{txt('Estas seguro de que deseas eliminar esta capsula? Esta accion no se puede deshacer.', 'Are you sure you want to delete this capsule? This action cannot be undone.')}</p>
             <div className="ce-modal__buttons">
               <button type="button" className="ce-modal__btn ce-modal__btn--cancel" onClick={() => setShowDeleteModal(false)}>
-                Cancelar
+                {txt('Cancelar', 'Cancel')}
               </button>
               <button type="button" className="ce-modal__btn ce-modal__btn--delete" onClick={handleDeleteCapsule}>
-                Eliminar
+                {txt('Eliminar', 'Delete')}
               </button>
             </div>
           </div>
@@ -514,8 +517,8 @@ function CapsuleEditPage() {
       {showAddFriend && (
         <div className="ce-modal-overlay" onClick={() => setShowAddFriend(false)}>
           <div className="ce-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Añadir amigo</h2>
-            <p className="ce-modal__subtitle">Selecciona un amigo para compartir esta cápsula</p>
+            <h2>{txt('Anadir amigo', 'Add friend')}</h2>
+            <p className="ce-modal__subtitle">{txt('Selecciona un amigo para compartir esta capsula', 'Select a friend to share this capsule')}</p>
             <div className="ce-friends-list">
               {friends.length > 0 ? friends.map((friend) => (
                 <div key={friend._id} className="ce-friend-item">
@@ -530,15 +533,15 @@ function CapsuleEditPage() {
                     </div>
                   </div>
                   <button type="button" className="ce-friend__add-btn" onClick={() => handleAddFriend(friend._id)}>
-                    Añadir
+                    {txt('Anadir', 'Add')}
                   </button>
                 </div>
               )) : (
-                <p className="ce-friends-empty">No tienes amigos disponibles para añadir</p>
+                <p className="ce-friends-empty">{txt('No tienes amigos disponibles para anadir', 'You have no friends available to add')}</p>
               )}
             </div>
             <button type="button" className="ce-modal__close-btn" onClick={() => setShowAddFriend(false)}>
-              Cerrar
+              {txt('Cerrar', 'Close')}
             </button>
           </div>
         </div>

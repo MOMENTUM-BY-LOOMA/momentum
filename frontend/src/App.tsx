@@ -18,6 +18,7 @@ import TodasMisCapsulas from './pages/TodasMisCapsulas.tsx'
 import CreateCapsuleFlowPage from './pages/CreateCapsuleFlowPage.tsx'
 import CapsuleEditPage from './pages/CapsuleEditPage.tsx'
 import SharedCapsuleView from './pages/SharedCapsuleView.tsx'
+import MediaDetailPage from './pages/MediaDetailPage.tsx'
 import MisAmigos from './pages/MisAmigos.tsx'
 import PerfilAmigo from './pages/PerfilAmigo.tsx'
 import MiPerfil from './pages/MiPerfil.tsx'
@@ -36,6 +37,7 @@ import './styles/capsule-edit.css'
 import './styles/shared-capsule-view.css'
 import './styles/notification-bell.css'
 import './styles/create-capsule.css'
+import './styles/media-detail.css'
 
 type GuardStatus = 'checking' | 'authenticated' | 'unauthenticated'
 
@@ -138,7 +140,7 @@ function AppLayout() {
     '/ajustes/cuenta',
     '/ajustes/preferencias',
     '/ajustes/sesion',
-  ].includes(location.pathname) || location.pathname.match(/^\/capsulas\/[^/]+(\/interior|\/compartida|\/editar)?$/)
+  ].includes(location.pathname) || location.pathname.match(/^\/capsulas\/[^/]+(\/interior|\/compartida|\/editar|\/media)/)
 
   // AppBottomNav is hidden on these paths — only add padding when it's visible
   const bottomNavHidden = ['/', '/inicio-publico', '/registro', '/login', '/inicio-registro'].includes(location.pathname)
@@ -177,6 +179,7 @@ function AppLayout() {
             <Route path="/capsulas/:id" element={<CapsuleView />} />
             <Route path="/capsulas/:id/interior" element={<CapsuleInterior />} />
             <Route path="/capsulas/:id/compartida" element={<SharedCapsuleView />} />
+            <Route path="/capsulas/:id/media/:mediaIndex" element={<MediaDetailPage />} />
             <Route path="/capsulas/:capsuleId/editar" element={<CapsuleEditPage />} />
             <Route path="/amigos" element={<MisAmigos />} />
             <Route path="/amigos/:amigoId" element={<PerfilAmigo />} />

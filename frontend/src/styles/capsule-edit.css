@@ -30,7 +30,7 @@
   background: none;
   border: none;
   color: var(--color-texto-secundario);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -53,7 +53,7 @@
   border: 1px solid var(--color-borde);
   border-radius: 99px;
   padding: 7px 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-texto-principal);
   cursor: pointer;
@@ -69,7 +69,7 @@
 }
 
 .ce-title__pencil {
-  font-size: 13px;
+  font-size: 0.8125rem;
   opacity: 0.6;
   flex-shrink: 0;
 }
@@ -90,7 +90,7 @@
   border: 1px solid var(--color-boton-primario);
   border-radius: 99px;
   padding: 7px 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   font-family: inherit;
   color: var(--color-texto-principal);
@@ -101,7 +101,7 @@
   background: none;
   border: none;
   color: var(--color-texto-secundario);
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
   padding: 4px;
@@ -124,7 +124,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   color: var(--color-texto-principal);
   flex-shrink: 0;
@@ -149,7 +149,7 @@
   border: 1px solid var(--color-borde);
   border-radius: 99px;
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--color-texto-principal);
   font-family: inherit;
   cursor: pointer;
@@ -206,7 +206,7 @@
   background: rgba(0, 0, 0, 0.55);
   border: none;
   color: #fff;
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -236,7 +236,7 @@
   background: var(--color-boton-primario);
   color: var(--color-boton-texto);
   border: none;
-  font-size: 28px;
+  font-size: 1.75rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -271,7 +271,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 1.375rem;
   line-height: 1;
   color: var(--color-texto-principal);
   transition: opacity 0.18s;
@@ -320,7 +320,7 @@
   border-radius: 16px;
   margin: 0 16px;
   padding: 48px 32px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-texto-secundario);
   font-family: inherit;
@@ -344,7 +344,7 @@
 }
 
 .ce-description__label {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--color-texto-principal);
   margin: 0;
@@ -357,7 +357,7 @@
   border-radius: 12px;
   background: var(--color-fondo-secundario);
   color: var(--color-texto-principal);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-family: inherit;
   resize: vertical;
   min-height: 80px;
@@ -383,7 +383,7 @@
   border: none;
   border-radius: 999px;
   padding: 14px 32px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -401,7 +401,7 @@
   border: 1px solid #d32f2f;
   border-radius: 99px;
   color: #d32f2f;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
   padding: 10px 24px;
@@ -437,7 +437,7 @@
 }
 
 .ce-modal h2 {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-texto-principal);
   margin: 0;
@@ -446,7 +446,7 @@
 .ce-modal p {
   margin: 0;
   color: var(--color-texto-principal);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -465,7 +465,7 @@
   padding: 13px;
   border: none;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -493,7 +493,7 @@
   border: 1px solid var(--color-borde);
   border-radius: 12px;
   padding: 13px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -545,7 +545,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-borde);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-texto-principal);
 }
@@ -558,7 +558,7 @@
 }
 
 .ce-friend__text strong {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-texto-principal);
   display: block;
@@ -568,7 +568,7 @@
 }
 
 .ce-friend__text small {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-texto-secundario);
   display: block;
 }
@@ -579,7 +579,7 @@
   border: none;
   border-radius: 99px;
   padding: 7px 14px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -596,7 +596,7 @@
   color: var(--color-texto-secundario);
   padding: 24px 0;
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ── Desktop ── */

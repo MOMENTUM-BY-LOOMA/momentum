@@ -17,6 +17,7 @@ import {
   type ApiFriendRelation,
   type ApiUser,
 } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 
 type FriendItem = {
   friend: ApiUser
@@ -62,6 +63,8 @@ function getUserHandle(user: ApiUser) {
 
 function MisAmigos() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const searchBoxRef = useRef<HTMLDivElement | null>(null)
   const [currentUser, setCurrentUser] = useState<ApiUser | null>(null)
   const [friendData, setFriendData] = useState<FriendItem[]>([])
@@ -195,9 +198,9 @@ function MisAmigos() {
     try {
       await acceptFriendRequest(requestId)
       await refreshFriendsAndRequests()
-      setAddStatus({ kind: 'success', text: 'Solicitud aceptada' })
+      setAddStatus({ kind: 'success', text: txt('Solicitud aceptada', 'Request accepted') })
     } catch {
-      setAddStatus({ kind: 'error', text: 'No se pudo aceptar la solicitud' })
+      setAddStatus({ kind: 'error', text: txt('No se pudo aceptar la solicitud', 'Could not accept request') })
     } finally {
       setProcessingRequestId(null)
     }
@@ -210,9 +213,9 @@ function MisAmigos() {
     try {
       await rejectFriendRequest(requestId)
       await refreshFriendsAndRequests()
-      setAddStatus({ kind: 'warning', text: 'Solicitud rechazada' })
+      setAddStatus({ kind: 'warning', text: txt('Solicitud rechazada', 'Request rejected') })
     } catch {
-      setAddStatus({ kind: 'error', text: 'No se pudo rechazar la solicitud' })
+      setAddStatus({ kind: 'error', text: txt('No se pudo rechazar la solicitud', 'Could not reject request') })
     } finally {
       setProcessingRequestId(null)
     }
@@ -226,18 +229,18 @@ function MisAmigos() {
       await requestFriendByUserId(user._id)
       setSentSearchUserIds((prev) => ({ ...prev, [user._id]: true }))
       await refreshFriendsAndRequests()
-      setAddStatus({ kind: 'success', text: `Solicitud enviada a @${getUserHandle(user)}` })
+      setAddStatus({ kind: 'success', text: `${txt('Solicitud enviada a', 'Request sent to')} @${getUserHandle(user)}` })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error'
 
       if (message === 'User not found') {
-        setAddStatus({ kind: 'error', text: 'Usuario no encontrado' })
+        setAddStatus({ kind: 'error', text: txt('Usuario no encontrado', 'User not found') })
       } else if (message === 'You are already friends') {
-        setAddStatus({ kind: 'error', text: 'Ya sois amigos' })
+        setAddStatus({ kind: 'error', text: txt('Ya sois amigos', 'Already friends') })
       } else if (message === 'Friend request already sent') {
-        setAddStatus({ kind: 'warning', text: 'Solicitud ya enviada' })
+        setAddStatus({ kind: 'warning', text: txt('Solicitud ya enviada', 'Request already sent') })
       } else {
-        setAddStatus({ kind: 'error', text: 'No se pudo enviar la solicitud' })
+        setAddStatus({ kind: 'error', text: txt('No se pudo enviar la solicitud', 'Could not send request') })
       }
     } finally {
       setProcessingSearchUserId(null)
@@ -267,31 +270,31 @@ function MisAmigos() {
       setShareCopied(true)
       window.setTimeout(() => setShareCopied(false), 2000)
     } catch {
-      setAddStatus({ kind: 'error', text: 'No se pudo copiar el enlace' })
+      setAddStatus({ kind: 'error', text: txt('No se pudo copiar el enlace', 'Could not copy link') })
     }
   }
 
   return (
-    <section className="mis-amigos-page" aria-label="Mis amigos">
-      <header className="mis-amigos-page__header" aria-label="Encabezado de amigos">
+      <section className="mis-amigos-page" aria-label={txt('Mis amigos', 'My friends')}>
+        <header className="mis-amigos-page__header" aria-label={txt('Encabezado de amigos', 'Friends header')}>
         <span className="mis-amigos-page__header-spacer" aria-hidden="true" />
 
-        <a className="mis-amigos-page__logo-button" href="/inicio" aria-label="Ir a inicio">
+          <a className="mis-amigos-page__logo-button" href="/inicio" aria-label={txt('Ir a inicio', 'Go home')}>
           <img className="mis-amigos-page__logo" src={logoMAsset} alt="Momentum" />
         </a>
 
-        <button type="button" className="mis-amigos-page__settings-button" onClick={() => navigate('/ajustes')} aria-label="Abrir ajustes">
+          <button type="button" className="mis-amigos-page__settings-button" onClick={() => navigate('/ajustes')} aria-label={txt('Abrir ajustes', 'Open settings')}>
           <img className="mis-amigos-page__settings-icon" src={settingsIconAsset} alt="" aria-hidden="true" />
         </button>
       </header>
 
-      <h1 className="mis-amigos-page__title">MIS AMIGOS</h1>
+        <h1 className="mis-amigos-page__title">{txt('MIS AMIGOS', 'MY FRIENDS')}</h1>
 
-      <section className="mis-amigos-page__requests" aria-label="Solicitudes de amistad">
-        <article className="mis-amigos-panel" aria-label="Bloque de solicitudes recibidas">
-          <h2 className="mis-amigos-page__add-title">SOLICITUDES RECIBIDAS</h2>
+        <section className="mis-amigos-page__requests" aria-label={txt('Solicitudes de amistad', 'Friend requests')}>
+          <article className="mis-amigos-panel" aria-label={txt('Bloque de solicitudes recibidas', 'Received requests')}>
+            <h2 className="mis-amigos-page__add-title">{txt('SOLICITUDES RECIBIDAS', 'RECEIVED REQUESTS')}</h2>
           {incomingRequests.length === 0 ? (
-            <p className="mis-amigos-page__empty">No tienes solicitudes pendientes.</p>
+              <p className="mis-amigos-page__empty">{txt('No tienes solicitudes pendientes.', 'You do not have any pending requests.')}</p>
           ) : (
             incomingRequests.map(({ relationId, user }) => (
               <article key={relationId} className="mis-amigos-request-row">
@@ -299,7 +302,7 @@ function MisAmigos() {
                   {user.profilePhoto || user.avatar ? (
                     <img className="mis-amigos-request-row__photo" src={user.profilePhoto || user.avatar} alt={user.name} />
                   ) : (
-                    <div className="mis-amigos-request-row__photo-fallback" aria-label={`Sin foto de ${user.name}`}>
+                    <div className="mis-amigos-request-row__photo-fallback" aria-label={`${txt('Sin foto de', 'No photo for')} ${user.name}`}>
                       <span>{getInitial(user.name)}</span>
                     </div>
                   )}
@@ -313,14 +316,14 @@ function MisAmigos() {
                     disabled={processingRequestId === relationId}
                     onClick={() => handleAcceptRequest(relationId)}
                   >
-                    Confirmar
+                    {txt('Confirmar', 'Confirm')}
                   </button>
                   <button
                     type="button"
                     className="mis-amigos-page__button mis-amigos-page__button--ghost mis-amigos-page__button--icon"
                     disabled={processingRequestId === relationId}
                     onClick={() => handleRejectRequest(relationId)}
-                    aria-label={`Rechazar solicitud de ${user.name}`}
+                    aria-label={`${txt('Rechazar solicitud de', 'Reject request from')} ${user.name}`}
                   >
                     x
                   </button>
@@ -330,10 +333,10 @@ function MisAmigos() {
           )}
         </article>
 
-        <article className="mis-amigos-panel" aria-label="Bloque de solicitudes enviadas">
-          <h2 className="mis-amigos-page__add-title">SOLICITUDES ENVIADAS</h2>
+        <article className="mis-amigos-panel" aria-label={txt('Bloque de solicitudes enviadas', 'Sent requests')}>
+          <h2 className="mis-amigos-page__add-title">{txt('SOLICITUDES ENVIADAS', 'SENT REQUESTS')}</h2>
           {outgoingRequests.length === 0 ? (
-            <p className="mis-amigos-page__empty">No tienes solicitudes enviadas pendientes.</p>
+            <p className="mis-amigos-page__empty">{txt('No tienes solicitudes enviadas pendientes.', 'You do not have any pending sent requests.')}</p>
           ) : (
             outgoingRequests.map(({ relationId, user }) => (
               <article key={relationId} className="mis-amigos-request-row">
@@ -341,22 +344,22 @@ function MisAmigos() {
                   {user.profilePhoto || user.avatar ? (
                     <img className="mis-amigos-request-row__photo" src={user.profilePhoto || user.avatar} alt={user.name} />
                   ) : (
-                    <div className="mis-amigos-request-row__photo-fallback" aria-label={`Sin foto de ${user.name}`}>
+                    <div className="mis-amigos-request-row__photo-fallback" aria-label={`${txt('Sin foto de', 'No photo for')} ${user.name}`}>
                       <span>{getInitial(user.name)}</span>
                     </div>
                   )}
                   <span className="mis-amigos-request-row__name">{user.name}</span>
                 </div>
-                <span className="mis-amigos-request-row__pending">Pendiente</span>
+                <span className="mis-amigos-request-row__pending">{txt('Pendiente', 'Pending')}</span>
               </article>
             ))
           )}
         </article>
       </section>
 
-        <section className="mis-amigos-page__list" aria-label="Lista de amigos">
-          {loading ? <p className="mis-amigos-page__empty">Cargando amigos...</p> : null}
-          {!loading && friendData.length === 0 ? <p className="mis-amigos-page__empty">Todavía no tienes amigos aceptados.</p> : null}
+        <section className="mis-amigos-page__list" aria-label={txt('Lista de amigos', 'Friends list')}>
+          {loading ? <p className="mis-amigos-page__empty">{txt('Cargando amigos...', 'Loading friends...')}</p> : null}
+          {!loading && friendData.length === 0 ? <p className="mis-amigos-page__empty">{txt('Todavía no tienes amigos aceptados.', 'You do not have any accepted friends yet.')}</p> : null}
 
           {friendData.map(({ friend, capsules }) => {
             const visibleCapsules = capsules.slice(0, 3)
@@ -368,13 +371,13 @@ function MisAmigos() {
                   {friend.profilePhoto || friend.avatar ? (
                     <img className="mis-amigos-row__photo" src={friend.profilePhoto || friend.avatar} alt={friend.name} />
                   ) : (
-                    <div className="mis-amigos-row__photo-fallback" aria-label={`Sin foto de ${friend.name}`}>
+                    <div className="mis-amigos-row__photo-fallback" aria-label={`${txt('Sin foto de', 'No photo for')} ${friend.name}`}>
                       <span>{getInitial(friend.name)}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="mis-amigos-row__capsules" aria-label={`Cápsulas compartidas con ${friend.name}`}>
+                <div className="mis-amigos-row__capsules" aria-label={`${txt('Cápsulas compartidas con', 'Shared capsules with')} ${friend.name}`}>
                   {visibleCapsules.map((capsule) => (
                     <CapsulaThumb key={capsule._id} capsula={mapCapsule(capsule)} onOpen={(capsuleId) => navigate(`/capsulas/${capsuleId}`)} />
                   ))}
@@ -385,9 +388,9 @@ function MisAmigos() {
                     type="button"
                     className="mis-amigos-row__more"
                     onClick={() => navigate(`/amigos/${friend._id}`)}
-                    aria-label={`Ver más cápsulas compartidas con ${friend.name}`}
+                    aria-label={`${txt('Ver más cápsulas compartidas con', 'View more shared capsules with')} ${friend.name}`}
                   >
-                    Ver más &gt;
+                    {txt('Ver más', 'View more')} &gt;
                   </button>
                 ) : null}
               </article>
@@ -395,13 +398,13 @@ function MisAmigos() {
           })}
         </section>
 
-        <section className="mis-amigos-page__add" aria-label="Añadir amigos">
-          <h2 className="mis-amigos-page__add-title">AÑADIR AMIGOS</h2>
+        <section className="mis-amigos-page__add" aria-label={txt('Añadir amigos', 'Add friends')}>
+          <h2 className="mis-amigos-page__add-title">{txt('AÑADIR AMIGOS', 'ADD FRIENDS')}</h2>
 
           <div className="mis-amigos-page__row">
-            <input className="mis-amigos-page__input" type="text" value={shareUrl} readOnly aria-label="URL para compartir perfil" />
+            <input className="mis-amigos-page__input" type="text" value={shareUrl} readOnly aria-label={txt('URL para compartir perfil', 'Profile share URL')} />
             <button type="button" className="mis-amigos-page__button" onClick={handleCopyUrl}>
-              {shareCopied ? '¡Copiado!' : 'Copiar'}
+              {shareCopied ? txt('¡Copiado!', 'Copied!') : txt('Copiar', 'Copy')}
             </button>
           </div>
 
@@ -410,7 +413,7 @@ function MisAmigos() {
               <input
                 className="mis-amigos-page__input"
                 type="text"
-                placeholder="Introduce el nombre de tu amigo"
+                placeholder={txt('Introduce el nombre de tu amigo', 'Enter your friend\'s username')}
                 value={busqueda}
                 onFocus={() => {
                   if (busqueda.trim().length >= 2) {
@@ -422,15 +425,15 @@ function MisAmigos() {
                   setBusqueda(nextValue)
                   setSearchOpen(nextValue.trim().length >= 2)
                 }}
-                aria-label="Buscar amigo por nombre de usuario"
+                aria-label={txt('Buscar amigo por nombre de usuario', 'Search friend by username')}
               />
 
               {searchOpen ? (
-                <div className="mis-amigos-page__search-results" role="listbox" aria-label="Resultados de usuarios">
-                  {searchingUsers ? <p className="mis-amigos-page__search-empty">Buscando usuarios...</p> : null}
+                <div className="mis-amigos-page__search-results" role="listbox" aria-label={txt('Resultados de usuarios', 'User results')}>
+                  {searchingUsers ? <p className="mis-amigos-page__search-empty">{txt('Buscando usuarios...', 'Searching users...')}</p> : null}
 
                   {!searchingUsers && searchResults.length === 0 ? (
-                    <p className="mis-amigos-page__search-empty">No se encontró ningún usuario</p>
+                    <p className="mis-amigos-page__search-empty">{txt('No se encontró ningún usuario', 'No user found')}</p>
                   ) : null}
 
                   {!searchingUsers && searchResults.map((user) => {
@@ -443,7 +446,7 @@ function MisAmigos() {
                           type="button"
                           className="mis-amigos-page__search-main"
                           onClick={handleSelectSearchResult}
-                          aria-label={`Seleccionar ${handle}`}
+                          aria-label={`${txt('Seleccionar', 'Select')} ${handle}`}
                         >
                           {user.profilePhoto || user.avatar ? (
                             <img className="mis-amigos-page__search-avatar" src={user.profilePhoto || user.avatar} alt={user.name} />
@@ -460,9 +463,9 @@ function MisAmigos() {
                           className="mis-amigos-page__search-add"
                           onClick={() => handleRequestFromSearch(user)}
                           disabled={requestAlreadySent || processingSearchUserId === user._id}
-                          aria-label={`Enviar solicitud a ${handle}`}
+                          aria-label={`${txt('Enviar solicitud a', 'Send request to')} ${handle}`}
                         >
-                          {requestAlreadySent ? 'Solicitud enviada' : '+'}
+                          {requestAlreadySent ? txt('Solicitud enviada', 'Request sent') : '+'}
                         </button>
                       </article>
                     )

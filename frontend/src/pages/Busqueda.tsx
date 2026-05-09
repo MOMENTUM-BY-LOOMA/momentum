@@ -7,6 +7,7 @@ import iconLoveN from '../img/icon_love_n.svg'
 import iconWorkN from '../img/icon_work_n.svg'
 import CapsulaThumb from '../components/CapsulaThumb'
 import { getCapsuleThumb, type ApiCapsule } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 
 interface Categoria {
   label: string
@@ -24,6 +25,8 @@ const categorias: Categoria[] = [
 export default function Busqueda() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
 
   // inputQuery: lo que el usuario escribe en el input (no lanza búsqueda automática)
   const [inputQuery, setInputQuery] = useState('')
@@ -38,6 +41,13 @@ export default function Busqueda() {
   const activeCategory = categorias.some((c) => c.valor === rawCategory) ? rawCategory : ''
   const hayFiltro = activeQ !== '' || activeCategory !== ''
   const categoriaLabel = categorias.find((c) => c.valor === activeCategory)?.label
+
+  const categoriasUi: Categoria[] = [
+    { label: txt('VIAJES', 'TRAVEL'), valor: 'viajes', icono: iconTripN },
+    { label: txt('FAMILIA', 'FAMILY'), valor: 'familia', icono: iconFamilyN },
+    { label: txt('AMISTAD', 'FRIENDSHIP'), valor: 'amistad', icono: iconLoveN },
+    { label: txt('TRABAJO', 'WORK'), valor: 'trabajo', icono: iconWorkN },
+  ]
 
   useEffect(() => {
     setToken(sessionStorage.getItem('authToken') || '')
@@ -82,13 +92,13 @@ export default function Busqueda() {
 
   return (
     <div className="busqueda-page">
-      <header className="mobile-header" aria-label="Búsqueda">
+      <header className="mobile-header" aria-label={txt('Búsqueda', 'Search')}>
         {hayFiltro ? (
           <button
             type="button"
             className="mobile-header__left"
             onClick={() => navigate('/buscar')}
-            aria-label="Volver a búsqueda"
+            aria-label={txt('Volver a búsqueda', 'Back to search')}
           >
             ←
           </button>
@@ -98,7 +108,7 @@ export default function Busqueda() {
         <button
           type="button"
           className="logo-button"
-          aria-label="Ir a inicio"
+          aria-label={txt('Ir a inicio', 'Go home')}
           onClick={() => navigate('/inicio')}
         >
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
@@ -107,7 +117,7 @@ export default function Busqueda() {
       </header>
 
       <h2 className="busqueda__title">
-        {hayFiltro ? 'RESULTADOS' : 'BÚSQUEDA'}
+        {hayFiltro ? txt('RESULTADOS', 'RESULTS') : txt('BÚSQUEDA', 'SEARCH')}
       </h2>
 
       {/* Input siempre visible — solo se oculta cuando hay filtro de categoría activo sin texto */}
@@ -117,18 +127,18 @@ export default function Busqueda() {
             <input
               className="busqueda__input"
               type="text"
-              placeholder="Introduce el nombre de la cápsula"
+              placeholder={txt('Introduce el nombre de la cápsula', 'Enter the capsule name')}
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
-              aria-label="Buscar cápsulas"
+              aria-label={txt('Buscar cápsulas', 'Search capsules')}
             />
             {inputQuery && (
               <button
                 type="button"
                 className="busqueda__clear-btn"
                 onClick={() => { setInputQuery(''); if (hayFiltro) navigate('/buscar') }}
-                aria-label="Limpiar texto"
+                aria-label={txt('Limpiar texto', 'Clear text')}
               >
                 ×
               </button>
@@ -138,7 +148,7 @@ export default function Busqueda() {
               className="busqueda__buscar-btn"
               onClick={handleBuscar}
             >
-              Buscar
+              {txt('Buscar', 'Search')}
             </button>
           </div>
         </div>
@@ -153,7 +163,7 @@ export default function Busqueda() {
               type="button"
               className="pill-categoria__close"
               onClick={() => navigate('/buscar')}
-              aria-label={`Quitar filtro ${categoriaLabel}`}
+              aria-label={`${txt('Quitar filtro', 'Remove filter')} ${categoriaLabel}`}
             >
               ×
             </button>
@@ -164,15 +174,15 @@ export default function Busqueda() {
       {/* Grid de categorías: solo cuando no hay filtro activo */}
       {!hayFiltro && (
         <div className="busqueda__categorias-wrap">
-          <p className="busqueda__categorias-hint">Elige una categoría y encuentra tu cápsula</p>
+          <p className="busqueda__categorias-hint">{txt('Elige una categoría y encuentra tu cápsula', 'Choose a category and find your capsule')}</p>
           <div className="busqueda__categorias-grid">
-            {categorias.map((cat) => (
+            {categoriasUi.map((cat) => (
               <button
                 key={cat.valor}
                 type="button"
                 className="busqueda__categoria-card"
                 onClick={() => handleCategoriaClick(cat.valor)}
-                aria-label={`Filtrar por ${cat.label}`}
+                aria-label={`${txt('Filtrar por', 'Filter by')} ${cat.label}`}
               >
                 <div className="busqueda__categoria-icono">
                   <img src={cat.icono} alt="" width={32} height={32} aria-hidden="true" />
@@ -207,7 +217,7 @@ export default function Busqueda() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') navigate(`/capsulas/${capsula._id}`)
                   }}
-                  aria-label={capsula.title || 'Abrir cápsula'}
+                  aria-label={capsula.title || txt('Abrir cápsula', 'Open capsule')}
                 >
                   <div className="thumb-wrap">
                     <div
@@ -229,9 +239,9 @@ export default function Busqueda() {
             </section>
           ) : (
             <p className="busqueda__no-results">
-              No se encontraron cápsulas
+              {txt('No se encontraron cápsulas', 'No capsules found')}
               {activeQ && ` para "${activeQ}"`}
-              {activeCategory && categoriaLabel && ` en ${categoriaLabel}`}
+              {activeCategory && categoriaLabel && ` ${txt('en', 'in')} ${categoriaLabel}`}
             </p>
           )}
         </div>

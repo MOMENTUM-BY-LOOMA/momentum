@@ -11,7 +11,7 @@
   border: none;
   cursor: pointer;
   padding: 4px 8px;
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1;
   position: relative;
   display: flex;
@@ -24,7 +24,7 @@
   right: 0;
   background: #e53e3e;
   color: #fff;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   border-radius: 99px;
   min-width: 16px;
@@ -62,7 +62,7 @@
 }
 
 .notification-bell__panel-header strong {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--color-texto-principal);
 }
@@ -71,7 +71,7 @@
   background: none;
   border: none;
   color: var(--color-texto-secundario);
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
   padding: 0;
   font-family: inherit;
@@ -85,7 +85,7 @@
 
 .notification-bell__status {
   padding: 20px 16px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-texto-secundario);
   text-align: center;
   margin: 0;
@@ -130,13 +130,13 @@
 }
 
 .notification-bell__item-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-texto-principal);
   line-height: 1.4;
 }
 
 .notification-bell__item-meta {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--color-texto-secundario);
 }
 
@@ -183,7 +183,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 700;
   color: var(--color-texto-principal);
   flex-shrink: 0;
@@ -196,7 +196,7 @@
 }
 
 .nb-sharing-modal__text {
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--color-texto-principal);
   margin: 0;
   line-height: 1.45;
@@ -212,7 +212,7 @@
   padding: 14px;
   border: none;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;

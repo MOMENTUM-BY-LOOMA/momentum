@@ -28,6 +28,7 @@ export type ApiMediaItem = {
   _id?: string
   type?: 'image' | 'video' | 'audio' | 'file' | '3d'
   url: string
+  author?: ApiUser | string
   modelFormat?: '' | 'glb' | 'gltf' | 'obj' | 'fbx' | 'stl'
   fileSize?: number
   title?: string

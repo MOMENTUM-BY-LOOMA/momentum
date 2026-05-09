@@ -1,9 +1,12 @@
+import type { CSSProperties } from 'react'
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 
 type CapsulaThumb3DProps = {
   modelUrl: string
-  title: string
+  title?: string
+  className?: string
+  style?: CSSProperties
 }
 
 function PlaceholderBox() {
@@ -15,11 +18,16 @@ function PlaceholderBox() {
   )
 }
 
-function CapsulaThumb3D({ modelUrl, title }: CapsulaThumb3DProps) {
+function CapsulaThumb3D({ modelUrl, title = 'Modelo 3D', className, style }: CapsulaThumb3DProps) {
   // For now, just show a placeholder
   // TODO: Implement 3D model loading when models are properly configured
   return (
-    <div className="capsula-thumb capsula-thumb--3d" aria-label={`Miniatura 3D de ${title}`} data-model-url={modelUrl}>
+    <div
+      className={`capsula-thumb capsula-thumb--3d${className ? ` ${className}` : ''}`}
+      aria-label={`Miniatura 3D de ${title}`}
+      data-model-url={modelUrl}
+      style={style}
+    >
       <Canvas camera={{ position: [0, 0, 2.2], fov: 45 }} dpr={[1, 1.5]}>
         <ambientLight intensity={0.85} />
         <directionalLight position={[1.2, 1.8, 2.4]} intensity={1.1} />

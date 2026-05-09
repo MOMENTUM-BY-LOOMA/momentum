@@ -2,9 +2,12 @@ import { Fragment, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { logoMAsset } from '../img'
 import { fetchCapsules, fetchCurrentUser, fetchFriends, type ApiUser, type ApiCapsule } from '../services/api.ts'
+import { useTranslate } from '../services/useTranslate'
 
 function ProfilePage() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [user, setUser] = useState<ApiUser | null>(null)
   const [friendsCount, setFriendsCount] = useState(0)
   const [capsules, setCapsules] = useState<ApiCapsule[]>([])
@@ -37,31 +40,31 @@ function ProfilePage() {
   if (loading) {
     return (
       <Fragment>
-        <header className="mobile-header" aria-label="Mi perfil">
+        <header className="mobile-header" aria-label={txt('Mi perfil', 'My profile')}>
           <span className="mobile-header__left" aria-hidden="true" />
-          <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+          <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
             <img src={logoMAsset} alt="Momentum" />
           </Link>
-          <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label="Ajustes">⚙️</button>
+          <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label={txt('Ajustes', 'Settings')}>⚙️</button>
         </header>
-        <div className="page-layout"><p>Cargando...</p></div>
+        <div className="page-layout"><p>{txt('Cargando...', 'Loading...')}</p></div>
       </Fragment>
     )
   }
 
   return (
     <Fragment>
-      <header className="mobile-header" aria-label="Mi perfil">
+      <header className="mobile-header" aria-label={txt('Mi perfil', 'My profile')}>
         <span className="mobile-header__left" aria-hidden="true" />
-        <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+        <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
           <img src={logoMAsset} alt="Momentum" />
         </Link>
-        <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label="Ajustes">⚙️</button>
+        <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label={txt('Ajustes', 'Settings')}>⚙️</button>
       </header>
       <div className="profile-page">
       {/* Header */}
       <header className="profile-header">
-        <h1 className="profile-header__title">MI PERFIL</h1>
+        <h1 className="profile-header__title">{txt('MI PERFIL', 'MY PROFILE')}</h1>
         <div className="profile-header__logo">M</div>
         <button className="profile-header__settings" onClick={() => navigate('/ajustes')}>
           ⚙️
@@ -76,16 +79,16 @@ function ProfilePage() {
           className="profile-info__image"
         />
         <div className="profile-info__username">
-          @{user?.name?.toLowerCase().replace(/\s+/g, '') || 'usuario'}
+          @{user?.name?.toLowerCase().replace(/\s+/g, '') || txt('usuario', 'user')}
         </div>
         <div className="profile-info__stats">
-          {friendsCount} amigos
+          {friendsCount} {txt('amigos', 'friends')}
         </div>
       </section>
 
       {/* Recent Memories */}
       <section className="profile-memories">
-        <h2 className="profile-memories__title">Últimos recuerdos</h2>
+        <h2 className="profile-memories__title">{txt('Últimos recuerdos', 'Recent memories')}</h2>
 
         {recentCapsules.length > 0 ? (
           <>
@@ -116,13 +119,13 @@ function ProfilePage() {
                 className="profile-memories__more"
                 onClick={() => navigate('/capsulas')}
               >
-                Ver más &gt;
+                {txt('Ver más', 'View more')} &gt;
               </button>
             )}
           </>
         ) : (
           <p className="profile-memories__empty">
-            No tienes recuerdos aún. ¡Crea tu primera cápsula!
+            {txt('No tienes recuerdos aún. ¡Crea tu primera cápsula!', 'You do not have any memories yet. Create your first capsule!')}
           </p>
         )}
       </section>

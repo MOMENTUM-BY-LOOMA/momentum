@@ -7,6 +7,7 @@ import {
   markNotificationRead,
   type ApiNotification,
 } from '../services/api.ts'
+import { useTranslate } from '../services/useTranslate'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
 
@@ -21,17 +22,17 @@ function resolveUrl(url: string) {
   return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
 }
 
-function resolveNotificationText(notification: ApiNotification) {
+function resolveNotificationText(notification: ApiNotification, fallbackActor: string) {
   const actorName = typeof notification.actor === 'object' && notification.actor
     ? notification.actor.name
-    : 'Alguien'
+    : fallbackActor
   const message = notification.data?.message ?? notification.type.replaceAll('_', ' ')
   return `${actorName} ${message}`
 }
 
-function formatDate(value?: string) {
-  if (!value) return 'Hace un momento'
-  return new Intl.DateTimeFormat('es-ES', {
+function formatDate(value: string | undefined, locale: string, nowLabel: string) {
+  if (!value) return nowLabel
+  return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
@@ -40,6 +41,8 @@ function formatDate(value?: string) {
 }
 
 function NotificationBell({ token, iconSrc }: NotificationBellProps) {
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
@@ -99,7 +102,7 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
       setUnreadCount(0)
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudieron marcar como leídas')
+      setError(err instanceof Error ? err.message : txt('No se pudieron marcar como leidas', 'Could not mark all as read'))
     }
   }
 
@@ -111,7 +114,7 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
       )
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo actualizar la notificación')
+      setError(err instanceof Error ? err.message : txt('No se pudo actualizar la notificacion', 'Could not update notification'))
     }
   }
 
@@ -155,7 +158,7 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
   const actor = sharingModal
     ? (typeof sharingModal.actor === 'object' ? sharingModal.actor : null)
     : null
-  const actorName = actor?.name ?? 'Alguien'
+  const actorName = actor?.name ?? txt('Alguien', 'Someone')
   const actorAvatar = actor?.avatar ?? null
 
   return (
@@ -165,7 +168,7 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
           type="button"
           className="notification-bell__button"
           onClick={() => setOpen((prev) => !prev)}
-          aria-label="Abrir notificaciones"
+          aria-label={txt('Abrir notificaciones', 'Open notifications')}
           aria-expanded={open}
         >
           {iconSrc
@@ -177,18 +180,18 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
         {open && (
           <div className="notification-bell__panel">
             <div className="notification-bell__panel-header">
-              <strong>Notificaciones</strong>
+              <strong>{txt('Notificaciones', 'Notifications')}</strong>
               <button type="button" className="notification-bell__link" onClick={handleMarkAllRead}>
-                Marcar todo como leído
+                {txt('Marcar todo como leido', 'Mark all as read')}
               </button>
             </div>
 
             {error && <p className="notification-bell__status">{error}</p>}
 
             {loading ? (
-              <p className="notification-bell__status">Cargando...</p>
+              <p className="notification-bell__status">{txt('Cargando...', 'Loading...')}</p>
             ) : notifications.length === 0 ? (
-              <p className="notification-bell__status">No tienes notificaciones.</p>
+              <p className="notification-bell__status">{txt('No tienes notificaciones.', 'You have no notifications.')}</p>
             ) : (
               <ul className="notification-bell__list">
                 {notifications.map((notification) => (
@@ -202,10 +205,10 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
                       onClick={() => handleMarkRead(notification._id)}
                     >
                       <span className="notification-bell__item-text">
-                        {resolveNotificationText(notification)}
+                        {resolveNotificationText(notification, txt('Alguien', 'Someone'))}
                       </span>
                       <span className="notification-bell__item-meta">
-                        {formatDate(notification.createdAt)}
+                        {formatDate(notification.createdAt, language === 'en' ? 'en-US' : 'es-ES', txt('Hace un momento', 'Just now'))}
                       </span>
                     </button>
                   </li>
@@ -227,7 +230,7 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
                   : <span>{actorName.charAt(0).toUpperCase()}</span>}
               </div>
               <p className="nb-sharing-modal__text">
-                <strong>{actorName}</strong> te ha compartido una cápsula
+                <strong>{actorName}</strong> {txt('te ha compartido una capsula', 'shared a capsule with you')}
               </p>
             </div>
 
@@ -238,14 +241,14 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
                 onClick={() => handleRejectSharing(sharingModal)}
                 disabled={rejectingId === sharingModal._id}
               >
-                Rechazar
+                {txt('Rechazar', 'Reject')}
               </button>
               <button
                 type="button"
                 className="nb-sharing-modal__btn nb-sharing-modal__btn--accept"
                 onClick={() => handleAcceptSharing(sharingModal)}
               >
-                Aceptar
+                {txt('Aceptar', 'Accept')}
               </button>
             </div>
           </div>

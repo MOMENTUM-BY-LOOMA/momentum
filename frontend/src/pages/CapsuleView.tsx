@@ -2,6 +2,7 @@ import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { logoMAsset } from '../img'
 import { fetchCapsuleById, type ApiCapsule, type ApiMediaItem } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 import { Model3DViewer } from '../3d/Model3DViewer'
 import '../styles/capsule-view.css'
 
@@ -43,25 +44,27 @@ function AvatarStack({ users, max = 4, size = 28 }: { users: any[]; max?: number
 function CapsuleView() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [capsule, setCapsule] = useState<ApiCapsule | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!id) { setError('ID de cápsula no encontrado'); setLoading(false); return }
+    if (!id) { setError(txt('ID de capsula no encontrado', 'Capsule ID not found')); setLoading(false); return }
     const token = sessionStorage.getItem('authToken')
     if (!token) { navigate('/login', { replace: true }); return }
     let active = true
     fetchCapsuleById(id)
       .then((data) => { if (active) { setCapsule(data); setLoading(false) } })
-      .catch(() => { if (active) { setError('No se pudo cargar la cápsula'); setLoading(false) } })
+      .catch(() => { if (active) { setError(txt('No se pudo cargar la capsula', 'Could not load capsule')); setLoading(false) } })
     return () => { active = false }
-  }, [id, navigate])
+  }, [id, navigate, language])
 
   const header = (
-    <header className="mobile-header" aria-label="Vista previa de cápsula">
-      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
-      <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+    <header className="mobile-header" aria-label={txt('Vista previa de capsula', 'Capsule preview')}>
+      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver', 'Back')}>←</button>
+      <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
         <img src={logoMAsset} alt="Momentum" />
       </Link>
       <span className="mobile-header__right" aria-hidden="true" />
@@ -74,7 +77,7 @@ function CapsuleView() {
         <span className="mobile-header__left" />
         <span className="mobile-header__right" />
       </header>
-      <section className="page-layout"><p>Cargando...</p></section>
+      <section className="page-layout"><p>{txt('Cargando...', 'Loading...')}</p></section>
     </Fragment>
   )
 
@@ -112,13 +115,13 @@ function CapsuleView() {
           className="capsule-view__button"
           onClick={() => navigate(`/capsulas/${id}/interior`)}
         >
-          Ver Cápsula
+          {txt('Ver Capsula', 'View Capsule')}
         </button>
 
         {/* Sección compartida */}
         {sharedUsers.length > 0 && (
-          <section className="capsule-view__shared-section" aria-label="Cápsula compartida con">
-            <span className="capsule-view__shared-pill">Cápsula compartida</span>
+          <section className="capsule-view__shared-section" aria-label={txt('Capsula compartida con', 'Capsule shared with')}>
+            <span className="capsule-view__shared-pill">{txt('Capsula compartida', 'Shared capsule')}</span>
             <div className="capsule-view__shared-users">
               {sharedUsers.map((user) => {
                 const u = typeof user === 'string' ? null : user

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import HeaderConAtras from '../components/HeaderConAtras'
 import { fetchCurrentUser, updateCurrentUserPreferences, type ApiUserPreferences } from '../services/api'
 import { applyUserPreferences, normalizeUserPreferences, type NormalizedUserPreferences } from '../services/userPreferences'
+import { useTranslate } from '../services/useTranslate'
 
 const DEFAULT_PREFS: NormalizedUserPreferences = {
   theme: 'claro',
@@ -15,47 +16,12 @@ const DEFAULT_PREFS: NormalizedUserPreferences = {
 
 function SettingsPreferencesPage() {
   const navigate = useNavigate()
+  const { t } = useTranslate()
   const [originalPrefs, setOriginalPrefs] = useState<NormalizedUserPreferences>(DEFAULT_PREFS)
   const [prefs, setPrefs] = useState<NormalizedUserPreferences>(DEFAULT_PREFS)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-
-  const ui = prefs.language === 'en'
-    ? {
-      title: 'SELECT YOUR PREFERENCES',
-      back: '← BACK',
-      language: 'Language',
-      textSize: 'Text size',
-      small: 'Small',
-      normal: 'Normal',
-      large: 'Large',
-      reduceAnimations: 'Reduce animations',
-      emphasizeFocus: 'Emphasize focus',
-      easyRead: 'Easy read mode',
-      save: 'SAVE CHANGES',
-      saving: 'SAVING...',
-      saved: 'Preferences saved',
-      loadError: 'Could not load preferences',
-      saveError: 'Could not save preferences',
-    }
-    : {
-      title: 'SELECCIONA TUS PREFERENCIAS',
-      back: '← ATRAS',
-      language: 'Idioma',
-      textSize: 'Tamano del texto',
-      small: 'Pequeno',
-      normal: 'Normal',
-      large: 'Grande',
-      reduceAnimations: 'Reducir animaciones',
-      emphasizeFocus: 'Enfatizar foco',
-      easyRead: 'Modo lectura facil',
-      save: 'GUARDAR CAMBIOS',
-      saving: 'GUARDANDO...',
-      saved: 'Preferencias guardadas',
-      loadError: 'No se pudieron cargar las preferencias',
-      saveError: 'No se pudieron guardar',
-    }
 
   useEffect(() => {
     const load = async () => {
@@ -69,7 +35,7 @@ function SettingsPreferencesPage() {
         setPrefs(userPrefs)
         applyUserPreferences(userPrefs)
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : ui.loadError)
+        setError(loadError instanceof Error ? loadError.message : t('loadError'))
       }
     }
 
@@ -98,11 +64,12 @@ function SettingsPreferencesPage() {
         sessionStorage.setItem('authUser', JSON.stringify(updatedUser))
         applyUserPreferences(updatedPrefs)
         window.dispatchEvent(new Event('authUserChanged'))
+        window.dispatchEvent(new Event('preferencesUpdated'))
       }
 
-      setSuccess(ui.saved)
+      setSuccess(t('saved'))
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : ui.saveError)
+      setError(saveError instanceof Error ? saveError.message : t('saveError'))
     } finally {
       setLoading(false)
     }
@@ -113,34 +80,34 @@ function SettingsPreferencesPage() {
       <HeaderConAtras onAtras={() => navigate(-1)} />
       <section className="settings-mobile" aria-label="Ajustes de preferencias">
 
-      <h1 className="settings-title">{ui.title}</h1>
+      <h1 className="settings-title">{t('selectPreferences')}</h1>
 
       <div className="settings-form settings-form--spacious">
-        <label className="settings-label" htmlFor="settings-language">{ui.language}</label>
+        <label className="settings-label" htmlFor="settings-language">{t('language')}</label>
         <select
           id="settings-language"
           className="settings-select"
           value={prefs.language}
           onChange={(event) => setPrefs((prev) => ({ ...prev, language: event.target.value as 'es' | 'en' }))}
         >
-          <option value="es">Espanol</option>
-          <option value="en">English</option>
+          <option value="es">{t('spanish')}</option>
+          <option value="en">{t('english')}</option>
         </select>
 
-        <label className="settings-label" htmlFor="settings-text-size">{ui.textSize}</label>
+        <label className="settings-label" htmlFor="settings-text-size">{t('textSize')}</label>
         <select
           id="settings-text-size"
           className="settings-select"
           value={prefs.textSize}
           onChange={(event) => setPrefs((prev) => ({ ...prev, textSize: event.target.value as 'small' | 'normal' | 'large' }))}
         >
-          <option value="small">{ui.small}</option>
-          <option value="normal">{ui.normal}</option>
-          <option value="large">{ui.large}</option>
+          <option value="small">{t('small')}</option>
+          <option value="normal">{t('normal')}</option>
+          <option value="large">{t('large')}</option>
         </select>
 
         <div className="settings-switch-row">
-          <span>{ui.reduceAnimations}</span>
+          <span>{t('reduceAnimations')}</span>
           <label className="settings-switch">
             <input
               type="checkbox"
@@ -152,7 +119,7 @@ function SettingsPreferencesPage() {
         </div>
 
         <div className="settings-switch-row">
-          <span>{ui.emphasizeFocus}</span>
+          <span>{t('emphasizeFocus')}</span>
           <label className="settings-switch">
             <input
               type="checkbox"
@@ -164,7 +131,7 @@ function SettingsPreferencesPage() {
         </div>
 
         <div className="settings-switch-row">
-          <span>{ui.easyRead}</span>
+          <span>{t('easyRead')}</span>
           <label className="settings-switch">
             <input
               type="checkbox"
@@ -179,7 +146,7 @@ function SettingsPreferencesPage() {
         {success ? <p className="settings-success">{success}</p> : null}
 
         <button type="button" className="settings-btn settings-btn--primary settings-btn--full" onClick={handleSave} disabled={loading}>
-          {loading ? ui.saving : ui.save}
+          {loading ? t('saving') : t('saveChanges')}
         </button>
       </div>
       </section>

@@ -600,7 +600,7 @@
   align-items: center;
   text-decoration: none;
   color: #1a1a1a;
-  font-size: 14px;
+  font-size: 0.875rem;
   letter-spacing: 0.08em;
   border: none;
   background: transparent;
@@ -644,7 +644,7 @@
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .settings-form {
@@ -671,7 +671,7 @@
   border: 1px solid #CCCCCC;
   border-radius: 8px;
   padding: 12px;
-  font-size: 16px;
+  font-size: 1rem;
   width: 100%;
   box-sizing: border-box;
   min-height: 44px;
@@ -701,7 +701,7 @@
   background: transparent;
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   cursor: pointer;
 }
 
@@ -745,7 +745,7 @@
   border-radius: 6px;
   min-height: 44px;
   padding: 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
@@ -862,7 +862,7 @@
   margin: 0 0 24px;
   text-align: center;
   text-transform: uppercase;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -894,7 +894,7 @@
 .mi-perfil__title {
   margin: 0;
   font-family: var(--title-font);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   justify-self: start;
@@ -958,7 +958,7 @@
 
 .mi-perfil__photo-fallback span {
   font-family: var(--title-font);
-  font-size: 64px;
+  font-size: 4rem;
   color: #888;
 }
 
@@ -967,7 +967,7 @@
   display: flex;
   gap: 32px;
   align-items: center;
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: #1A1A1A;
 }
 
@@ -977,7 +977,7 @@
 
 .mi-perfil__recuerdos h2 {
   margin: 0 0 12px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -1019,17 +1019,29 @@
   border-radius: 50%;
 }
 
+.capsula-thumb--3d.capsula-thumb--3d--full {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.capsula-thumb--3d.capsula-thumb--3d--full canvas {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0;
+}
+
 .capsula-thumb--fallback {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #7a7062;
   font-family: var(--title-font);
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 
 .mi-perfil__empty {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #5d5a54;
   padding: 10px 0;
 }
@@ -1043,7 +1055,7 @@
   border: none;
   background: transparent;
   color: #1A1A1A;
-  font-size: 14px;
+  font-size: 0.875rem;
   cursor: pointer;
   text-decoration: none;
 }
@@ -1212,7 +1224,7 @@
   color: var(--color-texto-principal);
   border-radius: 8px;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   text-align: left;
   display: flex;
   align-items: center;
@@ -1239,7 +1251,7 @@
   margin: 0;
   color: var(--color-texto-principal);
   font-family: var(--title-font);
-  font-size: 17px;
+  font-size: 1.0625rem;
   text-transform: uppercase;
 }
 
@@ -1259,7 +1271,7 @@
 }
 
 .header-con-titulo__icon-button {
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 .header-con-atras {
@@ -1281,13 +1293,13 @@
 }
 
 .header-con-atras__back-arrow {
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1;
   color: var(--color-texto-principal);
 }
 
 .header-con-atras__back-text {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--color-texto-secundario);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1400,7 +1412,7 @@
 }
 .todas-capsulas__title {
   font-family: var(--title-font);
-  font-size: 22px;
+  font-size: 1.375rem;
   text-align: center;
   padding: 16px 20px 12px;
   margin: 0;
@@ -1416,7 +1428,7 @@
   border: 1.5px solid #1A1A1A;
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 16px;
+  font-size: 1rem;
   width: 100%;
   box-sizing: border-box;
   flex: 1;
@@ -1429,7 +1441,7 @@
   right: 14px;
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 1.25rem;
   cursor: pointer;
   padding: 0;
   color: #1A1A1A;
@@ -1447,12 +1459,12 @@
   border: 1px solid var(--color-borde);
   border-radius: 99px;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .search-pill__clear {
   border: none;
   background: transparent;
-  font-size: 16px;
+  font-size: 1rem;
   padding: 0 6px;
   cursor: pointer;
 }
@@ -1461,7 +1473,7 @@
   color: var(--color-boton-texto);
   border-radius: 8px;
   padding: 8px 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
   border: none;
   cursor: pointer;
 }
@@ -1509,7 +1521,7 @@
 .todas-capsulas__empty {
   text-align: center;
   color: var(--color-texto-secundario);
-  font-size: 15px;
+  font-size: 0.9375rem;
   padding: 40px 20px;
 }
 .todas-capsulas__create {
@@ -1526,7 +1538,7 @@
   margin: 0;
   padding: 8px 0 16px;
   font-family: var(--title-font);
-  font-size: 20px;
+  font-size: 1.25rem;
   text-align: center;
 }
 
@@ -1585,11 +1597,11 @@
   background: #d5ccc0;
   color: #1a1a1a;
   font-family: var(--title-font);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .mis-amigos-request-row__name {
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: #1a1a1a;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -1603,7 +1615,7 @@
 }
 
 .mis-amigos-request-row__pending {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #7a746a;
 }
 
@@ -1611,7 +1623,7 @@
   margin: 0;
   padding: 0 20px 12px;
   color: #5d5a54;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .mis-amigos-row {
@@ -1637,7 +1649,7 @@
   background: #d5ccc0;
   color: #1a1a1a;
   font-family: var(--title-font);
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 .mis-amigos-row__capsules {
@@ -1657,7 +1669,7 @@
   border: none;
   background: transparent;
   color: #1a1a1a;
-  font-size: 13px;
+  font-size: 0.8125rem;
   white-space: nowrap;
   padding: 0;
   cursor: pointer;
@@ -1673,7 +1685,7 @@
 .mis-amigos-page__add-title {
   margin: 0 0 6px;
   font-family: var(--title-font);
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 
 .mis-amigos-page__row {
@@ -1696,7 +1708,7 @@
   background: #f5f0e8;
   padding: 10px 12px;
   font: inherit;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .mis-amigos-page__button {
@@ -1726,7 +1738,7 @@
   height: 36px;
   border-radius: 10px;
   padding: 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1;
 }
 
@@ -1785,7 +1797,7 @@
   background: #d5ccc0;
   color: #1a1a1a;
   font-family: var(--title-font);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .mis-amigos-page__search-username {
@@ -1817,14 +1829,14 @@
 .mis-amigos-page__search-empty {
   margin: 0;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #5d5a54;
   background: var(--color-fondo-secundario);
 }
 
 .mis-amigos-page__message {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .mis-amigos-page__message--success {
@@ -1859,7 +1871,7 @@
 }
 
 .perfil-amigo-page__back-label {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: #888888;
   text-align: center;
 }
@@ -1914,7 +1926,7 @@
   justify-content: center;
   color: #888888;
   font-family: var(--title-font);
-  font-size: 64px;
+  font-size: 4rem;
 }
 
 .perfil-amigo-page__badge {
@@ -1925,7 +1937,7 @@
   color: #ffffff;
   border-radius: 99px;
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .perfil-amigo-page__info {
@@ -1933,7 +1945,7 @@
   display: flex;
   gap: 32px;
   align-items: center;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .perfil-amigo-page__common {
@@ -1942,7 +1954,7 @@
 
 .perfil-amigo-page__common h2 {
   margin: 0 0 12px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 500;
 }
 
@@ -1961,7 +1973,7 @@
 .perfil-amigo-page__empty {
   margin: 0;
   color: #5d5a54;
-  font-size: 14px;
+  font-size: 0.875rem;
   padding: 8px 0;
 }
 
@@ -3925,7 +3937,7 @@
 /* ── CreateCapsuleFlowPage ── */
 .create-capsule__title {
   font-family: var(--title-font);
-  font-size: 22px;
+  font-size: 1.375rem;
   text-align: center;
   margin: 0 0 20px;
   color: var(--color-texto-principal);
@@ -3958,13 +3970,13 @@
 .create-capsule__section-title {
   margin: 0;
   font-family: var(--title-font);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-texto-principal);
 }
 .create-capsule__section-desc {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-texto-secundario);
   line-height: 1.4;
 }
@@ -4006,12 +4018,12 @@
   color: var(--color-boton-primario);
 }
 .create-capsule__upload-label {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-boton-primario);
 }
 .create-capsule__upload-hint {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-texto-secundario);
 }
 

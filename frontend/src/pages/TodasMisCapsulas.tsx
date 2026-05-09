@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchCapsules, getCapsuleThumb, type ApiCapsule } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 import { logoMAsset } from '../img'
 import CapsulaThumb from '../components/CapsulaThumb'
 
 export default function TodasMisCapsulas() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [capsulas, setCapsulas] = useState<ApiCapsule[]>([])
   const [busqueda, setBusqueda] = useState('')
   const [loading, setLoading] = useState(true)
@@ -40,13 +43,13 @@ export default function TodasMisCapsulas() {
     })
   }, [capsulas, busqueda])
 
-  const title = busqueda.trim() === '' ? 'TODAS TUS CÁPSULAS' : 'TODOS LOS RESULTADOS'
+  const title = busqueda.trim() === '' ? txt('TODAS TUS CAPSULAS', 'ALL YOUR CAPSULES') : txt('TODOS LOS RESULTADOS', 'ALL RESULTS')
 
   return (
     <div className="todas-capsulas-page">
-      <header className="mobile-header" aria-label="Mis capsulas">
-        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
-        <a href="/inicio" className="logo-button" aria-label="Ir a inicio">
+      <header className="mobile-header" aria-label={txt('Mis capsulas', 'My capsules')}>
+        <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver atras', 'Go back')}>←</button>
+        <a href="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
         </a>
         <span className="mobile-header__right" aria-hidden="true" />
@@ -57,24 +60,24 @@ export default function TodasMisCapsulas() {
       <div className={`todas-capsulas__search ${busqueda.trim() ? 'is-active' : ''}`}>
         <input
           className="todas-capsulas__input"
-          placeholder="Buscar por categoría"
+          placeholder={txt('Buscar por categoria', 'Search by category')}
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          aria-label="Buscar cápsulas"
+          aria-label={txt('Buscar capsulas', 'Search capsules')}
         />
         {busqueda.trim() && (
-          <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">×</button>
+          <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label={txt('Limpiar busqueda', 'Clear search')}>×</button>
         )}
       </div>
 
       <main className="todas-capsulas__grid-wrap">
         {loading ? null : capsulasFiltradas.length === 0 ? (
           busqueda.trim() ? (
-            <p className="todas-capsulas__empty">No se encontraron cápsulas en '{busqueda}'</p>
+            <p className="todas-capsulas__empty">{txt(`No se encontraron capsulas en '${busqueda}'`, `No capsules found in '${busqueda}'`)}</p>
           ) : (
             <div className="todas-capsulas__empty">
-              <p>Aún no tienes cápsulas. ¡Crea tu primera!</p>
-              <button type="button" className="todas-capsulas__create" onClick={() => navigate('/crear-capsula')}>Crear cápsula</button>
+              <p>{txt('Aun no tienes capsulas. Crea tu primera!', 'You have no capsules yet. Create your first one!')}</p>
+              <button type="button" className="todas-capsulas__create" onClick={() => navigate('/crear-capsula')}>{txt('Crear capsula', 'Create capsule')}</button>
             </div>
           )
         ) : (
@@ -89,7 +92,7 @@ export default function TodasMisCapsulas() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') navigate(`/capsulas/${capsula._id}`)
                 }}
-                aria-label={capsula.title || 'Abrir cápsula'}
+                aria-label={capsula.title || txt('Abrir capsula', 'Open capsule')}
               >
                 <div className="thumb-wrap">
                   <div

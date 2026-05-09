@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useRef } from 'react'
 import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
 import type { ApiUser } from '../services/api'
 import { fetchFriends } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 
 interface CreateCapsuleStep3Props {
   form: CreateCapsuleFormState
@@ -27,10 +28,16 @@ function CreateCapsuleStep3({
   currentUser,
   isLoading,
 }: CreateCapsuleStep3Props) {
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<FriendSearch[]>([])
   const [openRoleSelect, setOpenRoleSelect] = useState<string | null>(null)
-  const [shareButtonText, setShareButtonText] = useState('Compartir')
+  const [shareButtonText, setShareButtonText] = useState(language === 'en' ? 'Share' : 'Compartir')
+    useEffect(() => {
+      setShareButtonText(language === 'en' ? 'Share' : 'Compartir')
+    }, [language])
+
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -121,9 +128,9 @@ function CreateCapsuleStep3({
       case 'admin':
         return 'Admin'
       case 'editar':
-        return 'Editar'
+        return txt('Editar', 'Edit')
       case 'ver':
-        return 'Ver'
+        return txt('Ver', 'View')
     }
   }
 
@@ -134,20 +141,20 @@ function CreateCapsuleStep3({
     if (navigator.share) {
       navigator
         .share({
-          title: 'Únete a Momentum',
+          title: txt('Únete a Momentum', 'Join Momentum'),
           url: profileUrl,
         })
         .catch(() => {
           // Si el usuario cancela, usar el fallback
           navigator.clipboard.writeText(profileUrl)
-          setShareButtonText('¡Enlace copiado!')
-          setTimeout(() => setShareButtonText('Compartir'), 2000)
+          setShareButtonText(txt('¡Enlace copiado!', 'Link copied!'))
+          setTimeout(() => setShareButtonText(txt('Compartir', 'Share')), 2000)
         })
     } else {
       // Fallback: copiar al portapapeles
       navigator.clipboard.writeText(profileUrl)
-      setShareButtonText('¡Enlace copiado!')
-      setTimeout(() => setShareButtonText('Compartir'), 2000)
+      setShareButtonText(txt('¡Enlace copiado!', 'Link copied!'))
+      setTimeout(() => setShareButtonText(txt('Compartir', 'Share')), 2000)
     }
   }
 
@@ -160,14 +167,14 @@ function CreateCapsuleStep3({
         <div style={{ position: 'relative', marginBottom: '12px' }}>
           <input
             type="text"
-            placeholder="Buscar a tus amigos"
+            placeholder={txt('Buscar a tus amigos', 'Search your friends')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={isLoading}
             style={{
               width: '100%',
               padding: '10px 12px',
-              fontSize: '14px',
+              fontSize: '0.8750rem',
               backgroundColor: 'var(--color-fondo-secundario)',
               border: '1px solid var(--color-borde)',
               borderRadius: '6px',
@@ -176,7 +183,7 @@ function CreateCapsuleStep3({
               paddingLeft: '36px',
             }}
           />
-          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px' }}>🔍</span>
+          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '1rem' }}>🔍</span>
         </div>
 
         {/* Search Results */}
@@ -208,7 +215,7 @@ function CreateCapsuleStep3({
                     style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
                   />
                 )}
-                <span style={{ flex: 1, fontSize: '14px' }}>@{friend.username}</span>
+                <span style={{ flex: 1, fontSize: '0.8750rem' }}>@{friend.username}</span>
                 <button
                   type="button"
                   onClick={() => handleAddColaborador(friend)}
@@ -224,7 +231,7 @@ function CreateCapsuleStep3({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '16px',
+                    fontSize: '1rem',
                   }}
                 >
                   {isAlreadyAdded(friend.userId) ? '✓' : '+'}
@@ -236,8 +243,8 @@ function CreateCapsuleStep3({
 
         <div style={{ marginTop: '18px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <p style={{ fontSize: '13px', color: 'var(--color-texto-principal)', margin: 0 }}>
-              ¿No tiene cuenta?
+            <p style={{ fontSize: '0.8125rem', color: 'var(--color-texto-principal)', margin: 0 }}>
+              {txt('¿No tiene cuenta?', 'No account?')}
             </p>
             <button
               type="button"
@@ -255,17 +262,17 @@ function CreateCapsuleStep3({
                 borderRadius: '10px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 boxShadow: '0 2px 8px rgba(20, 38, 59, 0.16)',
-                fontSize: '14px',
+                fontSize: '0.8750rem',
                 lineHeight: 1,
               }}
             >
-              <span style={{ fontSize: '15px', fontFamily: 'serif' }}>{shareButtonText}</span>
-              <span style={{ fontSize: '16px', marginLeft: 'auto' }}>➜</span>
+              <span style={{ fontSize: '0.9375rem', fontFamily: 'serif' }}>{shareButtonText}</span>
+              <span style={{ fontSize: '1rem', marginLeft: 'auto' }}>➜</span>
             </button>
           </div>
           {!canFinishCapsule && (
-            <p style={{ fontSize: '12px', color: 'var(--color-texto-secundario)', margin: '8px 0 0 0' }}>
-              Antes de finalizar, añade amigos o comparte el enlace para quienes no tienen cuenta.
+            <p style={{ fontSize: '0.7500rem', color: 'var(--color-texto-secundario)', margin: '8px 0 0 0' }}>
+              {txt('Antes de finalizar, añade amigos o comparte el enlace para quienes no tienen cuenta.', 'Before finishing, add friends or share the link for people without an account.')}
             </p>
           )}
         </div>
@@ -281,8 +288,8 @@ function CreateCapsuleStep3({
           margin: '16px 20px',
         }}
       >
-        <p style={{ fontSize: '14px', fontWeight: 500, marginTop: 0, marginBottom: '12px', color: 'var(--color-texto-principal)' }}>
-          Colaboradores
+        <p style={{ fontSize: '0.8750rem', fontWeight: 500, marginTop: 0, marginBottom: '12px', color: 'var(--color-texto-principal)' }}>
+          {txt('Colaboradores', 'Collaborators')}
         </p>
 
         {form.colaboradores.map(colaborador => {
@@ -308,7 +315,7 @@ function CreateCapsuleStep3({
                 />
               )}
 
-              <span style={{ flex: 1, fontSize: '14px' }}>@{colaborador.username}</span>
+              <span style={{ flex: 1, fontSize: '0.8750rem' }}>@{colaborador.username}</span>
 
               {/* Selector de Rol */}
               <div style={{ position: 'relative' }}>
@@ -322,7 +329,7 @@ function CreateCapsuleStep3({
                     border: roleColor.border || 'none',
                     backgroundColor: roleColor.bg,
                     color: roleColor.text,
-                    fontSize: '12px',
+                    fontSize: '0.7500rem',
                     fontWeight: 500,
                     cursor: 'pointer',
                     display: 'flex',
@@ -359,7 +366,7 @@ function CreateCapsuleStep3({
                           width: '100%',
                           padding: '10px 16px',
                           textAlign: 'left',
-                          fontSize: '14px',
+                          fontSize: '0.8750rem',
                           background: 'none',
                           border: 'none',
                           cursor: 'pointer',
@@ -390,7 +397,7 @@ function CreateCapsuleStep3({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '18px',
+                  fontSize: '1.1250rem',
                 }}
               >
                 ×
@@ -413,11 +420,11 @@ function CreateCapsuleStep3({
             border: '1px solid var(--color-borde)',
             borderRadius: '8px',
             cursor: 'pointer',
-            fontSize: '16px',
+            fontSize: '1rem',
             fontWeight: 500,
           }}
         >
-          Atrás
+          {txt('Atrás', 'Back')}
         </button>
 
         <button
@@ -431,12 +438,12 @@ function CreateCapsuleStep3({
             border: 'none',
             borderRadius: '8px',
             cursor: isLoading || !canFinishCapsule ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
+            fontSize: '1rem',
             fontWeight: 500,
             minWidth: '140px',
           }}
         >
-          {isLoading ? 'Creando cápsula...' : 'Finalizar'}
+          {isLoading ? txt('Creando cápsula...', 'Creating capsule...') : txt('Finalizar', 'Finish')}
         </button>
       </div>
     </Fragment>

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
 import type { ApiUser } from '../services/api'
 import CreateCapsuleStep3 from './CreateCapsuleStep3'
+import { useTranslate } from '../services/useTranslate'
 
 interface CreateCapsuleStep2Props {
   form: CreateCapsuleFormState
@@ -12,8 +13,6 @@ interface CreateCapsuleStep2Props {
   isLoading: boolean
 }
 
-const CATEGORIES = ['Viajes', 'Estudio', 'Amigos', 'Familia', 'Otros']
-
 function CreateCapsuleStep2({
   form,
   updateForm,
@@ -22,6 +21,8 @@ function CreateCapsuleStep2({
   currentUser,
   isLoading,
 }: CreateCapsuleStep2Props) {
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const topRef = useRef<HTMLDivElement>(null)
   const sharingSectionRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState('')
@@ -53,23 +54,31 @@ function CreateCapsuleStep2({
     handleContinue()
   }
 
+  const categoriesUi = [
+    txt('Viajes', 'Travel'),
+    txt('Estudio', 'Study'),
+    txt('Amigos', 'Friends'),
+    txt('Familia', 'Family'),
+    txt('Otros', 'Other'),
+  ]
+
   return (
     <Fragment>
       <div ref={topRef} />
 
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-          Descripción
+        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8750rem', fontWeight: 500 }}>
+          {txt('Descripción', 'Description')}
         </label>
         <textarea
-          placeholder="De cuando fuimos a Lanzarote."
+          placeholder={txt('De cuando fuimos a Lanzarote.', 'When we went to Lanzarote.')}
           value={form.descripcion}
           onChange={(e) => updateForm({ descripcion: e.target.value })}
           disabled={isLoading}
           style={{
             width: '100%',
             padding: '12px',
-            fontSize: '16px',
+            fontSize: '1rem',
             minHeight: '120px',
             resize: 'none',
             backgroundColor: 'var(--color-fondo-secundario)',
@@ -84,8 +93,8 @@ function CreateCapsuleStep2({
 
       <div style={{ display: 'flex', gap: '10px', padding: '0 20px', marginBottom: '20px', alignItems: 'center' }}>
         <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-            Categoría
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8750rem', fontWeight: 500 }}>
+            {txt('Categoría', 'Category')}
           </label>
           <select
             value={form.categoria}
@@ -94,7 +103,7 @@ function CreateCapsuleStep2({
             style={{
               width: '100%',
               padding: '12px',
-              fontSize: '14px',
+              fontSize: '0.8750rem',
               backgroundColor: 'var(--color-fondo-secundario)',
               border: '1px solid var(--color-borde)',
               borderRadius: '8px',
@@ -102,8 +111,8 @@ function CreateCapsuleStep2({
               boxSizing: 'border-box',
             }}
           >
-            <option value="">Selecciona categoría</option>
-            {CATEGORIES.map((cat) => (
+            <option value="">{txt('Selecciona categoría', 'Select category')}</option>
+            {categoriesUi.map((cat) => (
               <option key={cat} value={cat.toLowerCase()}>
                 {cat}
               </option>
@@ -124,7 +133,7 @@ function CreateCapsuleStep2({
               disabled={isLoading}
               style={{ width: '20px', height: '20px', cursor: 'pointer' }}
             />
-            <span style={{ fontSize: '14px', fontWeight: 500 }}>Cápsula del tiempo</span>
+            <span style={{ fontSize: '0.8750rem', fontWeight: 500 }}>{txt('Cápsula del tiempo', 'Time capsule')}</span>
           </label>
         </div>
       </div>
@@ -142,8 +151,8 @@ function CreateCapsuleStep2({
             overflow: 'hidden',
           }}
         >
-          <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>Ajustes cápsula del tiempo</p>
-          <p style={{ fontSize: '12px', color: 'var(--color-texto-secundario)', marginBottom: '12px' }}>Abrir</p>
+          <p style={{ fontSize: '0.8750rem', fontWeight: 500, marginBottom: '4px' }}>{txt('Ajustes cápsula del tiempo', 'Time capsule settings')}</p>
+          <p style={{ fontSize: '0.7500rem', color: 'var(--color-texto-secundario)', marginBottom: '12px' }}>{txt('Abrir', 'Open')}</p>
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <select
@@ -157,15 +166,15 @@ function CreateCapsuleStep2({
               style={{
                 flex: 0.5,
                 padding: '10px',
-                fontSize: '14px',
+                fontSize: '0.8750rem',
                 backgroundColor: 'var(--color-fondo-principal)',
                 border: '1px solid var(--color-borde)',
                 borderRadius: '6px',
                 color: 'var(--color-texto-principal)',
               }}
             >
-              <option value="partir_de">A partir de</option>
-              <option value="despues_de">Después de</option>
+              <option value="partir_de">{txt('A partir de', 'Starting from')}</option>
+              <option value="despues_de">{txt('Después de', 'After')}</option>
             </select>
 
             <input
@@ -181,7 +190,7 @@ function CreateCapsuleStep2({
               style={{
                 flex: 1,
                 padding: '10px',
-                fontSize: '14px',
+                fontSize: '0.8750rem',
                 backgroundColor: 'var(--color-fondo-principal)',
                 border: '1px solid var(--color-borde)',
                 borderRadius: '6px',
@@ -202,7 +211,7 @@ function CreateCapsuleStep2({
         }}
       >
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
-          <span style={{ fontSize: '15px', fontWeight: 500 }}>Compartir con amigos</span>
+          <span style={{ fontSize: '0.9375rem', fontWeight: 500 }}>{txt('Compartir con amigos', 'Share with friends')}</span>
         </label>
         <input
           type="checkbox"
@@ -232,7 +241,7 @@ function CreateCapsuleStep2({
       )}
 
       {error && (
-        <p style={{ color: '#8B2020', fontSize: '14px', padding: '0 20px', marginBottom: '16px' }}>
+        <p style={{ color: '#8B2020', fontSize: '0.8750rem', padding: '0 20px', marginBottom: '16px' }}>
           {error}
         </p>
       )}
@@ -250,11 +259,11 @@ function CreateCapsuleStep2({
               border: '1px solid var(--color-borde)',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '16px',
+              fontSize: '1rem',
               fontWeight: 500,
             }}
           >
-            Atrás
+            {txt('Atrás', 'Back')}
           </button>
 
           <button
@@ -268,11 +277,11 @@ function CreateCapsuleStep2({
               border: 'none',
               borderRadius: '8px',
               cursor: isLoading || !form.title.trim() || !form.categoria.trim() ? 'not-allowed' : 'pointer',
-              fontSize: '16px',
+              fontSize: '1rem',
               fontWeight: 500,
             }}
           >
-            Finalizar
+            {txt('Finalizar', 'Finish')}
           </button>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { logoMAsset } from '../img'
+import { useTranslate } from '../services/useTranslate'
 
 type HeaderConAtrasProps = {
   onAtras?: () => void
@@ -7,16 +8,17 @@ type HeaderConAtrasProps = {
 
 function HeaderConAtras({ onAtras }: HeaderConAtrasProps) {
   const navigate = useNavigate()
+  const { t } = useTranslate()
   const handleAtras = onAtras ?? (() => navigate(-1))
 
   return (
     <header className="header-con-atras" aria-label="Encabezado interior">
-      <button type="button" className="header-con-atras__back" onClick={handleAtras} aria-label="Volver atrás">
+      <button type="button" className="header-con-atras__back" onClick={handleAtras} aria-label={t('backText')}>
         <span className="header-con-atras__back-arrow" aria-hidden="true">←</span>
-        <span className="header-con-atras__back-text">ATRÁS</span>
+        <span className="header-con-atras__back-text">{t('backText')}</span>
       </button>
 
-      <Link to="/" className="header-con-atras__logo-button" aria-label="Ir a Home">
+      <Link to="/" className="header-con-atras__logo-button" aria-label={t('home')}>
         <img className="header-con-atras__logo" src={logoMAsset} alt="Momentum" />
       </Link>
     </header>

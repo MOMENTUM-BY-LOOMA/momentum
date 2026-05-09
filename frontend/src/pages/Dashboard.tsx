@@ -5,6 +5,7 @@ import CapsulaThumb from '../components/CapsulaThumb'
 import NotificationBell from '../components/NotificationBell'
 import { logoMAsset, settingsIconAsset, notificationIconAsset } from '../img'
 import { clearSession, getCapsuleThumb, type ApiCapsule } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 import '../styles/home.css'
 
 type SharedCapsuleFriend = {
@@ -32,6 +33,8 @@ const CATEGORIAS = [
 
 function Dashboard() {
   const navigate = useNavigate()
+  const { t, language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('')
   const [capsulasDesbloqueadas, setCapsulasDesbloqueadas] = useState<ApiCapsule[]>([])
   const [misCapsulas, setMisCapsulas] = useState<ApiCapsule[]>([])
@@ -39,6 +42,14 @@ function Dashboard() {
   const [loadingTiempo, setLoadingTiempo] = useState(false)
   const [loadingPerfil, setLoadingPerfil] = useState(false)
   const [loadingCompartidas, setLoadingCompartidas] = useState(false)
+
+  const categorias = [
+    { label: t('categoryTravel'), valor: 'viajes' },
+    { label: t('categoryFamily'), valor: 'familia' },
+    { label: t('categoryFriendship'), valor: 'amistad' },
+    { label: t('categoryWork'), valor: 'trabajo' },
+    { label: t('categoryOther'), valor: 'otros' },
+  ]
 
   useEffect(() => {
     const token = sessionStorage.getItem('authToken')
@@ -134,25 +145,25 @@ function Dashboard() {
 
   return (
     <>
-      <header className="home-header" aria-label="Encabezado principal">
+      <header className="home-header" aria-label={txt('Encabezado principal', 'Main header')}>
         <span className="home-header__left" aria-hidden="true">
           <IconoTema />
         </span>
-        <button type="button" className="home-header__logo-button" aria-label="Recargar inicio" onClick={() => navigate('/inicio')}>
+        <button type="button" className="home-header__logo-button" aria-label={txt('Recargar inicio', 'Reload home')} onClick={() => navigate('/inicio')}>
           <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
         </button>
         <div className="home-header__right">
           <NotificationBell token={sessionStorage.getItem('authToken')} iconSrc={notificationIconAsset} />
-          <button type="button" className="home-header__settings" aria-label="Abrir ajustes" onClick={() => navigate('/ajustes')}>
+          <button type="button" className="home-header__settings" aria-label={txt('Abrir ajustes', 'Open settings')} onClick={() => navigate('/ajustes')}>
             <img src={settingsIconAsset} alt="" aria-hidden="true" />
           </button>
         </div>
       </header>
 
-      <section className="home-page" aria-label="Pantalla principal de Momentum">
+      <section className="home-page" aria-label={txt('Pantalla principal de Momentum', 'Momentum main screen')}>
         {loadingTiempo ? (
           <div className="home-card home-card--unlock">
-            <span className="home-loading-text">Cargando...</span>
+            <span className="home-loading-text">{txt('Cargando...', 'Loading...')}</span>
           </div>
         ) : capsulasDesbloqueadas.length > 0 ? (
           <article className="home-card home-card--unlock">
@@ -160,12 +171,12 @@ function Dashboard() {
               ⏰
             </span>
             <div className="home-card__body">
-              <p className="home-card__title">¡Tu cápsula del tiempo está lista!</p>
+              <p className="home-card__title">{txt('Tu capsula del tiempo esta lista!', 'Your time capsule is ready!')}</p>
               <p className="home-card__subtitle">
                 {capsulasDesbloqueadas.length === 1 ? (
                   <em>{capsulasDesbloqueadas[0].title}</em>
                 ) : (
-                  `Tienes ${capsulasDesbloqueadas.length} cápsulas listas para abrir`
+                  txt(`Tienes ${capsulasDesbloqueadas.length} capsulas listas para abrir`, `You have ${capsulasDesbloqueadas.length} capsules ready to open`)
                 )}
               </p>
             </div>
@@ -180,17 +191,17 @@ function Dashboard() {
                 }
               }}
             >
-              Abrir
+              {txt('Abrir', 'Open')}
             </button>
           </article>
         ) : null}
 
         <section className="home-profile-card" aria-labelledby="home-profile-title">
           <div className="home-profile-card__content">
-            <h1 id="home-profile-title">MI PERFIL</h1>
-            <div className="home-profile-card__thumbs" aria-label="Cápsulas recientes">
+            <h1 id="home-profile-title">{t('myProfile')}</h1>
+            <div className="home-profile-card__thumbs" aria-label={txt('Capsulas recientes', 'Recent capsules')}>
               {loadingPerfil ? (
-                <span className="home-loading-text">Cargando...</span>
+                <span className="home-loading-text">{txt('Cargando...', 'Loading...')}</span>
               ) : misCapsulas.length > 0 ? (
                 misCapsulas.map((capsula) => (
                   <div key={capsula._id} className="home-thumb home-thumb--profile">
@@ -208,16 +219,16 @@ function Dashboard() {
                   </div>
                 ))
               ) : (
-                <p className="home-empty-text">Aún no tienes cápsulas visibles.</p>
+                <p className="home-empty-text">{t('noVisibleCapsules')}</p>
               )}
             </div>
           </div>
           <button type="button" className="home-profile-card__button" onClick={() => navigate('/perfil')}>
-            Ir
+            {txt('Ir', 'Go')}
           </button>
         </section>
 
-        <section className="home-search" aria-label="Filtro por categoría y búsqueda">
+        <section className="home-search" aria-label={txt('Filtro por categoria y busqueda', 'Category and search filter')}>
           <form
             className="home-search__form"
             onSubmit={(event) => {
@@ -230,26 +241,26 @@ function Dashboard() {
                 className="home-search__input"
                 value={categoriaSeleccionada}
                 onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-                aria-label="Buscar por categoría"
+                aria-label={txt('Buscar por categoria', 'Search by category')}
               >
-                <option value="">Selecciona una categoría</option>
-                {CATEGORIAS.map((cat) => (
+                <option value="">{txt('Selecciona una categoria', 'Select a category')}</option>
+                {categorias.map((cat) => (
                   <option key={cat.valor} value={cat.valor}>{cat.label}</option>
                 ))}
               </select>
             </div>
 
             <button type="submit" className="home-search__button">
-              Buscar
+              {txt('Buscar', 'Search')}
             </button>
           </form>
         </section>
 
         <section className="home-shared" aria-labelledby="home-shared-title">
-          <h2 id="home-shared-title">Comparte tus cápsulas</h2>
+          <h2 id="home-shared-title">{t('shareCapsules')}</h2>
 
           {loadingCompartidas ? (
-            <p className="home-loading-text">Cargando...</p>
+            <p className="home-loading-text">{txt('Cargando...', 'Loading...')}</p>
           ) : amigosCompartidos.length > 0 ? (
             amigosCompartidos.map((amigo) => (
               <article key={amigo._id} className="home-shared-card">
@@ -263,7 +274,7 @@ function Dashboard() {
 
                 <div className="home-shared-card__main">
                   <p className="home-shared-card__user">@{amigo.username}</p>
-                  <div className="home-shared-card__thumbs" aria-label={`Cápsulas compartidas con ${amigo.name}`}>
+                  <div className="home-shared-card__thumbs" aria-label={`${txt('Capsulas compartidas con', 'Capsules shared with')} ${amigo.name}`}>
                     {amigo.capsules.slice(0, 4).map((capsula) => (
                       <div key={capsula._id} className="home-thumb home-thumb--friend">
                         <div
@@ -283,15 +294,15 @@ function Dashboard() {
                 </div>
 
                 <button type="button" className="home-shared-card__more" onClick={() => navigate(`/amigos/${amigo._id}`)}>
-                  Ver más &gt;
+                  {txt('Ver mas', 'See more')} &gt;
                 </button>
               </article>
             ))
           ) : (
             <div className="home-shared__empty">
-              <p>Aún no has compartido cápsulas con nadie.</p>
+              <p>{t('noSharedCapsules')}</p>
               <button type="button" className="home-shared__empty-link" onClick={() => navigate('/amigos')}>
-                Ir a mis amigos &gt;
+                {txt('Ir a mis amigos', 'Go to my friends')} &gt;
               </button>
             </div>
           )}

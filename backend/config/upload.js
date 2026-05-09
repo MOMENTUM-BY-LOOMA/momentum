@@ -19,16 +19,22 @@ function fileFilter(_req, file, cb) {
     'image/webp',
     'video/mp4',
     'video/webm',
+    'video/quicktime',
+    'video/ogg',
     'audio/mpeg',
     'audio/mp3',
+    'audio/wav',
+    'audio/ogg',
     'application/pdf',
     'text/plain',
+    'application/zip',
     'application/octet-stream',
     'model/gltf-binary',
     'application/gltf+json',
     'model/obj',
     'model/fbx',
     'model/stl',
+    'model/vnd.usdz+zip',
   ]);
 
   if (allowedMimeTypes.has(file.mimetype)) {

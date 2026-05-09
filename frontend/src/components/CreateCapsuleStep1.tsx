@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect, useRef } from 'react'
 import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
 import { fetchCapsuleModels, uploadModel3DFile, type ApiCapsuleModel } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 
 interface CreateCapsuleStep1Props {
   form: CreateCapsuleFormState
@@ -10,6 +11,8 @@ interface CreateCapsuleStep1Props {
 }
 
 function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateCapsuleStep1Props) {
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [models, setModels] = useState<ApiCapsuleModel[]>([])
   const [carouselIndex, setCarouselIndex] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -59,7 +62,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
     const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
     const validExts = new Set(['glb', 'gltf', 'obj', 'fbx', 'stl'])
     if (!validExts.has(ext)) {
-      setError('Formato 3D no soportado. Usa .glb, .gltf, .obj, .fbx o .stl')
+      setError(txt('Formato 3D no soportado. Usa .glb, .gltf, .obj, .fbx o .stl', 'Unsupported 3D format. Use .glb, .gltf, .obj, .fbx or .stl'))
       e.target.value = ''
       return
     }
@@ -79,7 +82,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
       })
     } catch (err) {
       console.error('Error uploading 3D model:', err)
-      setError('Error al subir el archivo 3D')
+      setError(txt('Error al subir el archivo 3D', 'Error uploading 3D file'))
     } finally {
       setUploadingFile(false)
       e.target.value = ''
@@ -108,12 +111,12 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
 
   const handleContinue = () => {
     if (!form.title.trim()) {
-      setError('El nombre de la cápsula es obligatorio')
+      setError(txt('El nombre de la cápsula es obligatorio', 'Capsule name is required'))
       return
     }
 
     if (!form.modelId && !form.modelUrl) {
-      setError('Debe seleccionar un diseño de cápsula')
+      setError(txt('Debe seleccionar un diseño de cápsula', 'You must select a capsule design'))
       return
     }
 
@@ -130,12 +133,12 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
     <Fragment>
       {/* NOMBRE DE CÁPSULA */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>
-          Nombre de Cápsula
+        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8750rem', fontWeight: 500 }}>
+          {txt('Nombre de Cápsula', 'Capsule Name')}
         </label>
         <input
           type="text"
-          placeholder="Viaje a Lanzarote"
+          placeholder={txt('Viaje a Lanzarote', 'Trip to Lanzarote')}
           value={form.title}
           onChange={handleTitleChange}
           disabled={isLoading}
@@ -144,7 +147,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
             padding: '12px 20px',
             border: '1px solid var(--color-borde)',
             borderRadius: '8px',
-            fontSize: '16px',
+            fontSize: '1rem',
             backgroundColor: 'var(--color-fondo-principal)',
             color: 'var(--color-texto-principal)',
             boxSizing: 'border-box',
@@ -154,8 +157,8 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
 
       {/* DISEÑO DE CÁPSULA */}
       <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-        <label style={{ display: 'block', marginBottom: '12px', fontSize: '14px', fontWeight: 500 }}>
-          Diseño de Cápsula
+        <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.8750rem', fontWeight: 500 }}>
+          {txt('Diseño de Cápsula', 'Capsule Design')}
         </label>
 
         {/* Carrusel */}
@@ -176,12 +179,12 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
               style={{
                 background: 'none',
                 border: 'none',
-                fontSize: '24px',
+                fontSize: '1.5000rem',
                 color: 'var(--color-texto-principal)',
                 cursor: 'pointer',
                 padding: '8px',
               }}
-              aria-label="Modelo anterior"
+              aria-label={txt('Modelo anterior', 'Previous model')}
             >
               ‹
             </button>
@@ -224,7 +227,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                       }}
                     />
                   </div>
-                      <p style={{ fontSize: '11px', marginTop: '8px', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
+                      <p style={{ fontSize: '0.6875rem', marginTop: '8px', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
                     {models[carouselIndex].nombre}
                   </p>
                 </>
@@ -248,9 +251,9 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                     }}
                     onClick={handleCustomModelClick}
                   >
-                    <span style={{ fontSize: '28px', lineHeight: 1 }}>+</span>
-                    <span style={{ fontSize: '11px', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
-                      Cápsula personalizada
+                    <span style={{ fontSize: '1.7500rem', lineHeight: 1 }}>+</span>
+                    <span style={{ fontSize: '0.6875rem', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
+                      {txt('Cápsula personalizada', 'Custom capsule')}
                     </span>
                   </div>
                   <input
@@ -272,12 +275,12 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
               style={{
                 background: 'none',
                 border: 'none',
-                fontSize: '24px',
+                fontSize: '1.5000rem',
                 color: 'var(--color-texto-principal)',
                 cursor: 'pointer',
                 padding: '8px',
               }}
-              aria-label="Modelo siguiente"
+              aria-label={txt('Modelo siguiente', 'Next model')}
             >
               ›
             </button>
@@ -285,8 +288,8 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
         </div>
 
         {form.modelFile && (
-          <div style={{ padding: '8px 12px', backgroundColor: 'var(--color-fondo-secundario)', borderRadius: '6px', fontSize: '13px', color: 'var(--color-texto-principal)' }}>
-            Archivo: {form.modelFile.name}
+          <div style={{ padding: '8px 12px', backgroundColor: 'var(--color-fondo-secundario)', borderRadius: '6px', fontSize: '0.8125rem', color: 'var(--color-texto-principal)' }}>
+            {txt('Archivo', 'File')}: {form.modelFile.name}
           </div>
         )}
       </div>
@@ -301,8 +304,8 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
           marginBottom: '24px',
         }}
       >
-        <label style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-texto-principal)', display: 'block', marginBottom: '12px' }}>
-          Subir archivos
+        <label style={{ fontSize: '0.9375rem', fontWeight: 500, color: 'var(--color-texto-principal)', display: 'block', marginBottom: '12px' }}>
+          {txt('Subir archivos', 'Upload files')}
         </label>
 
         {/* Grilla de miniaturas */}
@@ -340,7 +343,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                   }}
                 >
                   {isVideo && (
-                    <div style={{ position: 'absolute', top: '4px', left: '4px', background: 'rgba(0, 0, 0, 0.7)', color: 'white', padding: '2px 6px', fontSize: '10px', borderRadius: '3px' }}>
+                    <div style={{ position: 'absolute', top: '4px', left: '4px', background: 'rgba(0, 0, 0, 0.7)', color: 'white', padding: '2px 6px', fontSize: '0.6250rem', borderRadius: '3px' }}>
                       VID
                     </div>
                   )}
@@ -361,9 +364,9 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '16px',
+                      fontSize: '1rem',
                     }}
-                    aria-label="Eliminar archivo"
+                    aria-label={txt('Eliminar archivo', 'Remove file')}
                   >
                     ×
                   </button>
@@ -387,7 +390,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '32px',
+              fontSize: '2rem',
               color: 'var(--color-texto-principal)',
             }}
           >
@@ -398,7 +401,7 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
 
       {/* Error */}
       {error && (
-        <p style={{ color: '#8B2020', fontSize: '14px', padding: '0 20px', marginBottom: '16px' }}>
+        <p style={{ color: '#8B2020', fontSize: '0.8750rem', padding: '0 20px', marginBottom: '16px' }}>
           {error}
         </p>
       )}
@@ -416,11 +419,11 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
             border: 'none',
             borderRadius: '8px',
             cursor: isLoading || loadingModels || uploadingFile || !form.title.trim() || !isModelSelected ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
+            fontSize: '1rem',
             fontWeight: 500,
           }}
         >
-          {uploadingFile ? 'Subiendo...' : 'Continuar'}
+          {uploadingFile ? txt('Subiendo...', 'Uploading...') : txt('Continuar', 'Continue')}
         </button>
       </div>
     </Fragment>

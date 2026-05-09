@@ -4,6 +4,7 @@ const commentSchema = new mongoose.Schema(
   {
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     text: { type: String, required: true, trim: true },
+    replyTo: { type: mongoose.Schema.Types.ObjectId, default: null },
     createdAt: { type: Date, default: Date.now },
   },
   { _id: true },
@@ -11,6 +12,7 @@ const commentSchema = new mongoose.Schema(
 
 const mediaItemSchema = new mongoose.Schema(
   {
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     type: {
       type: String,
       enum: ['image', 'video', 'audio', 'file', '3d'],

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeaderConAtras from '../components/HeaderConAtras'
+import { useTranslate } from '../services/useTranslate'
 
 type CategoryCard = {
   title: string
@@ -57,28 +58,43 @@ function CategoryIcon({ icon }: { icon: CategoryCard['icon'] }) {
 function SearchPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const categories = useMemo(() => CATEGORIES, [])
+  const { t } = useTranslate()
+  const categories = useMemo(
+    () =>
+      CATEGORIES.map((category) => ({
+        ...category,
+        title:
+          category.icon === 'travel'
+            ? t('categoryTravel')
+            : category.icon === 'study'
+              ? t('categoryStudy')
+              : category.icon === 'friends'
+                ? t('categoryFriendship')
+                : t('categoryOther'),
+      })),
+    [t],
+  )
 
   return (
     <>
       <HeaderConAtras onAtras={() => navigate(-1)} />
 
-      <section className="search-screen" aria-label="Pantalla de búsqueda">
+      <section className="search-screen" aria-label={t('search')}>
 
-      <section className="search-screen__search-bar" aria-label="Buscar cápsula por nombre">
+      <section className="search-screen__search-bar" aria-label={t('searchByName')}>
         <input
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Introduce el nombre de la cápsula"
-          aria-label="Introduce el nombre de la cápsula"
+          placeholder={t('enterCapsuleName')}
+          aria-label={t('enterCapsuleName')}
         />
-        <button type="button">Buscar</button>
+        <button type="button">{t('search')}</button>
       </section>
 
-      <p className="search-screen__help-text">Elige una categoría y encuentra tu cápsula</p>
+      <p className="search-screen__help-text">{t('chooseCategory')}</p>
 
-      <section className="search-screen__grid" aria-label="Categorías de búsqueda">
+      <section className="search-screen__grid" aria-label={t('filterByCategory')}>
         {categories.map((category) => (
           <article key={category.title} className="search-screen__category">
             <h2>{category.title.toUpperCase()}</h2>

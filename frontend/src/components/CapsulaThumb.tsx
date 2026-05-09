@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { useTranslate } from '../services/useTranslate'
 
 type ThumbCapsule = {
   id: string
@@ -25,13 +26,15 @@ function isGltfModel(url: string) {
 }
 
 function CapsulaThumb({ capsula, onOpen }: CapsulaThumbProps) {
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const title = capsula.nombre || 'Capsula'
 
   return (
     <button
       type="button"
       className="capsula-thumb-button"
-      aria-label={`Abrir capsula ${title}`}
+      aria-label={`${txt('Abrir capsula', 'Open capsule')} ${title}`}
       onClick={() => onOpen(capsula.id)}
     >
       {capsula.thumbnailUrl ? (
@@ -41,7 +44,7 @@ function CapsulaThumb({ capsula, onOpen }: CapsulaThumbProps) {
           <LazyCapsulaThumb3D modelUrl={capsula.modelUrl} title={title} />
         </Suspense>
       ) : (
-        <div className="capsula-thumb capsula-thumb--fallback" aria-label={`Sin miniatura para ${title}`}>
+        <div className="capsula-thumb capsula-thumb--fallback" aria-label={`${txt('Sin miniatura para', 'No thumbnail for')} ${title}`}>
           <span>{getInitial(title)}</span>
         </div>
       )}

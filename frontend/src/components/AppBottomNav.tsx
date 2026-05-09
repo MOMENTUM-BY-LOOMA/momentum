@@ -5,6 +5,7 @@ import iconSearch from '../img/icon_search.svg'
 import iconCreate from '../img/icon_create.svg'
 import iconFriends from '../img/icon_friends.svg'
 import iconProfile from '../img/icon_profile.svg'
+import { useTranslate } from '../services/useTranslate'
 
 type Tab = {
   id: string
@@ -36,6 +37,7 @@ function isTabActive(id: string, pathname: string): boolean {
 function AppBottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslate()
 
   useEffect(() => {
     const current = sessionStorage.getItem(ACTIVE_KEY)
@@ -82,17 +84,27 @@ function AppBottomNav() {
 
   return (
     <div className="navbar-wrapper">
-      <nav className="navbar-pill app-bottom-nav" role="navigation" aria-label="Navegación inferior">
+      <nav className="navbar-pill app-bottom-nav" role="navigation" aria-label={t('navHome')}>
         {TABS.map((tab) => {
           const isCreate = tab.id === 'create'
           const isActive = !isCreate && isTabActive(tab.id, location.pathname)
+          const ariaLabel =
+            tab.id === 'home'
+              ? t('navHome')
+              : tab.id === 'search'
+                ? t('navSearch')
+                : tab.id === 'create'
+                  ? t('navCreate')
+                  : tab.id === 'friends'
+                    ? t('navFriends')
+                    : t('navProfile')
 
           if (isCreate) {
             return (
               <button
                 key={tab.id}
                 type="button"
-                aria-label={tab.aria}
+                aria-label={ariaLabel}
                 className="app-bottom-nav__item app-bottom-nav__item--create"
                 onClick={() => onTabClick(tab)}
               >
@@ -105,7 +117,7 @@ function AppBottomNav() {
             <button
               key={tab.id}
               type="button"
-              aria-label={tab.aria}
+              aria-label={ariaLabel}
               className={`app-bottom-nav__item${isActive ? ' is-active' : ''}`}
               onClick={() => onTabClick(tab)}
             >

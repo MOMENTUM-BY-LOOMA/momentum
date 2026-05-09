@@ -4,6 +4,7 @@ import { createCapsule, uploadMediaFile, type ApiMediaItem, fetchCurrentUser, ty
 import CreateCapsuleStep1 from '../components/CreateCapsuleStep1'
 import CreateCapsuleStep2 from '../components/CreateCapsuleStep2'
 import HeaderSimple from '../components/HeaderSimple'
+import { useTranslate } from '../services/useTranslate'
 
 function getModelFormatFromUrl(url: string) {
   return (url.split('?')[0].split('.').pop()?.toLowerCase() || '') as ApiMediaItem['modelFormat']
@@ -40,6 +41,8 @@ export interface CreateCapsuleFormState {
 
 function CreateCapsuleFlowPage() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [paso, setPasoState] = useState(1)
 
   const [currentUser, setCurrentUser] = useState<ApiUser | null>(null)
@@ -82,12 +85,12 @@ function CreateCapsuleFlowPage() {
 
   async function handleCreateCapsule() {
     if (!form.title.trim()) {
-      setError('El título es obligatorio')
+      setError(txt('El título es obligatorio', 'Title is required'))
       return
     }
 
     if (!form.modelUrl && !form.modelId) {
-      setError('Debe seleccionar un diseño de cápsula')
+      setError(txt('Debe seleccionar un diseño de cápsula', 'You must select a capsule design'))
       return
     }
 
@@ -114,7 +117,7 @@ function CreateCapsuleFlowPage() {
 
       // 2. Guardar el modelo 3D seleccionado o subido previamente
       if (form.modelUrl) {
-        const modelTitle = form.modelId ? form.modelUrl : 'Modelo 3D'
+        const modelTitle = form.modelId ? form.modelUrl : txt('Modelo 3D', '3D Model')
         mediaItems.push({
           type: '3d',
           url: form.modelUrl,
@@ -149,7 +152,7 @@ function CreateCapsuleFlowPage() {
 
       navigate(`/capsulas/${capsule._id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo crear la cápsula')
+      setError(err instanceof Error ? err.message : txt('No se pudo crear la cápsula', 'Could not create capsule'))
     } finally {
       setIsSubmitting(false)
     }
@@ -164,8 +167,8 @@ function CreateCapsuleFlowPage() {
       <HeaderSimple />
 
       <section className="page-card form-card">
-        <h1 className="create-capsule__title" style={{ fontFamily: 'Playfair Display', fontSize: '22px', textAlign: 'center', marginBottom: '24px' }}>
-          CREA TU CÁPSULA
+        <h1 className="create-capsule__title" style={{ fontFamily: 'Playfair Display', fontSize: '1.3750rem', textAlign: 'center', marginBottom: '24px' }}>
+          {txt('CREA TU CÁPSULA', 'CREATE YOUR CAPSULE')}
         </h1>
 
         {error && <p className="page-status page-status--error">{error}</p>}

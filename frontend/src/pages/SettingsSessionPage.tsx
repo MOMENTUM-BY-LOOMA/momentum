@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import HeaderConAtras from '../components/HeaderConAtras'
 import ModalCerrarSesion from '../components/ModalCerrarSesion'
 import { clearSession, logoutUser } from '../services/api.ts'
+import { useTranslate } from '../services/useTranslate'
 
 function SettingsSessionPage() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -21,7 +24,7 @@ function SettingsSessionPage() {
       clearSession()
       navigate('/login')
     } catch (logoutError) {
-      const detail = logoutError instanceof Error ? logoutError.message : 'No se pudo cerrar sesion'
+      const detail = logoutError instanceof Error ? logoutError.message : txt('No se pudo cerrar sesion', 'Could not log out')
       setError(detail)
     } finally {
       setLoading(false)
@@ -32,17 +35,17 @@ function SettingsSessionPage() {
   return (
     <Fragment>
       <HeaderConAtras onAtras={() => navigate(-1)} />
-      <section className="settings-mobile settings-mobile--session" aria-label="Sesion y seguridad">
+      <section className="settings-mobile settings-mobile--session" aria-label={txt('Sesion y seguridad', 'Session and security')}>
 
-      <h1 className="settings-title">SESION Y SEGURIDAD</h1>
+      <h1 className="settings-title">{txt('SESION Y SEGURIDAD', 'SESSION AND SECURITY')}</h1>
 
       <div className="settings-form settings-form--spacious settings-form--session-lowered">
         <button type="button" className="settings-btn settings-btn--danger settings-btn--full" onClick={() => setShowLogoutModal(true)}>
-          CERRAR SESION
+          {txt('CERRAR SESION', 'LOG OUT')}
         </button>
 
         <Link to="/ajustes/cuenta" className="settings-btn settings-btn--ghost settings-btn--full settings-link-btn">
-          GESTIONAR ELIMINACION DE CUENTA
+          {txt('GESTIONAR ELIMINACION DE CUENTA', 'MANAGE ACCOUNT DELETION')}
         </Link>
 
         {message ? <p className="settings-success">{message}</p> : null}

@@ -2,6 +2,7 @@ import { useEffect, useState, Fragment, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { logoMAsset } from '../img'
 import { fetchCapsuleById, getCapsuleThumb, type ApiCapsule } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 import '../styles/shared-capsule-view.css'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
@@ -17,6 +18,8 @@ function resolveUrl(url: string) {
 function SharedCapsuleView() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const carouselRef = useRef<HTMLDivElement>(null)
 
   const [capsule, setCapsule] = useState<ApiCapsule | null>(null)
@@ -36,20 +39,20 @@ function SharedCapsuleView() {
   }, [loading])
 
   useEffect(() => {
-    if (!id) { setError('ID de cápsula no encontrado'); setLoading(false); return }
+    if (!id) { setError(txt('ID de capsula no encontrado', 'Capsule ID not found')); setLoading(false); return }
     const token = sessionStorage.getItem('authToken')
     if (!token) { navigate('/login', { replace: true }); return }
     let active = true
     fetchCapsuleById(id)
       .then((data) => { if (active) { setCapsule(data); setLoading(false) } })
-      .catch(() => { if (active) { setError('No se pudo cargar la cápsula'); setLoading(false) } })
+      .catch(() => { if (active) { setError(txt('No se pudo cargar la capsula', 'Could not load capsule')); setLoading(false) } })
     return () => { active = false }
-  }, [id, navigate])
+  }, [id, navigate, language])
 
   const header = (
-    <header className="mobile-header" aria-label="Cápsula compartida">
-      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver">←</button>
-      <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
+    <header className="mobile-header" aria-label={txt('Capsula compartida', 'Shared capsule')}>
+      <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver', 'Back')}>←</button>
+      <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
         <img src={logoMAsset} alt="Momentum" />
       </Link>
       <span className="mobile-header__right" aria-hidden="true" />
@@ -59,14 +62,14 @@ function SharedCapsuleView() {
   if (loading) return (
     <Fragment>
       {header}
-      <section className="page-layout"><p>Cargando...</p></section>
+      <section className="page-layout"><p>{txt('Cargando...', 'Loading...')}</p></section>
     </Fragment>
   )
 
   if (error || !capsule) return (
     <Fragment>
       {header}
-      <section className="page-layout"><p>{error || 'No se pudo cargar la cápsula'}</p></section>
+      <section className="page-layout"><p>{error || txt('No se pudo cargar la capsula', 'Could not load capsule')}</p></section>
     </Fragment>
   )
 
@@ -102,7 +105,7 @@ function SharedCapsuleView() {
 
         {/* Owner info */}
         <div className="scv-owner-section">
-          <span className="scv-owner-label">CÁPSULA CREADA POR</span>
+          <span className="scv-owner-label">{txt('CAPSULA CREADA POR', 'CAPSULE CREATED BY')}</span>
           <div className="scv-owner-row">
             <div className="scv-owner__avatar">
               {ownerAvatar
@@ -144,7 +147,7 @@ function SharedCapsuleView() {
                   className="scv-carousel__arrow"
                   onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
                   disabled={slideIndex === 0}
-                  aria-label="Anterior"
+                  aria-label={txt('Anterior', 'Previous')}
                 >‹</button>
                 <div className="scv-dots">
                   {Array.from({ length: totalSlides }, (_, i) => (
@@ -153,7 +156,7 @@ function SharedCapsuleView() {
                       type="button"
                       className={`scv-dot${slideIndex === i ? ' scv-dot--active' : ''}`}
                       onClick={() => setSlideIndex(i)}
-                      aria-label={`Ir a slide ${i + 1}`}
+                      aria-label={`${txt('Ir a slide', 'Go to slide')} ${i + 1}`}
                     />
                   ))}
                 </div>
@@ -162,7 +165,7 @@ function SharedCapsuleView() {
                   className="scv-carousel__arrow"
                   onClick={() => setSlideIndex((i) => Math.min(totalSlides - 1, i + 1))}
                   disabled={slideIndex >= totalSlides - 1}
-                  aria-label="Siguiente"
+                  aria-label={txt('Siguiente', 'Next')}
                 >›</button>
               </div>
             )}
@@ -182,7 +185,7 @@ function SharedCapsuleView() {
           className="scv-accept-btn"
           onClick={() => navigate(`/capsulas/${id}/interior`)}
         >
-          Aceptar
+          {txt('Aceptar', 'Accept')}
         </button>
       </section>
     </Fragment>

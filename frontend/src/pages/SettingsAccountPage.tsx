@@ -13,6 +13,7 @@ import {
   updateCurrentUser,
   type ApiUser,
 } from '../services/api'
+import { useTranslate } from '../services/useTranslate'
 
 function createCenteredCrop(width: number, height: number) {
   return centerCrop(
@@ -41,6 +42,8 @@ async function blobToDataUrl(blob: Blob) {
 
 function SettingsAccountPage() {
   const navigate = useNavigate()
+  const { language } = useTranslate()
+  const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
 
@@ -130,7 +133,7 @@ function SettingsAccountPage() {
     })
 
     if (!blob) {
-      setError('No se pudo recortar la imagen')
+      setError(txt('No se pudo recortar la imagen', 'Could not crop image'))
       return
     }
 
@@ -147,7 +150,7 @@ function SettingsAccountPage() {
     setPasswordError('')
 
     if (password !== '' && password !== repeatPassword) {
-      setPasswordError('Las contraseñas no coinciden')
+      setPasswordError(txt('Las contraseñas no coinciden', 'Passwords do not match'))
       return
     }
 
@@ -176,9 +179,9 @@ function SettingsAccountPage() {
       }
 
       if (password.trim()) {
-        const currentPassword = window.prompt('Introduce tu contrasena actual para confirmar el cambio de contrasena')
+        const currentPassword = window.prompt(txt('Introduce tu contrasena actual para confirmar el cambio de contrasena', 'Enter your current password to confirm the password change'))
         if (!currentPassword) {
-          setError('No se cambio la contrasena: falta confirmacion de contrasena actual')
+          setError(txt('No se cambio la contrasena: falta confirmacion de contrasena actual', 'Password was not changed: current password confirmation is missing'))
         } else {
           await changeCurrentUserPassword(currentPassword, password.trim())
           setPassword('')
@@ -186,9 +189,9 @@ function SettingsAccountPage() {
         }
       }
 
-      setFeedback('Cambios guardados correctamente')
+      setFeedback(txt('Cambios guardados correctamente', 'Changes saved successfully'))
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'No se pudo guardar')
+      setError(saveError instanceof Error ? saveError.message : txt('No se pudo guardar', 'Could not save'))
     } finally {
       setLoading(false)
     }
@@ -196,7 +199,7 @@ function SettingsAccountPage() {
 
   async function handleDeleteAccount() {
     if (!password.trim()) {
-      setError('Para eliminar la cuenta, introduce tu contrasena en el campo Contrasena')
+      setError(txt('Para eliminar la cuenta, introduce tu contrasena en el campo Contrasena', 'To delete the account, enter your password in the Password field'))
       setShowDeleteModal(false)
       return
     }
@@ -209,7 +212,7 @@ function SettingsAccountPage() {
       clearSession()
       navigate('/')
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'No se pudo eliminar la cuenta')
+      setError(deleteError instanceof Error ? deleteError.message : txt('No se pudo eliminar la cuenta', 'Could not delete the account'))
     } finally {
       setDeleting(false)
       setShowDeleteModal(false)
@@ -219,27 +222,27 @@ function SettingsAccountPage() {
   return (
     <Fragment>
       <HeaderConAtras onAtras={() => navigate(-1)} />
-      <section className="settings-mobile" aria-label="Ajustes de cuenta">
+      <section className="settings-mobile" aria-label={txt('Ajustes de cuenta', 'Account settings')}>
 
-      <h1 className="settings-title">AJUSTA TU PERFIL</h1>
+      <h1 className="settings-title">{txt('AJUSTA TU PERFIL', 'ADJUST YOUR PROFILE')}</h1>
 
       <div className="settings-form">
         <label className="settings-label" htmlFor="settings-username">
-          Nombre de usuario
+          {txt('Nombre de usuario', 'Username')}
         </label>
         <input
           id="settings-username"
           className="settings-input"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
-          placeholder="Tu nombre"
+          placeholder={txt('Tu nombre', 'Your name')}
         />
 
-        <label className="settings-label">Foto de usuario</label>
+        <label className="settings-label">{txt('Foto de usuario', 'Profile photo')}</label>
         <div className="settings-photo-row">
-          <img className="settings-photo-preview" src={previewImage || defaultAvatarAsset} alt="Foto de perfil" />
+          <img className="settings-photo-preview" src={previewImage || defaultAvatarAsset} alt={txt('Foto de perfil', 'Profile photo')} />
           <button type="button" className="settings-photo-picker" onClick={onPickImageClick}>
-            Selecciona foto de usuario {'>'}
+            {txt('Selecciona foto de usuario', 'Choose profile photo')} {'>'}
           </button>
           <input
             ref={fileInputRef}
@@ -261,7 +264,7 @@ function SettingsAccountPage() {
             >
               <img
                 src={cropSource}
-                alt="Recorte"
+                alt={txt('Recorte', 'Crop')}
                 ref={imageRef}
                 onLoad={(event) => {
                   const target = event.currentTarget
@@ -270,14 +273,14 @@ function SettingsAccountPage() {
               />
             </ReactCrop>
             <div className="settings-cropper__actions">
-              <button type="button" className="settings-btn settings-btn--primary" onClick={applyCrop}>Confirmar recorte</button>
-              <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setCropSource('')}>Cancelar</button>
+              <button type="button" className="settings-btn settings-btn--primary" onClick={applyCrop}>{txt('Confirmar recorte', 'Confirm crop')}</button>
+              <button type="button" className="settings-btn settings-btn--ghost" onClick={() => setCropSource('')}>{txt('Cancelar', 'Cancel')}</button>
             </div>
           </div>
         ) : null}
 
         <label className="settings-label" htmlFor="settings-email">
-          Correo electronico
+          {txt('Correo electronico', 'Email')}
         </label>
         <input
           id="settings-email"
@@ -285,11 +288,11 @@ function SettingsAccountPage() {
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="correo@ejemplo.com"
+          placeholder={txt('correo@ejemplo.com', 'example@email.com')}
         />
 
         <label className="settings-label" htmlFor="settings-password">
-          Contrasena
+          {txt('Contrasena', 'Password')}
         </label>
         <input
           id="settings-password"
@@ -297,11 +300,11 @@ function SettingsAccountPage() {
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Nueva contrasena"
+          placeholder={txt('Nueva contrasena', 'New password')}
         />
 
         <label className="settings-label" htmlFor="settings-repeat-password">
-          Repetir contrasena
+          {txt('Repetir contrasena', 'Repeat password')}
         </label>
         <input
           id="settings-repeat-password"
@@ -309,7 +312,7 @@ function SettingsAccountPage() {
           type="password"
           value={repeatPassword}
           onChange={(event) => setRepeatPassword(event.target.value)}
-          placeholder="Repite la contrasena"
+          placeholder={txt('Repite la contrasena', 'Repeat the password')}
         />
 
         {passwordError ? <p className="settings-error">{passwordError}</p> : null}
@@ -318,7 +321,7 @@ function SettingsAccountPage() {
 
         <div className="settings-action-row">
           <button type="button" className="settings-btn settings-btn--primary" onClick={handleSave} disabled={loading}>
-            {loading ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
+            {loading ? txt('GUARDANDO...', 'SAVING...') : txt('GUARDAR CAMBIOS', 'SAVE CHANGES')}
           </button>
           <button
             type="button"
@@ -326,7 +329,7 @@ function SettingsAccountPage() {
             onClick={() => setShowDeleteModal(true)}
             disabled={loading || deleting}
           >
-            ELIMINAR CUENTA
+            {txt('ELIMINAR CUENTA', 'DELETE ACCOUNT')}
           </button>
         </div>
       </div>

@@ -377,10 +377,11 @@ router.get('/:id', auth, async (req, res) => {
 
   try {
     let capsule = await Capsule.findOne({ _id: req.params.id, ...accessQuery(req.user.id) })
-      .populate('owner', 'name username email avatar')
+      .populate('owner', 'name username email avatar profilePhoto')
       .populate('sharedWith', 'name username email avatar')
       .populate('collaborators.user', 'name username email avatar')
       .populate('comments.author', 'name username email avatar')
+      .populate('mediaItems.author', 'name username email avatar profilePhoto')
       .populate('mediaItems.comments.author', 'name username email avatar');
 
     if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
@@ -780,6 +781,7 @@ router.post(
       }
 
       capsule.mediaItems.push({
+        author: req.user.id,
         type: req.body.type ?? 'image',
         url: req.body.url,
         modelFormat: req.body.modelFormat ?? '',
@@ -801,7 +803,10 @@ router.post(
 router.post(
   '/:id/comments',
   auth,
-  [body('text').trim().notEmpty().withMessage('Comment text is required')],
+  [
+    body('text').trim().notEmpty().withMessage('Comment text is required'),
+    body('replyTo').optional().isMongoId().withMessage('replyTo must be a valid comment id'),
+  ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -820,17 +825,28 @@ router.post(
       const capsule = await findAccessibleCapsule(req.params.id, req.user.id);
       if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
 
+      let replyTarget = null;
+      if (req.body.replyTo) {
+        replyTarget = capsule.comments.id(req.body.replyTo);
+        if (!replyTarget) {
+          return res.status(404).json({ message: 'Reply target not found' });
+        }
+      }
+
       capsule.comments.push({
         author: req.user.id,
         text: req.body.text,
+        replyTo: replyTarget?._id ?? null,
       });
 
       await capsule.save();
 
-      // Notify capsule owner about the new comment
-      if (String(capsule.owner) !== String(req.user.id)) {
-        const newComment = capsule.comments[capsule.comments.length - 1];
-        await notifyCommentAdded(capsule.owner, req.user.id, capsule._id, newComment._id);
+      const newComment = capsule.comments[capsule.comments.length - 1];
+      const recipient = replyTarget?.author || capsule.owner;
+
+      // Notify capsule owner or the replied comment author
+      if (String(recipient) !== String(req.user.id)) {
+        await notifyCommentAdded(recipient, req.user.id, capsule._id, newComment._id);
       }
 
       const populated = await Capsule.findById(capsule._id)
@@ -958,6 +974,7 @@ router.delete('/:id/media/:mediaId/comments/:commentId', auth, async (req, res) 
       .populate('owner', 'name email avatar')
       .populate('sharedWith', 'name email avatar')
       .populate('collaborators.user', 'name email avatar')
+      .populate('mediaItems.author', 'name email avatar profilePhoto')
       .populate('mediaItems.comments.author', 'name email avatar');
 
     res.json(populated);
