@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { fetchCapsules, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
 import { logoMAsset } from '../img'
@@ -7,6 +8,8 @@ import CapsulaThumb from '../components/CapsulaThumb'
 
 export default function TodasMisCapsulas() {
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [capsulas, setCapsulas] = useState<ApiCapsule[]>([])
@@ -50,7 +53,7 @@ export default function TodasMisCapsulas() {
       <header className="mobile-header" aria-label={txt('Mis capsulas', 'My capsules')}>
         <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver atras', 'Go back')}>←</button>
         <a href="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
-          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+          <img className="mobile-header__logo" src={logo} alt="Momentum" />
         </a>
         <span className="mobile-header__right" aria-hidden="true" />
       </header>

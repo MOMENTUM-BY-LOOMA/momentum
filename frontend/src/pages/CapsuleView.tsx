@@ -1,5 +1,6 @@
 import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import { fetchCapsuleById, type ApiCapsule, type ApiMediaItem } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
@@ -44,6 +45,8 @@ function AvatarStack({ users, max = 4, size = 28 }: { users: any[]; max?: number
 function CapsuleView() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [capsule, setCapsule] = useState<ApiCapsule | null>(null)
@@ -65,7 +68,7 @@ function CapsuleView() {
     <header className="mobile-header" aria-label={txt('Vista previa de capsula', 'Capsule preview')}>
       <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver', 'Back')}>←</button>
       <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
-        <img src={logoMAsset} alt="Momentum" />
+        <img src={logo} alt="Momentum" />
       </Link>
       <span className="mobile-header__right" aria-hidden="true" />
     </header>

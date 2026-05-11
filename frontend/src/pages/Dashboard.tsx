@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import IconoTema from '../components/IconoTema'
 import CapsulaThumb from '../components/CapsulaThumb'
 import NotificationBell from '../components/NotificationBell'
@@ -33,8 +34,11 @@ const CATEGORIAS = [
 
 function Dashboard() {
   const navigate = useNavigate()
+  const { tema } = useTema()
   const { t, language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
+  const notificationIcon = notificationIconAsset
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('')
   const [capsulasDesbloqueadas, setCapsulasDesbloqueadas] = useState<ApiCapsule[]>([])
   const [misCapsulas, setMisCapsulas] = useState<ApiCapsule[]>([])
@@ -150,10 +154,10 @@ function Dashboard() {
           <IconoTema />
         </span>
         <button type="button" className="home-header__logo-button" aria-label={txt('Recargar inicio', 'Reload home')} onClick={() => navigate('/inicio')}>
-          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+          <img className="mobile-header__logo" src={logo} alt="Momentum" />
         </button>
         <div className="home-header__right">
-          <NotificationBell token={sessionStorage.getItem('authToken')} iconSrc={notificationIconAsset} />
+          <NotificationBell token={sessionStorage.getItem('authToken')} iconSrc={notificationIcon} />
           <button type="button" className="home-header__settings" aria-label={txt('Abrir ajustes', 'Open settings')} onClick={() => navigate('/ajustes')}>
             <img src={settingsIconAsset} alt="" aria-hidden="true" />
           </button>

@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import { fetchCapsuleById, type ApiCapsule } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
@@ -122,6 +123,8 @@ function buildCommentTree(comments: Comment[]) {
 export default function MediaDetailPage() {
   const { id: capsuleId, mediaIndex: mediaIndexStr } = useParams()
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { t } = useTranslate()
   
   const mediaIndex = mediaIndexStr ? parseInt(mediaIndexStr, 10) : 0
@@ -249,7 +252,7 @@ export default function MediaDetailPage() {
       <header className="md-header">
         <button type="button" className="md-header__back" onClick={() => navigate(-1)} aria-label={t('back')}>←</button>
         <Link to="/inicio" className="md-header__logo" aria-label={t('homeTitle')}>
-          <img src={logoMAsset} alt="Momentum" />
+          <img src={logo} alt="Momentum" />
         </Link>
       </header>
 

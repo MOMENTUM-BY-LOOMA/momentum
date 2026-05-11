@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import CapsulaThumb, { type ThumbCapsule } from '../components/CapsulaThumb'
 import { logoMAsset, settingsIconAsset } from '../img'
 import {
@@ -63,6 +64,8 @@ function getUserHandle(user: ApiUser) {
 
 function MisAmigos() {
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const searchBoxRef = useRef<HTMLDivElement | null>(null)
@@ -280,7 +283,7 @@ function MisAmigos() {
         <span className="mis-amigos-page__header-spacer" aria-hidden="true" />
 
           <a className="mis-amigos-page__logo-button" href="/inicio" aria-label={txt('Ir a inicio', 'Go home')}>
-          <img className="mis-amigos-page__logo" src={logoMAsset} alt="Momentum" />
+          <img className="mis-amigos-page__logo" src={logo} alt="Momentum" />
         </a>
 
           <button type="button" className="mis-amigos-page__settings-button" onClick={() => navigate('/ajustes')} aria-label={txt('Abrir ajustes', 'Open settings')}>

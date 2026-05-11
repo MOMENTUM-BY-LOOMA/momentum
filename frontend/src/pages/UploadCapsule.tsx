@@ -1,5 +1,6 @@
 import { Fragment, type FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -76,6 +77,8 @@ async function render3DThumbnailFromUrl(modelUrl: string) {
 
 function UploadCapsule() {
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const token = localStorage.getItem('authToken')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
@@ -213,7 +216,7 @@ function UploadCapsule() {
       <header className="mobile-header" aria-label="Subir capsula">
         <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label="Volver atras">←</button>
         <Link to="/inicio" className="logo-button" aria-label="Ir a inicio">
-          <img src={logoMAsset} alt="Momentum" />
+          <img src={logo} alt="Momentum" />
         </Link>
         <span className="mobile-header__right" aria-hidden="true" />
       </header>

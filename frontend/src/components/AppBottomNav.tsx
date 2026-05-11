@@ -1,42 +1,50 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import iconHome from '../img/icon_home.svg'
 import iconSearch from '../img/icon_search.svg'
 import iconCreate from '../img/icon_create.svg'
 import iconFriends from '../img/icon_friends.svg'
 import iconProfile from '../img/icon_profile.svg'
+import iconHomeN from '../img/icon_home_n.svg'
+import iconSearchN from '../img/icon_search_n.svg'
+import iconCreateN from '../img/icon_create_n.svg'
+import iconFriendsN from '../img/icon_friends_n.svg'
+import iconProfileN from '../img/icon_profile_n.svg'
 import { useTranslate } from '../services/useTranslate'
 
 type Tab = {
   id: string
   to: string
   aria: string
-  icon: string
+  iconLight: string
+  iconDark: string
 }
 
 const TABS: Tab[] = [
-  { id: 'home',    to: '/inicio',          aria: 'Ir a Home',      icon: iconHome    },
-  { id: 'search',  to: '/buscar',          aria: 'Buscar',         icon: iconSearch  },
-  { id: 'create',  to: '/capsulas/crear',  aria: 'Crear capsula',  icon: iconCreate  },
-  { id: 'friends', to: '/amigos',          aria: 'Ir a Amigos',    icon: iconFriends },
-  { id: 'profile', to: '/perfil',          aria: 'Ir a Mi Perfil', icon: iconProfile },
+  { id: 'home', to: '/inicio', aria: 'Ir a Home', iconLight: iconHome, iconDark: iconHomeN },
+  { id: 'search', to: '/buscar', aria: 'Buscar', iconLight: iconSearch, iconDark: iconSearchN },
+  { id: 'create', to: '/capsulas/crear', aria: 'Crear capsula', iconLight: iconCreate, iconDark: iconCreateN },
+  { id: 'friends', to: '/amigos', aria: 'Ir a Amigos', iconLight: iconFriends, iconDark: iconFriendsN },
+  { id: 'profile', to: '/perfil', aria: 'Ir a Mi Perfil', iconLight: iconProfile, iconDark: iconProfileN },
 ]
 
 const ACTIVE_KEY = 'app.bottomNav.active'
 
 function isTabActive(id: string, pathname: string): boolean {
   switch (id) {
-    case 'home':    return pathname === '/inicio' || pathname === '/dashboard'
-    case 'search':  return pathname === '/buscar'
+    case 'home': return pathname === '/inicio' || pathname === '/dashboard'
+    case 'search': return pathname === '/buscar'
     case 'friends': return pathname.startsWith('/amigos')
     case 'profile': return pathname === '/perfil' || pathname === '/mis-capsulas' || pathname.startsWith('/ajustes')
-    default:        return false
+    default: return false
   }
 }
 
 function AppBottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { tema } = useTema()
   const { t } = useTranslate()
 
   useEffect(() => {
@@ -82,12 +90,15 @@ function AppBottomNav() {
     navigate(tab.to)
   }
 
+  const isDarkMode = tema === 'oscuro'
+
   return (
-    <div className="navbar-wrapper">
-      <nav className="navbar-pill app-bottom-nav" role="navigation" aria-label={t('navHome')}>
+    <div className={`navbar-wrapper${isDarkMode ? ' navbar-wrapper--dark' : ''}`}>
+      <nav className={`navbar-pill app-bottom-nav${isDarkMode ? ' app-bottom-nav--dark' : ''}`} role="navigation" aria-label={t('navHome')}>
         {TABS.map((tab) => {
           const isCreate = tab.id === 'create'
           const isActive = !isCreate && isTabActive(tab.id, location.pathname)
+          const icon = isDarkMode ? tab.iconDark : tab.iconLight
           const ariaLabel =
             tab.id === 'home'
               ? t('navHome')
@@ -108,7 +119,7 @@ function AppBottomNav() {
                 className="app-bottom-nav__item app-bottom-nav__item--create"
                 onClick={() => onTabClick(tab)}
               >
-                <img src={tab.icon} alt="" width={20} height={20} aria-hidden="true" />
+                <img src={icon} alt="" width={20} height={20} aria-hidden="true" />
               </button>
             )
           }
@@ -123,7 +134,7 @@ function AppBottomNav() {
             >
               <span className={`app-bottom-nav__icon-wrap${isActive ? ' is-active' : ''}`}>
                 <img
-                  src={tab.icon}
+                  src={icon}
                   alt=""
                   width={20}
                   height={20}

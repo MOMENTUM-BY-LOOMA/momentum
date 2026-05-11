@@ -1,11 +1,14 @@
 import { Fragment, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import { fetchCapsules, fetchCurrentUser, fetchFriends, type ApiUser, type ApiCapsule } from '../services/api.ts'
 import { useTranslate } from '../services/useTranslate'
 
 function ProfilePage() {
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const [user, setUser] = useState<ApiUser | null>(null)
@@ -43,7 +46,7 @@ function ProfilePage() {
         <header className="mobile-header" aria-label={txt('Mi perfil', 'My profile')}>
           <span className="mobile-header__left" aria-hidden="true" />
           <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
-            <img src={logoMAsset} alt="Momentum" />
+            <img src={logo} alt="Momentum" />
           </Link>
           <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label={txt('Ajustes', 'Settings')}>⚙️</button>
         </header>
@@ -57,7 +60,7 @@ function ProfilePage() {
       <header className="mobile-header" aria-label={txt('Mi perfil', 'My profile')}>
         <span className="mobile-header__left" aria-hidden="true" />
         <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
-          <img src={logoMAsset} alt="Momentum" />
+          <img src={logo} alt="Momentum" />
         </Link>
         <button type="button" className="mobile-header__right" onClick={() => navigate('/ajustes')} aria-label={txt('Ajustes', 'Settings')}>⚙️</button>
       </header>

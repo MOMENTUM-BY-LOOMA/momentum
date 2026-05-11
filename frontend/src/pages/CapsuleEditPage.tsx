@@ -1,7 +1,8 @@
 import { useEffect, useState, Fragment, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
-import iconDeleteN from '../img/icon_delete_n.svg'
+import iconDelete from '../img/icon_delete.svg'
 import iconCreate from '../img/icon_create.svg'
 import {
   fetchCapsuleById,
@@ -46,8 +47,10 @@ function AvatarStack({ users, max = 4, size = 26 }: { users: any[]; max?: number
 function CapsuleEditPage() {
   const { capsuleId: id } = useParams<{ capsuleId: string }>()
   const navigate = useNavigate()
+  const { tema } = useTema()
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const fileInputRef = useRef<HTMLInputElement>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
@@ -291,7 +294,7 @@ function CapsuleEditPage() {
     <header className="mobile-header" aria-label={txt('Editar capsula', 'Edit capsule')}>
       <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver', 'Back')}>←</button>
       <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
-        <img src={logoMAsset} alt="Momentum" />
+        <img src={logo} alt="Momentum" />
       </Link>
       <span className="mobile-header__right" aria-hidden="true" />
     </header>
@@ -397,7 +400,7 @@ function CapsuleEditPage() {
                       onClick={() => media._id && handleDeleteMedia(media._id)}
                       aria-label={txt('Eliminar foto', 'Delete photo')}
                     >
-                      <img src={iconDeleteN} alt="" width={16} height={16} aria-hidden="true" />
+                      <img src={iconDelete} alt="" width={16} height={16} aria-hidden="true" />
                     </button>
                   </div>
                 ))}

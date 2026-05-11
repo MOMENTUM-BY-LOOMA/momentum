@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, Fragment } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import iconEdit from '../img/icon_edit.svg'
 import { fetchCapsuleById, getCapsuleThumb, type ApiCapsule } from '../services/api'
@@ -55,7 +56,7 @@ function getMediaKind(media: any) {
   const mimeType = String(media?.mimeType || '')
   const title = String(media?.title || '')
   const type = media?.type
-  
+
   // Check MIME type first (most reliable)
   if (mimeType) {
     if (mimeType.startsWith('image/')) return 'image'
@@ -63,13 +64,13 @@ function getMediaKind(media: any) {
     if (mimeType.startsWith('audio/')) return 'audio'
     if (mimeType.startsWith('model/') || mimeType.includes('gltf')) return '3d'
   }
-  
+
   // Check explicit type field
   if (type === '3d') return '3d'
   if (type === 'audio') return 'audio'
   if (type === 'video') return 'video'
   if (type === 'image') return 'image'
-  
+
   // Check title/filename for extension
   if (title) {
     const titleLower = title.toLowerCase()
@@ -78,14 +79,14 @@ function getMediaKind(media: any) {
     if (/\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(titleLower)) return 'video'
     if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(titleLower)) return 'image'
   }
-  
+
   // Check URL for extension (fallback)
   const urlLower = url.toLowerCase()
   if (/\.(glb|gltf|obj|fbx|stl)(\?.*)?$/i.test(urlLower)) return '3d'
   if (/\.(mp3|wav|ogg|oga|m4a|aac|flac|webm)(\?.*)?$/i.test(urlLower)) return 'audio'
   if (/\.(mp4|mov|webm|ogg|avi|mkv)(\?.*)?$/i.test(urlLower)) return 'video'
   if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(urlLower)) return 'image'
-  
+
   return 'file'
 }
 
@@ -153,6 +154,8 @@ const SLIDE_GAP = 0
 function CapsuleInterior() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
 
@@ -291,7 +294,7 @@ function CapsuleInterior() {
     <header className="mobile-header" aria-label={txt('Interior de capsula', 'Capsule interior')}>
       <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={txt('Volver', 'Back')}>←</button>
       <Link to="/inicio" className="logo-button" aria-label={txt('Ir a inicio', 'Go home')}>
-        <img src={logoMAsset} alt="Momentum" />
+        <img src={logo} alt="Momentum" />
       </Link>
       <span className="mobile-header__right" aria-hidden="true" />
     </header>
@@ -634,29 +637,29 @@ function CapsuleInterior() {
 
           {generalComments.length > 0 ? (
             <div className="ci-comments__list">
-                {generalCommentTree.roots.map((comment) => renderGeneralComment(comment))}
+              {generalCommentTree.roots.map((comment) => renderGeneralComment(comment))}
             </div>
           ) : (
             <p className="ci-comments__empty">{txt('Sin comentarios todavia', 'No comments yet')}</p>
           )}
 
-            {generalReplyTarget && (
-              <div className="ci-comment-replying" role="status" aria-live="polite">
-                <span>
-                  {txt('Respondiendo a', 'Replying to')} @{typeof generalReplyTarget.author === 'string'
-                    ? generalReplyTarget.author
-                    : ((generalReplyTarget.author as any).username || (generalReplyTarget.author as any).name || 'Usuario')}
-                </span>
-                <button type="button" className="ci-comment-replying__cancel" onClick={() => setGeneralReplyTarget(null)}>
-                  {txt('Cancelar', 'Cancel')}
-                </button>
-              </div>
-            )}
+          {generalReplyTarget && (
+            <div className="ci-comment-replying" role="status" aria-live="polite">
+              <span>
+                {txt('Respondiendo a', 'Replying to')} @{typeof generalReplyTarget.author === 'string'
+                  ? generalReplyTarget.author
+                  : ((generalReplyTarget.author as any).username || (generalReplyTarget.author as any).name || 'Usuario')}
+              </span>
+              <button type="button" className="ci-comment-replying__cancel" onClick={() => setGeneralReplyTarget(null)}>
+                {txt('Cancelar', 'Cancel')}
+              </button>
+            </div>
+          )}
 
           <div className="ci-comment-input">
-            <input              ref={generalCommentInputRef}              type="text"
+            <input ref={generalCommentInputRef} type="text"
               className="ci-comment-input__field"
-                placeholder={generalReplyTarget ? txt('escribe tu respuesta...', 'write your reply...') : txt('comentar algo...', 'comment something...')}
+              placeholder={generalReplyTarget ? txt('escribe tu respuesta...', 'write your reply...') : txt('comentar algo...', 'comment something...')}
               value={generalCommentText}
               onChange={(e) => setGeneralCommentText(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitGeneralComment() }}
@@ -667,7 +670,7 @@ function CapsuleInterior() {
               className="ci-comment-input__send-text"
               onClick={handleSubmitGeneralComment}
               disabled={submittingComment || !generalCommentText.trim()}
-              >{generalReplyTarget ? txt('Responder', 'Reply') : txt('Enviar', 'Send')}</button>
+            >{generalReplyTarget ? txt('Responder', 'Reply') : txt('Enviar', 'Send')}</button>
           </div>
         </section>
 

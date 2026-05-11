@@ -1,11 +1,14 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import { fetchCapsules, type ApiCapsule } from '../services/api.ts'
 import { useTranslate } from '../services/useTranslate'
 
 function CapsulesPage() {
   const navigate = useNavigate()
+  const { tema } = useTema()
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
   const { t } = useTranslate()
   const [capsules, setCapsules] = useState<ApiCapsule[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +42,7 @@ function CapsulesPage() {
       <header className="mobile-header" aria-label={t('capsulesTitle')}>
         <button type="button" className="mobile-header__left" onClick={() => navigate(-1)} aria-label={t('backText')}>←</button>
         <Link to="/inicio" className="logo-button" aria-label={t('home')}>
-          <img src={logoMAsset} alt="Momentum" />
+          <img src={logo} alt="Momentum" />
         </Link>
         <span className="mobile-header__right" aria-hidden="true" />
       </header>

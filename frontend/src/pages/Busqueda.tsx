@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
-import iconTripN from '../img/icon_trip_n.svg'
-import iconFamilyN from '../img/icon_family_n.svg'
-import iconLoveN from '../img/icon_love_n.svg'
-import iconWorkN from '../img/icon_work_n.svg'
+import iconTrip from '../img/icon_trip.svg'
+import iconFamily from '../img/icon_family.svg'
+import iconLove from '../img/icon_love.svg'
+import iconWork from '../img/icon_work.svg'
 import CapsulaThumb from '../components/CapsulaThumb'
 import { getCapsuleThumb, type ApiCapsule } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
@@ -16,17 +17,20 @@ interface Categoria {
 }
 
 const categorias: Categoria[] = [
-  { label: 'VIAJES',   valor: 'viajes',   icono: iconTripN   },
-  { label: 'FAMILIA',  valor: 'familia',  icono: iconFamilyN },
-  { label: 'AMISTAD',  valor: 'amistad',  icono: iconLoveN   },
-  { label: 'TRABAJO',  valor: 'trabajo',  icono: iconWorkN   },
+  { label: 'VIAJES', valor: 'viajes', icono: iconTrip },
+  { label: 'FAMILIA', valor: 'familia', icono: iconFamily },
+  { label: 'AMISTAD', valor: 'amistad', icono: iconLove },
+  { label: 'TRABAJO', valor: 'trabajo', icono: iconWork },
 ]
 
 export default function Busqueda() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { tema } = useTema()
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
+
+  const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
 
   // inputQuery: lo que el usuario escribe en el input (no lanza búsqueda automática)
   const [inputQuery, setInputQuery] = useState('')
@@ -43,10 +47,10 @@ export default function Busqueda() {
   const categoriaLabel = categorias.find((c) => c.valor === activeCategory)?.label
 
   const categoriasUi: Categoria[] = [
-    { label: txt('VIAJES', 'TRAVEL'), valor: 'viajes', icono: iconTripN },
-    { label: txt('FAMILIA', 'FAMILY'), valor: 'familia', icono: iconFamilyN },
-    { label: txt('AMISTAD', 'FRIENDSHIP'), valor: 'amistad', icono: iconLoveN },
-    { label: txt('TRABAJO', 'WORK'), valor: 'trabajo', icono: iconWorkN },
+    { label: txt('VIAJES', 'TRAVEL'), valor: 'viajes', icono: iconTrip },
+    { label: txt('FAMILIA', 'FAMILY'), valor: 'familia', icono: iconFamily },
+    { label: txt('AMISTAD', 'FRIENDSHIP'), valor: 'amistad', icono: iconLove },
+    { label: txt('TRABAJO', 'WORK'), valor: 'trabajo', icono: iconWork },
   ]
 
   useEffect(() => {
@@ -56,7 +60,7 @@ export default function Busqueda() {
   // Sincronizar el input con el param q de la URL (al navegar de vuelta etc.)
   useEffect(() => {
     setInputQuery(urlParams.get('q')?.trim() ?? '')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search])
 
   // Buscar solo cuando cambia la URL (no al escribir)
@@ -111,7 +115,7 @@ export default function Busqueda() {
           aria-label={txt('Ir a inicio', 'Go home')}
           onClick={() => navigate('/inicio')}
         >
-          <img className="mobile-header__logo" src={logoMAsset} alt="Momentum" />
+          <img className="mobile-header__logo" src={logo} alt="Momentum" />
         </button>
         <span className="mobile-header__right" aria-hidden="true" />
       </header>
