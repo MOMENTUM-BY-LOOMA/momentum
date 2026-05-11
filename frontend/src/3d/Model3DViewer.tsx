@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { usePreferences } from '../context/PreferencesContext'
 
 interface Model3DViewerProps {
   modelPath: string
@@ -10,6 +11,7 @@ interface Model3DViewerProps {
 
 export function Model3DViewer({ modelPath, backgroundColor = '#13131f' }: Model3DViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const { preferences } = usePreferences()
 
   useEffect(() => {
     const container = containerRef.current
@@ -79,6 +81,14 @@ export function Model3DViewer({ modelPath, backgroundColor = '#13131f' }: Model3
     // Animation — keep the ID so we can cancel it on cleanup
     let animId: number
     const animate = () => {
+      // If reduce animations is enabled, only render once without continuous loop
+      if (preferences.reduceAnimations) {
+        controls.update()
+        renderer.render(scene, camera)
+        return
+      }
+      
+      // Normal animation loop
       animId = requestAnimationFrame(animate)
       controls.update()
       renderer.render(scene, camera)
@@ -107,7 +117,7 @@ export function Model3DViewer({ modelPath, backgroundColor = '#13131f' }: Model3
         container.removeChild(renderer.domElement)
       }
     }
-  }, [modelPath, backgroundColor])
+  }, [modelPath, backgroundColor, preferences.reduceAnimations])
 
   return (
     <div

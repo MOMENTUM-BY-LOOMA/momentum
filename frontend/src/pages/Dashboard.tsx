@@ -4,7 +4,7 @@ import { useTema } from '../context/TemaContext'
 import IconoTema from '../components/IconoTema'
 import CapsulaThumb from '../components/CapsulaThumb'
 import NotificationBell from '../components/NotificationBell'
-import { logoMAsset, settingsIconAsset, notificationIconAsset } from '../img'
+import { logoMAsset, settingsIconAsset, notificationIconAsset, notificationIconNAsset } from '../img'
 import { clearSession, getCapsuleThumb, type ApiCapsule } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
 import '../styles/home.css'
@@ -38,7 +38,7 @@ function Dashboard() {
   const { t, language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
-  const notificationIcon = notificationIconAsset
+  const notificationIcon = tema === 'oscuro' ? notificationIconAsset : notificationIconNAsset
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('')
   const [capsulasDesbloqueadas, setCapsulasDesbloqueadas] = useState<ApiCapsule[]>([])
   const [misCapsulas, setMisCapsulas] = useState<ApiCapsule[]>([])

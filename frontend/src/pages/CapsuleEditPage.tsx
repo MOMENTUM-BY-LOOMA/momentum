@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTema } from '../context/TemaContext'
-import { logoMAsset } from '../img'
+import { logoMAsset, deleteIconNAsset } from '../img'
 import iconDelete from '../img/icon_delete.svg'
 import iconCreate from '../img/icon_create.svg'
 import {
@@ -51,6 +51,7 @@ function CapsuleEditPage() {
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
   const logo = tema === 'oscuro' ? '/img/logo_m_blanco.svg' : logoMAsset
+  const deleteIcon = tema === 'oscuro' ? iconDelete : deleteIconNAsset
   const fileInputRef = useRef<HTMLInputElement>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
@@ -400,7 +401,7 @@ function CapsuleEditPage() {
                       onClick={() => media._id && handleDeleteMedia(media._id)}
                       aria-label={txt('Eliminar foto', 'Delete photo')}
                     >
-                      <img src={iconDelete} alt="" width={16} height={16} aria-hidden="true" />
+                      <img src={deleteIcon} alt="" width={16} height={16} aria-hidden="true" />
                     </button>
                   </div>
                 ))}

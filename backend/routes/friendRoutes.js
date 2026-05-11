@@ -632,4 +632,55 @@ router.delete('/blocks/:userId', auth, async (req, res) => {
   }
 });
 
+// Get friends of a public user (no auth required)
+router.get('/public/:identifier', async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({ message: 'Database unavailable' });
+  }
+
+  try {
+    const { identifier } = req.params;
+    
+    // Find the user by ID or username
+    let user;
+    if (isValidObjectId(identifier)) {
+      user = await User.findById(identifier, '_id');
+    } else {
+      // Search by name (username)
+      const normalized = normalizeUsername(identifier);
+      const users = await User.find({}, '_id name email');
+      user = users.find((u) => normalizeUsername(u.name) === normalized || normalizeUsername(u.email) === normalized);
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get all accepted friend relations for this user
+    const relations = await FriendRelation.find({
+      status: 'accepted',
+      $or: [
+        { requester: user._id },
+        { recipient: user._id },
+      ],
+    })
+      .populate('requester', 'name email avatar profilePhoto')
+      .populate('recipient', 'name email avatar profilePhoto');
+
+    // Return the friend list with friend count
+    const friends = relations.map((relation) => ({
+      ...relationResponse(relation, user._id, true),
+      friend: String(relation.requester._id) === String(user._id) ? relation.recipient : relation.requester,
+    }));
+
+    res.json({
+      userId: user._id,
+      friendCount: friends.length,
+      friends,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

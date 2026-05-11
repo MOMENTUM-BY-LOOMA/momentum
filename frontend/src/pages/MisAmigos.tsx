@@ -264,7 +264,10 @@ function MisAmigos() {
     return clean || 'usuario'
   }, [currentUser])
 
-  const shareUrl = useMemo(() => `https://momentum.app/perfil/${username}`, [username])
+  const shareUrl = useMemo(() => {
+    const APP_BASE = (import.meta.env.VITE_APP_URL ?? window.location.origin).replace(/\/$/, '')
+    return `${APP_BASE}/perfil/${username}`
+  }, [username])
   const outgoingPendingIds = useMemo(() => new Set(outgoingRequests.map((entry) => entry.user._id)), [outgoingRequests])
 
   const handleCopyUrl = async () => {
@@ -370,15 +373,23 @@ function MisAmigos() {
 
             return (
               <article key={friend._id} className="mis-amigos-row">
-                <div className="mis-amigos-row__photo-wrap">
-                  {friend.profilePhoto || friend.avatar ? (
-                    <img className="mis-amigos-row__photo" src={friend.profilePhoto || friend.avatar} alt={friend.name} />
-                  ) : (
-                    <div className="mis-amigos-row__photo-fallback" aria-label={`${txt('Sin foto de', 'No photo for')} ${friend.name}`}>
-                      <span>{getInitial(friend.name)}</span>
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  className="mis-amigos-row__friend-btn"
+                  onClick={() => navigate(`/perfil/${friend.name}`)}
+                  aria-label={`${txt('Ver perfil de', 'View profile of')} ${friend.name}`}
+                >
+                  <div className="mis-amigos-row__photo-wrap">
+                    {friend.profilePhoto || friend.avatar ? (
+                      <img className="mis-amigos-row__photo" src={friend.profilePhoto || friend.avatar} alt={friend.name} />
+                    ) : (
+                      <div className="mis-amigos-row__photo-fallback" aria-label={`${txt('Sin foto de', 'No photo for')} ${friend.name}`}>
+                        <span>{getInitial(friend.name)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="mis-amigos-row__name">{friend.name}</span>
+                </button>
 
                 <div className="mis-amigos-row__capsules" aria-label={`${txt('Cápsulas compartidas con', 'Shared capsules with')} ${friend.name}`}>
                   {visibleCapsules.map((capsule) => (

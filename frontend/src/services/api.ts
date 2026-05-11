@@ -308,6 +308,10 @@ export async function fetchFriends(): Promise<ApiFriendRelation[]> {
   return requestJson<ApiFriendRelation[]>('/api/friends')
 }
 
+export async function fetchPublicUserFriends(userIdentifier: string): Promise<{ friendCount: number; friends: ApiFriendRelation[] }> {
+  return requestJson<{ friendCount: number; friends: ApiFriendRelation[] }>(`/api/friends/public/${encodeURIComponent(userIdentifier)}`)
+}
+
 export async function fetchUserById(userId: string): Promise<ApiFriendProfile> {
   return requestJson<ApiFriendProfile>(`/api/users/${userId}`)
 }

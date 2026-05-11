@@ -135,7 +135,8 @@ function CreateCapsuleStep3({
   }
 
   const handleShareProfile = () => {
-    const profileUrl = `https://momentum.app/perfil/${currentUser.username}`
+    const APP_BASE = (import.meta.env.VITE_APP_URL ?? window.location.origin).replace(/\/$/, '')
+    const profileUrl = `${APP_BASE}/perfil/${currentUser.username}`
     updateForm({ sharingDecision: 'link' })
     
     if (navigator.share) {

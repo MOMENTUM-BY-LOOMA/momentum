@@ -52,6 +52,9 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
   const [error, setError] = useState('')
   const [sharingModal, setSharingModal] = useState<ApiNotification | null>(null)
   const [rejectingId, setRejectingId] = useState<string | null>(null)
+  const [toast, setToast] = useState<ApiNotification | null>(null)
+  const toastTimerRef = useRef<number | null>(null)
+  const prevNotificationsRef = useRef<ApiNotification[]>([])
 
   const loadAll = async () => {
     try {
@@ -62,6 +65,19 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
       setUnreadCount(countResult.unreadCount)
       setNotifications(notificationsResult)
 
+      // detect new unread notifications compared to previous load
+      try {
+        const prevIds = new Set(prevNotificationsRef.current.map((n) => n._id))
+        const newOnes = notificationsResult.filter((n) => !prevIds.has(n._id) && !n.read)
+        if (newOnes.length > 0) {
+          showToast(newOnes[0])
+        }
+      } catch {
+        // ignore
+      }
+      // store for next comparison
+      prevNotificationsRef.current = notificationsResult
+
       const pending = notificationsResult.find(
         (n) => !n.read && n.type === 'collaborator_added'
       )
@@ -69,6 +85,19 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
     } catch {
       setUnreadCount(0)
     }
+  }
+
+  function showToast(notification: ApiNotification) {
+    setToast(notification)
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    // stay at least 3000ms
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
+  }
+
+  function hideToast() {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = null
+    setToast(null)
   }
 
   useEffect(() => {
@@ -95,6 +124,12 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
     const intervalId = window.setInterval(loadAll, 60000)
     return () => window.clearInterval(intervalId)
   }, [token])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    }
+  }, [])
 
   async function handleMarkAllRead() {
     try {
@@ -199,18 +234,70 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
                     key={notification._id}
                     className={`notification-bell__item ${notification.read ? 'is-read' : ''}`}
                   >
-                    <button
-                      type="button"
-                      className="notification-bell__item-button"
-                      onClick={() => handleMarkRead(notification._id)}
-                    >
-                      <span className="notification-bell__item-text">
-                        {resolveNotificationText(notification, txt('Alguien', 'Someone'))}
-                      </span>
-                      <span className="notification-bell__item-meta">
-                        {formatDate(notification.createdAt, language === 'en' ? 'en-US' : 'es-ES', txt('Hace un momento', 'Just now'))}
-                      </span>
-                    </button>
+                    <div className="notification-bell__item-row">
+                      <button
+                        type="button"
+                        className="notification-bell__item-button"
+                        onClick={async () => {
+                          // Navigate to the relevant place first, then mark as read
+                          try {
+                            const target = (() => {
+                              const t = notification.type
+                              const data = notification.data || {}
+                              // friend_request -> open friends page
+                              if (t === 'friend_request') return '/amigos'
+                              // friend_accepted -> go to friend's profile if actor id available
+                              if (t === 'friend_accepted') {
+                                if (notification.actor && typeof notification.actor !== 'string') return `/amigos/${notification.actor._id}`
+                                if (data.relationId) return `/amigos`
+                                return '/amigos'
+                              }
+                              // collaborator_added -> go to capsule (edit if role=edit/admin else shared/view)
+                              if (t === 'collaborator_added') {
+                                const capsuleId = data.capsuleId
+                                const role = String(data.role || '')
+                                if (!capsuleId) return '/mis-capsulas'
+                                if (role === 'admin' || role === 'edit') return `/capsulas/${capsuleId}/editar`
+                                return `/capsulas/${capsuleId}`
+                              }
+                              // comment_added or others -> open capsule if provided
+                              if (t === 'comment_added') {
+                                const capsuleId = data.capsuleId
+                                if (capsuleId) return `/capsulas/${capsuleId}`
+                                return '/inicio'
+                              }
+                              return '/inicio'
+                            })()
+
+                            navigate(target)
+                          } finally {
+                            // mark as read after navigation (best-effort)
+                            await handleMarkRead(notification._id).catch(() => {})
+                          }
+                        }}
+                      >
+                        <span className="notification-bell__item-text">
+                          {resolveNotificationText(notification, txt('Alguien', 'Someone'))}
+                        </span>
+                        <span className="notification-bell__item-meta">
+                          {formatDate(notification.createdAt, language === 'en' ? 'en-US' : 'es-ES', txt('Hace un momento', 'Just now'))}
+                        </span>
+                      </button>
+
+                      {!notification.read && (
+                        <button
+                          type="button"
+                          className="notification-bell__item-mark-read"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void handleMarkRead(notification._id)
+                          }}
+                          aria-label={txt('Marcar como leida', 'Mark as read')}
+                        >
+                          ✓
+                        </button>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -251,6 +338,55 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
                 {txt('Aceptar', 'Accept')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast / globo de notificación entrante */}
+      {toast && (
+        <div className="notification-toast" role="status" aria-live="polite">
+          <div className="notification-toast__content">
+            <button
+              type="button"
+              className="notification-toast__close"
+              onClick={() => hideToast()}
+              aria-label={txt('Cerrar notificación', 'Close notification')}
+            >
+              ×
+            </button>
+            <button
+              type="button"
+              className="notification-toast__action"
+              onClick={async () => {
+                // navigate to relevant target then mark read
+                try {
+                  const t = toast
+                  if (!t) return
+                  const data = t.data || {}
+                  let target = '/inicio'
+                  if (t.type === 'friend_request') target = '/amigos'
+                  else if (t.type === 'friend_accepted') {
+                    if (t.actor && typeof t.actor !== 'string') target = `/amigos/${t.actor._id}`
+                    else target = '/amigos'
+                  } else if (t.type === 'collaborator_added') {
+                    const capsuleId = data.capsuleId
+                    const role = String(data.role || '')
+                    if (capsuleId) target = (role === 'admin' || role === 'edit') ? `/capsulas/${capsuleId}/editar` : `/capsulas/${capsuleId}`
+                    else target = '/mis-capsulas'
+                  } else if (t.type === 'comment_added') {
+                    const capsuleId = data.capsuleId
+                    if (capsuleId) target = `/capsulas/${capsuleId}`
+                  }
+
+                  navigate(target)
+                } finally {
+                  if (toast) await handleMarkRead(toast._id).catch(() => {})
+                  hideToast()
+                }
+              }}
+            >
+              <span className="notification-toast__text">{resolveNotificationText(toast, txt('Alguien', 'Someone'))}</span>
+            </button>
           </div>
         </div>
       )}

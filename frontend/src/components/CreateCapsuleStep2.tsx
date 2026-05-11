@@ -3,6 +3,7 @@ import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
 import type { ApiUser } from '../services/api'
 import CreateCapsuleStep3 from './CreateCapsuleStep3'
 import { useTranslate } from '../services/useTranslate'
+import { usePreferences } from '../context/PreferencesContext'
 
 interface CreateCapsuleStep2Props {
   form: CreateCapsuleFormState
@@ -23,6 +24,7 @@ function CreateCapsuleStep2({
 }: CreateCapsuleStep2Props) {
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
+  const { preferences } = usePreferences()
   const topRef = useRef<HTMLDivElement>(null)
   const sharingSectionRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState('')
@@ -30,10 +32,11 @@ function CreateCapsuleStep2({
   useEffect(() => {
     if (form.compartirConAmigos) {
       window.requestAnimationFrame(() => {
-        sharingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const behavior = preferences.reduceAnimations ? 'auto' : 'smooth'
+        sharingSectionRef.current?.scrollIntoView({ behavior: behavior as ScrollBehavior, block: 'start' })
       })
     }
-  }, [form.compartirConAmigos])
+  }, [form.compartirConAmigos, preferences.reduceAnimations])
 
   const getTodayDate = () => {
     const today = new Date()
@@ -47,7 +50,8 @@ function CreateCapsuleStep2({
 
   const handlePrimaryAction = () => {
     if (form.compartirConAmigos) {
-      sharingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const behavior = preferences.reduceAnimations ? 'auto' : 'smooth'
+      sharingSectionRef.current?.scrollIntoView({ behavior: behavior as ScrollBehavior, block: 'start' })
       return
     }
 

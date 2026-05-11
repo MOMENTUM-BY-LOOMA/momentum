@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { loginUser } from '../services/api'
 import { logoMAsset } from '../img'
 
@@ -23,7 +23,10 @@ function Login() {
       }
       sessionStorage.setItem('authUser', JSON.stringify(response.user))
       window.dispatchEvent(new Event('authUserChanged'))
-      navigate('/inicio')
+      // respect redirectTo from location.state if present
+      const state = (location as any).state as { redirectTo?: string } | null
+      const redirectTo = state?.redirectTo
+      navigate(redirectTo || '/inicio')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
     } finally {

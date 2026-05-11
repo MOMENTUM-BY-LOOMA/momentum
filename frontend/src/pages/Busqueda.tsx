@@ -3,9 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTema } from '../context/TemaContext'
 import { logoMAsset } from '../img'
 import iconTrip from '../img/icon_trip.svg'
+import iconTripN from '../img/icon_trip_n.svg'
 import iconFamily from '../img/icon_family.svg'
+import iconFamilyN from '../img/icon_family_n.svg'
 import iconLove from '../img/icon_love.svg'
+import iconLoveN from '../img/icon_love_n.svg'
 import iconWork from '../img/icon_work.svg'
+import iconWorkN from '../img/icon_work_n.svg'
 import CapsulaThumb from '../components/CapsulaThumb'
 import { getCapsuleThumb, type ApiCapsule } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
@@ -14,13 +18,14 @@ interface Categoria {
   label: string
   valor: string
   icono: string
+  iconoN?: string
 }
 
 const categorias: Categoria[] = [
-  { label: 'VIAJES', valor: 'viajes', icono: iconTrip },
-  { label: 'FAMILIA', valor: 'familia', icono: iconFamily },
-  { label: 'AMISTAD', valor: 'amistad', icono: iconLove },
-  { label: 'TRABAJO', valor: 'trabajo', icono: iconWork },
+  { label: 'VIAJES', valor: 'viajes', icono: iconTrip, iconoN: iconTripN },
+  { label: 'FAMILIA', valor: 'familia', icono: iconFamily, iconoN: iconFamilyN },
+  { label: 'AMISTAD', valor: 'amistad', icono: iconLove, iconoN: iconLoveN },
+  { label: 'TRABAJO', valor: 'trabajo', icono: iconWork, iconoN: iconWorkN },
 ]
 
 export default function Busqueda() {
@@ -47,10 +52,10 @@ export default function Busqueda() {
   const categoriaLabel = categorias.find((c) => c.valor === activeCategory)?.label
 
   const categoriasUi: Categoria[] = [
-    { label: txt('VIAJES', 'TRAVEL'), valor: 'viajes', icono: iconTrip },
-    { label: txt('FAMILIA', 'FAMILY'), valor: 'familia', icono: iconFamily },
-    { label: txt('AMISTAD', 'FRIENDSHIP'), valor: 'amistad', icono: iconLove },
-    { label: txt('TRABAJO', 'WORK'), valor: 'trabajo', icono: iconWork },
+    { label: txt('VIAJES', 'TRAVEL'), valor: 'viajes', icono: iconTrip, iconoN: iconTripN },
+    { label: txt('FAMILIA', 'FAMILY'), valor: 'familia', icono: iconFamily, iconoN: iconFamilyN },
+    { label: txt('AMISTAD', 'FRIENDSHIP'), valor: 'amistad', icono: iconLove, iconoN: iconLoveN },
+    { label: txt('TRABAJO', 'WORK'), valor: 'trabajo', icono: iconWork, iconoN: iconWorkN },
   ]
 
   useEffect(() => {
@@ -189,7 +194,7 @@ export default function Busqueda() {
                 aria-label={`${txt('Filtrar por', 'Filter by')} ${cat.label}`}
               >
                 <div className="busqueda__categoria-icono">
-                  <img src={cat.icono} alt="" width={32} height={32} aria-hidden="true" />
+                  <img src={tema === 'oscuro' ? cat.icono : (cat.iconoN ?? cat.icono)} alt="" width={32} height={32} aria-hidden="true" />
                 </div>
                 <span className="busqueda__categoria-nombre">{cat.label}</span>
               </button>
