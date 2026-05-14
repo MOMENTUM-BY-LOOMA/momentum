@@ -1010,7 +1010,6 @@
   border-radius: 50%;
   overflow: hidden;
   object-fit: cover;
-  background: #D5CCC0;
 }
 
 .capsula-thumb--3d canvas {
@@ -1038,6 +1037,47 @@
   color: #7a7062;
   font-family: var(--title-font);
   font-size: 1.5rem;
+}
+
+.capsula-thumb--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #D5CCC0;
+}
+
+.capsula-thumb-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: #7a7062;
+  border-radius: 50%;
+  animation: capsula-spin 0.7s linear infinite;
+}
+
+@keyframes capsula-spin {
+  to { transform: rotate(360deg); }
+}
+
+.model3d-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.model3d-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: capsula-spin 0.7s linear infinite;
 }
 
 .mi-perfil__empty {

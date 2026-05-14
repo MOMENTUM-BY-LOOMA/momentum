@@ -8,8 +8,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-const CLOUDINARY_NAME = process.env.CLOUDINARY_NAME || null;
-const S3_BUCKET = process.env.S3_BUCKET || null;
+const useR2 = Boolean(process.env.S3_3D_BUCKET);
 
 function fileFilter(_req, file, cb) {
   const allowedMimeTypes = new Set([
@@ -41,7 +40,6 @@ function fileFilter(_req, file, cb) {
     return cb(null, true);
   }
 
-  // Extension fallback for 3D models (browsers often send application/octet-stream)
   const ext = String(file.originalname || '').split('.').pop()?.toLowerCase() || '';
   if (['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext)) {
     return cb(null, true);
@@ -51,32 +49,13 @@ function fileFilter(_req, file, cb) {
 }
 
 let upload;
-let useS3 = false;
-let useCloudinary = false;
-let cloudinaryInstance = null;
 
-if (CLOUDINARY_NAME) {
-  const cloudinary = require('cloudinary').v2;
-  cloudinary.config({
-    cloud_name: CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET,
-  });
-  cloudinaryInstance = cloudinary;
-
+if (useR2) {
   upload = multer({
     storage: multer.memoryStorage(),
     fileFilter,
-    limits: { fileSize: 50 * 1024 * 1024 },
+    limits: { fileSize: 100 * 1024 * 1024 },
   });
-  useCloudinary = true;
-} else if (S3_BUCKET) {
-  upload = multer({
-    storage: multer.memoryStorage(),
-    fileFilter,
-    limits: { fileSize: 50 * 1024 * 1024 },
-  });
-  useS3 = true;
 } else {
   const storage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, uploadsDir),
@@ -93,8 +72,5 @@ if (CLOUDINARY_NAME) {
 module.exports = {
   upload,
   uploadsDir,
-  useS3,
-  S3_BUCKET,
-  useCloudinary,
-  cloudinaryInstance,
+  useR2,
 };

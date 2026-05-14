@@ -7,6 +7,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/3d', express.static(path.join(__dirname, '../frontend/public/3d')));
 
 app.get('/health', (req, res) => {
   res.json({ ok: true });

@@ -40,7 +40,7 @@ function CapsulaThumb({ capsula, onOpen }: CapsulaThumbProps) {
       {capsula.thumbnailUrl ? (
         <img className="capsula-thumb" src={capsula.thumbnailUrl} alt={title} loading="lazy" />
       ) : capsula.modelUrl && isGltfModel(capsula.modelUrl) ? (
-        <Suspense fallback={<div className="capsula-thumb capsula-thumb--fallback"><span>{getInitial(title)}</span></div>}>
+        <Suspense fallback={<div className="capsula-thumb capsula-thumb--loading"><span className="capsula-thumb-spinner" /></div>}>
           <LazyCapsulaThumb3D modelUrl={capsula.modelUrl} title={title} />
         </Suspense>
       ) : (

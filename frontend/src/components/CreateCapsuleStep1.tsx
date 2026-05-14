@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useRef } from 'react'
 import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
 import { fetchCapsuleModels, uploadModel3DFile, type ApiCapsuleModel } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
+import CapsulaThumb3D from './CapsulaThumb3D'
 
 interface CreateCapsuleStep1Props {
   form: CreateCapsuleFormState
@@ -202,15 +203,14 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                 <>
                   <div
                     style={{
-                      width: '100px',
-                      height: '100px',
-                      borderRadius: '12px',
+                      width: '160px',
+                      height: '160px',
+                      borderRadius: '16px',
                       overflow: 'hidden',
-                      background: 'var(--color-fondo-secundario)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transform: isModelSelected && form.modelId === models[carouselIndex].id ? 'scale(1.15)' : 'scale(1)',
+                      transform: isModelSelected && form.modelId === models[carouselIndex].id ? 'scale(1.08)' : 'scale(1)',
                       transition: 'transform 0.2s ease',
                       cursor: 'pointer',
                       outline: isModelSelected && form.modelId === models[carouselIndex].id ? '2px solid var(--color-texto-principal)' : 'none',
@@ -227,35 +227,73 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                       }}
                     />
                   </div>
-                      <p style={{ fontSize: '0.6875rem', marginTop: '8px', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
-                    {models[carouselIndex].nombre}
-                  </p>
                 </>
               ) : (
                 <>
-                  <div
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      borderRadius: '12px',
-                      background: 'var(--color-fondo-secundario)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      gap: '4px',
-                      border: '1.5px dashed var(--color-borde)',
-                      transform: isCustomModelSelected ? 'scale(1.15)' : 'scale(1)',
-                      outline: isCustomModelSelected ? '2px solid var(--color-texto-principal)' : 'none',
-                    }}
-                    onClick={handleCustomModelClick}
-                  >
-                    <span style={{ fontSize: '1.7500rem', lineHeight: 1 }}>+</span>
-                    <span style={{ fontSize: '0.6875rem', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
-                      {txt('Cápsula personalizada', 'Custom capsule')}
-                    </span>
-                  </div>
+                  {uploadingFile ? (
+                    <div
+                      style={{
+                        width: '160px',
+                        height: '160px',
+                        borderRadius: '16px',
+                        background: 'var(--color-fondo-secundario)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <span className="capsula-thumb-spinner" />
+                    </div>
+                  ) : form.modelUrl && !form.modelId ? (
+                    <div
+                      style={{
+                        width: '160px',
+                        height: '160px',
+                        borderRadius: '16px',
+                        overflow: 'hidden',
+                        transform: isCustomModelSelected ? 'scale(1.08)' : 'scale(1)',
+                        transition: 'transform 0.2s ease',
+                        cursor: 'pointer',
+                        outline: isCustomModelSelected ? '2px solid var(--color-texto-principal)' : 'none',
+                      }}
+                      onClick={handleCustomModelClick}
+                      title={txt('Cambiar modelo', 'Change model')}
+                    >
+                      <CapsulaThumb3D
+                        modelUrl={form.modelUrl}
+                        style={{ width: '160px', height: '160px', borderRadius: 0 }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        width: '160px',
+                        height: '160px',
+                        borderRadius: '16px',
+                        background: 'var(--color-fondo-secundario)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        gap: '4px',
+                        border: '1.5px dashed var(--color-borde)',
+                        transform: isCustomModelSelected ? 'scale(1.08)' : 'scale(1)',
+                        outline: isCustomModelSelected ? '2px solid var(--color-texto-principal)' : 'none',
+                      }}
+                      onClick={handleCustomModelClick}
+                    >
+                      <span style={{ fontSize: '2rem', lineHeight: 1 }}>+</span>
+                      <span style={{ fontSize: '0.6875rem', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
+                        {txt('Cápsula personalizada', 'Custom capsule')}
+                      </span>
+                    </div>
+                  )}
+                  {form.modelUrl && !form.modelId && (
+                    <p style={{ fontSize: '0.6875rem', marginTop: '8px', textAlign: 'center', color: 'var(--color-texto-secundario)' }}>
+                      {txt('Personalizada', 'Custom')}
+                    </p>
+                  )}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -327,15 +365,15 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
                 key={index}
                 style={{
                   position: 'relative',
-                  width: '80px',
-                  height: '80px',
+                  width: '112px',
+                  height: '112px',
                 }}
               >
                 <div
                   style={{
                     width: '100%',
                     height: '100%',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     background: preview ? `url(${preview}) center/cover` : 'var(--color-fondo-secundario)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -381,9 +419,9 @@ function CreateCapsuleStep1({ form, updateForm, onContinue, isLoading }: CreateC
             onClick={handleAddMedia}
             disabled={isLoading}
             style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '8px',
+              width: '112px',
+              height: '112px',
+              borderRadius: '10px',
               background: 'var(--color-fondo-secundario)',
               border: '2px dashed var(--color-borde)',
               cursor: 'pointer',

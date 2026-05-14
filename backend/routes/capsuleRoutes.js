@@ -9,6 +9,46 @@ const { notifyCommentAdded, notifyCollaboratorAdded } = require('../services/not
 
 const router = express.Router();
 
+// R2 cleanup helpers
+const S3_3D_BUCKET = process.env.S3_3D_BUCKET || null;
+const S3_3D_PUBLIC_URL = (process.env.S3_3D_PUBLIC_URL || '').replace(/\/$/, '');
+let r2Client = null;
+let DeleteObjectCommand = null;
+if (S3_3D_BUCKET) {
+  try {
+    const sdk = require('@aws-sdk/client-s3');
+    r2Client = new sdk.S3Client({
+      region: process.env.S3_3D_REGION || 'auto',
+      endpoint: process.env.S3_3D_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.S3_3D_ACCESS_KEY,
+        secretAccessKey: process.env.S3_3D_SECRET_KEY,
+      },
+    });
+    DeleteObjectCommand = sdk.DeleteObjectCommand;
+  } catch (e) {
+    r2Client = null;
+  }
+}
+
+function r2KeyFromUrl(url) {
+  if (!url || !S3_3D_PUBLIC_URL) return null;
+  if (!url.startsWith(S3_3D_PUBLIC_URL + '/')) return null;
+  return url.slice(S3_3D_PUBLIC_URL.length + 1);
+}
+
+async function deleteFromR2(url) {
+  if (!r2Client || !DeleteObjectCommand || !url) return;
+  const key = r2KeyFromUrl(url);
+  if (!key) return;
+  if (key.startsWith('defaults/')) return;
+  try {
+    await r2Client.send(new DeleteObjectCommand({ Bucket: S3_3D_BUCKET, Key: key }));
+  } catch (e) {
+    console.error('R2 delete error for key', key, e.message);
+  }
+}
+
 function isDbConnected() {
   if (process.env.NODE_ENV === 'test') {
     return true;
@@ -202,28 +242,19 @@ router.get('/common/:friendId', auth, async (req, res) => {
   }
 });
 
+
+
+
+
 // Get available 3D models for capsule creation
 router.get('/models', auth, async (req, res) => {
   try {
-    // Sample 3D models - in production, these could come from a database or file system
     const models = [
       {
-        id: 'model-cube',
-        nombre: 'Cubo Moderno',
-        thumbnailUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzNjZjYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkN1YmU8L3RleHQ+PC9zdmc+',
-        modelUrl: '/3d/cube.glb',
-      },
-      {
-        id: 'model-pyramid',
-        nombre: 'Pirámide Clásica',
-        thumbnailUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzY2MzM5OSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkN0PSQoPy5Qb3I8L3RleHQ+PC9zdmc+',
-        modelUrl: '/3d/pyramid.glb',
-      },
-      {
-        id: 'model-sphere',
-        nombre: 'Esfera Brillante',
-        thumbnailUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzY2M2NiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjMyIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkVzZmVyYTwvdGV4dD48L3N2Zz4=',
-        modelUrl: '/3d/sphere.glb',
+        id: 'model-infinity+clock+sculpture+3d+model',
+        nombre: 'Infinity+Clock+Sculpture+3d+Model',
+        thumbnailUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/thumbnails/infinity+clock+sculpture+3d+model.png',
+        modelUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/models/infinity+clock+sculpture+3d+model.glb',
       },
     ];
 
@@ -933,8 +964,14 @@ router.delete('/:id/media/:mediaId', auth, async (req, res) => {
     const mediaItem = capsule.mediaItems.id(req.params.mediaId);
     if (!mediaItem) return res.status(404).json({ message: 'Media item not found' });
 
+    const urlToDelete = mediaItem.url;
+    const thumbToDelete = mediaItem.thumbnailUrl;
+
     mediaItem.deleteOne();
     await capsule.save();
+
+    // Clean up R2 after DB save
+    Promise.allSettled([deleteFromR2(urlToDelete), deleteFromR2(thumbToDelete)]).catch(() => {});
 
     res.json({ message: 'Media deleted' });
   } catch (error) {
@@ -999,6 +1036,16 @@ router.delete('/:id', auth, async (req, res) => {
 
     if (!canManage(capsule, req.user.id)) {
       return res.status(403).json({ message: 'Not authorized to delete this capsule' });
+    }
+
+    // Delete all media files from R2 (fire-and-forget, don't block the response)
+    if (capsule.mediaItems?.length) {
+      const urls = [];
+      for (const item of capsule.mediaItems) {
+        if (item.url) urls.push(item.url);
+        if (item.thumbnailUrl) urls.push(item.thumbnailUrl);
+      }
+      Promise.allSettled(urls.map(deleteFromR2)).catch(() => {});
     }
 
     await Capsule.findByIdAndDelete(req.params.id);

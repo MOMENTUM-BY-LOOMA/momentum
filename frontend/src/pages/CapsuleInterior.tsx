@@ -13,6 +13,7 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').repla
 function resolveUrl(url: string) {
   if (!url) return ''
   if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
+  if (url.startsWith('/3d/')) return url
   return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
 }
 

@@ -8,11 +8,12 @@ import { Model3DViewer } from '../3d/Model3DViewer'
 import '../styles/capsule-view.css'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
-const FALLBACK_MODEL = '/3d/statue%20of%20liberty%203d%20model.glb'
+const FALLBACK_MODEL = '/3d/liberty.glb'
 
 function resolveUrl(url: string) {
   if (!url) return ''
   if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
+  if (url.startsWith('/3d/')) return url
   return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
 }
 

@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createCapsule, uploadMediaFile, type ApiMediaItem, fetchCurrentUser, type ApiUser } from '../services/api.ts'
+import { render3DThumbnailFromUrl } from '../utils/render3DThumb'
 import CreateCapsuleStep1 from '../components/CreateCapsuleStep1'
 import CreateCapsuleStep2 from '../components/CreateCapsuleStep2'
 import HeaderSimple from '../components/HeaderSimple'
@@ -115,16 +116,25 @@ function CreateCapsuleFlowPage() {
         })
       }
 
-      // 2. Guardar el modelo 3D seleccionado o subido previamente
+      // 2. Guardar el modelo 3D — generar miniatura real antes de guardar
+      let generatedThumbnailUrl = form.thumbnailUrl || ''
       if (form.modelUrl) {
         const modelTitle = form.modelId ? form.modelUrl : txt('Modelo 3D', '3D Model')
+        try {
+          const thumbBlob = await render3DThumbnailFromUrl(form.modelUrl)
+          const thumbFile = new File([thumbBlob], 'model-thumb.png', { type: 'image/png' })
+          const thumbUpload = await uploadMediaFile(thumbFile)
+          generatedThumbnailUrl = thumbUpload.fileUrl
+        } catch (err) {
+          console.error('Could not generate 3D thumbnail, using placeholder', err)
+        }
         mediaItems.push({
           type: '3d',
           url: form.modelUrl,
           modelFormat: getModelFormatFromUrl(form.modelUrl),
           title: modelTitle,
           description: '',
-          thumbnailUrl: form.thumbnailUrl || '',
+          thumbnailUrl: generatedThumbnailUrl,
         })
       }
 
@@ -140,7 +150,7 @@ function CreateCapsuleFlowPage() {
         description: form.descripcion.trim(),
         mediaItems,
         design: form.modelId ? { key: form.modelId } : undefined,
-        previewImage: form.thumbnailUrl ?? '',
+        previewImage: generatedThumbnailUrl,
         timeCapsule: form.timeCapsule.enabled
           ? {
               enabled: true,

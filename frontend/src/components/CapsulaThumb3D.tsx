@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { useGLTF } from '@react-three/drei'
+import * as THREE from 'three'
 
 type CapsulaThumb3DProps = {
   modelUrl: string
@@ -9,18 +11,24 @@ type CapsulaThumb3DProps = {
   style?: CSSProperties
 }
 
-function PlaceholderBox() {
-  return (
-    <mesh position={[0, -0.45, 0]}>
-      <boxGeometry args={[0.8, 0.8, 0.8]} />
-      <meshStandardMaterial color="#999" />
-    </mesh>
-  )
+function ModelMesh({ url }: { url: string }) {
+  const gltf = useGLTF(url)
+
+  const scene = useMemo(() => {
+    const s = gltf.scene.clone()
+    const box = new THREE.Box3().setFromObject(s)
+    const center = box.getCenter(new THREE.Vector3())
+    const size = box.getSize(new THREE.Vector3())
+    const maxDim = Math.max(size.x, size.y, size.z, 0.001)
+    s.position.sub(center)
+    s.scale.setScalar(2.4 / maxDim)
+    return s
+  }, [gltf])
+
+  return <primitive object={scene} />
 }
 
 function CapsulaThumb3D({ modelUrl, title = 'Modelo 3D', className, style }: CapsulaThumb3DProps) {
-  // For now, just show a placeholder
-  // TODO: Implement 3D model loading when models are properly configured
   return (
     <div
       className={`capsula-thumb capsula-thumb--3d${className ? ` ${className}` : ''}`}
@@ -28,10 +36,12 @@ function CapsulaThumb3D({ modelUrl, title = 'Modelo 3D', className, style }: Cap
       data-model-url={modelUrl}
       style={style}
     >
-      <Canvas camera={{ position: [0, 0, 2.2], fov: 45 }} dpr={[1, 1.5]}>
+      <Canvas camera={{ position: [0, 0, 3.5], fov: 45 }} dpr={[1, 1.5]}>
         <ambientLight intensity={0.85} />
         <directionalLight position={[1.2, 1.8, 2.4]} intensity={1.1} />
-        <PlaceholderBox />
+        <Suspense fallback={null}>
+          <ModelMesh url={modelUrl} />
+        </Suspense>
       </Canvas>
     </div>
   )

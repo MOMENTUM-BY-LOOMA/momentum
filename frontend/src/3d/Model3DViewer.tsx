@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -12,8 +12,10 @@ interface Model3DViewerProps {
 export function Model3DViewer({ modelPath, backgroundColor = '#13131f' }: Model3DViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const { preferences } = usePreferences()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    setIsLoading(true)
     const container = containerRef.current
     if (!container) return
 
@@ -73,9 +75,13 @@ export function Model3DViewer({ modelPath, backgroundColor = '#13131f' }: Model3
         model.scale.setScalar(2.4 / maxDim)
 
         scene.add(model)
+        setIsLoading(false)
       },
       undefined,
-      (err) => console.error('Model3DViewer: error loading model', err),
+      (err) => {
+        console.error('Model3DViewer: error loading model', err)
+        setIsLoading(false)
+      },
     )
 
     // Animation — keep the ID so we can cancel it on cleanup
@@ -120,9 +126,13 @@ export function Model3DViewer({ modelPath, backgroundColor = '#13131f' }: Model3
   }, [modelPath, backgroundColor, preferences.reduceAnimations])
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative' }}
-    />
+    <div style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative' }}>
+      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      {isLoading && (
+        <div className="model3d-loading-overlay">
+          <div className="model3d-spinner" />
+        </div>
+      )}
+    </div>
   )
 }
