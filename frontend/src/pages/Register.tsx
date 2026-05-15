@@ -1,8 +1,9 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { logoMAsset } from '../img'
 function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -67,12 +68,14 @@ function Register() {
     setError('')
 
     try {
+      const incomingState = (location as any).state as { inviteToken?: string } | null
       navigate('/registro/datos', {
         state: {
           name: name.trim(),
           email: email.trim(),
           password,
           avatar: profilePhoto || undefined,
+          inviteToken: incomingState?.inviteToken,
         },
       })
     } catch (submitError) {

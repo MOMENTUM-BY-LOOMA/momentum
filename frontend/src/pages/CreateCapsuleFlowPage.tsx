@@ -139,10 +139,32 @@ function CreateCapsuleFlowPage() {
       }
 
       // 3. Crear cápsula
-      const collaborators: CreateCapsuleCollaboratorPayload[] = form.colaboradores.map(col => ({
-        userId: col.userId,
-        role: col.rol === 'editar' ? 'edit' : col.rol === 'admin' ? 'admin' : 'view',
-      }))
+      const collaborators: CreateCapsuleCollaboratorPayload[] = form.colaboradores
+        .filter(col => col.userId && String(col.userId).trim().length > 0)
+        .map(col => ({
+          userId: col.userId,
+          role: col.rol === 'editar' ? 'edit' : col.rol === 'admin' ? 'admin' : 'view',
+        }))
+
+      // Debug: log payload to help diagnosing stuck creation
+      try {
+        // eslint-disable-next-line no-console
+        console.log('Creating capsule payload', {
+          title: form.title.trim(),
+          category: form.categoria.trim(),
+          description: form.descripcion.trim(),
+          mediaItems,
+          design: form.modelId ? { key: form.modelId } : undefined,
+          previewImage: generatedThumbnailUrl,
+          timeCapsule: form.timeCapsule.enabled ? {
+            enabled: true,
+            unlockAt: form.timeCapsule.date ? new Date(form.timeCapsule.date).toISOString() : null,
+          } : undefined,
+          collaborators,
+        })
+      } catch (logErr) {
+        // ignore logging errors
+      }
 
       const capsule = await createCapsule({
         title: form.title.trim(),
@@ -162,6 +184,9 @@ function CreateCapsuleFlowPage() {
 
       navigate(`/capsulas/${capsule._id}`)
     } catch (err) {
+      // Log error for debugging
+      // eslint-disable-next-line no-console
+      console.error('Create capsule error:', err)
       setError(err instanceof Error ? err.message : txt('No se pudo crear la cápsula', 'Could not create capsule'))
     } finally {
       setIsSubmitting(false)

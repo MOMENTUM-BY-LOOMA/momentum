@@ -6,6 +6,7 @@ import CapsuleInterior from './pages/CapsuleInterior.tsx'
 import Dashboard from './pages/Dashboard.tsx'
 import Home from './pages/Home.tsx'
 import PerfilPublico from './pages/PerfilPublico.tsx'
+import InviteLanding from './pages/InviteLanding.tsx'
 import InitialLoading from './pages/InitialLoading.tsx'
 import Login from './pages/Login.tsx'
 import Register from './pages/Register.tsx'
@@ -158,6 +159,7 @@ function AppLayout() {
       >
         <Routes>
           <Route path="/perfil/:username" element={<PerfilPublico />} />
+          <Route path="/invite/:token" element={<InviteLanding />} />
 
           <Route element={<RequireGuest />}>
             <Route path="/" element={<InitialLoading />} />

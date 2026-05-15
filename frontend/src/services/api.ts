@@ -140,11 +140,18 @@ export type ApiCapsuleModel = {
 
 export function getCapsuleThumb(capsule: ApiCapsule): { thumbnailUrl?: string; modelUrl?: string } {
   const model3D = capsule.mediaItems?.find((m) => m.type === '3d')
+  const image = capsule.mediaItems?.find((m) => m.type === 'image')
+  const video = capsule.mediaItems?.find((m) => m.type === 'video')
+
   return {
-    thumbnailUrl: model3D?.thumbnailUrl
-      || capsule.mediaItems?.find((m) => m.type === 'image')?.thumbnailUrl
-      || capsule.previewImage
-      || undefined,
+    thumbnailUrl:
+      model3D?.thumbnailUrl ||
+      image?.thumbnailUrl ||
+      video?.thumbnailUrl ||
+      capsule.previewImage ||
+      // fallback to video url so frontend can render a <video> preview when no thumbnail exists
+      (video ? video.url : undefined) ||
+      undefined,
     modelUrl: model3D?.url,
   }
 }
@@ -436,6 +443,22 @@ export async function uploadModel3DFile(file: File): Promise<UploadModel3DRespon
 
 export async function fetchNotifications(): Promise<ApiNotification[]> {
   return requestJson<ApiNotification[]>('/api/notifications')
+}
+
+export async function getInvite(token: string): Promise<{ capsuleId: string; title: string; role: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/invite/${encodeURIComponent(token)}`)
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    const message = typeof data.message === 'string' ? data.message : 'Invite not found'
+    throw new Error(message)
+  }
+  return response.json()
+}
+
+export async function acceptInvite(token: string): Promise<ApiCapsule> {
+  return requestJson<ApiCapsule>(`/api/invite/${encodeURIComponent(token)}/accept`, {
+    method: 'POST',
+  })
 }
 
 export async function fetchUnreadNotificationCount(): Promise<{ unreadCount: number }> {

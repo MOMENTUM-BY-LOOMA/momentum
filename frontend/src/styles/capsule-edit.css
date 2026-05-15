@@ -333,6 +333,21 @@
   cursor: not-allowed;
 }
 
+.ce-add-media-btn {
+  display: block;
+  width: 100%;
+  background: var(--color-boton-primario);
+  color: var(--color-boton-texto);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ce-add-media-btn:disabled { opacity: 0.6; cursor: not-allowed }
+
 /* ── Description ── */
 .ce-description {
   padding: 0 20px;

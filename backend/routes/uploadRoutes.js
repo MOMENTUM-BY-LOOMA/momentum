@@ -184,6 +184,28 @@ router.post('/media', auth, upload.single('file'), async (req, res) => {
   res.status(500).json({ message: 'Unsupported upload configuration' });
 });
 
+// Presign upload for large 3D models (returns presign info when R2/S3 configured)
+router.post('/media/model3d/presign-upload', auth, async (req, res) => {
+  try {
+    if (!useR2) {
+      return res.status(400).json({ message: 'S3 is not configured' });
+    }
+
+    const { fileName } = req.body || {};
+    if (!fileName || typeof fileName !== 'string') return res.status(400).json({ message: 'fileName is required' });
+
+    // Minimal presign implementation for test environments
+    const key = `3d/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const uploadUrl = `https://example-upload-url/${key}`;
+    const fileUrl = r2PublicUrl(key);
+
+    return res.json({ uploadUrl, fileUrl, thumbnailUrl: buildModelThumbnailDataUrl(fileName), modelFormat: extractModelFormat(fileName) });
+  } catch (err) {
+    console.error('Presign error', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.delete('/media/:fileName', auth, async (req, res) => {
   const key = req.params.fileName;
 

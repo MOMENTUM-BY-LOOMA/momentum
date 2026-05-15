@@ -4,6 +4,7 @@ import { useTema } from '../context/TemaContext'
 import { logoMAsset, deleteIconNAsset } from '../img'
 import iconDelete from '../img/icon_delete.svg'
 import iconCreate from '../img/icon_create.svg'
+import { Model3DViewer } from '../3d/Model3DViewer'
 import {
   fetchCapsuleById,
   fetchFriends,
@@ -71,9 +72,8 @@ function CapsuleEditPage() {
   const [titleDraft, setTitleDraft] = useState('')
   const [savingTitle, setSavingTitle] = useState(false)
 
-  const mediaItems = (capsule?.mediaItems || []).filter(
-    (m) => m.type === 'image' || m.type === 'video'
-  )
+  // Show all media types in the carousel (images, video, 3d, file)
+  const mediaItems = (capsule?.mediaItems || [])
   const totalSlides = mediaItems.length
 
   useEffect(() => {
@@ -245,7 +245,7 @@ function CapsuleEditPage() {
       const addRes = await fetch(`${API_BASE}/api/capsules/${id}/media`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ url: uploaded.url, type: uploaded.type, modelFormat: uploaded.modelFormat }),
+        body: JSON.stringify({ url: uploaded.fileUrl || uploaded.file || uploaded.url, type: uploaded.type, modelFormat: uploaded.modelFormat, thumbnailUrl: uploaded.thumbnailUrl }),
       })
       if (addRes.ok) {
         const updated = await fetchCapsuleById(id)
@@ -322,11 +322,24 @@ function CapsuleEditPage() {
     ),
   ]
 
+  // Find 3D model for top viewer (reuse view styling)
+  const model3D = (capsule?.mediaItems || []).find((m: any) => m.type === '3d') ?? null
+  const modelPath = model3D ? resolveUrl(model3D.url) : '/3d/liberty.glb'
+
   return (
     <Fragment>
       {header}
 
       <section className="ce-page">
+        {/* Top preview similar to CapsuleView */}
+        <div className="capsule-view__title-row" style={{ width: '100%' }}>
+          <h1 className="capsule-view__title">{capsule.title}</h1>
+          <AvatarStack users={collaborators} size={28} />
+        </div>
+
+        <div className="capsule-view__model-wrapper" style={{ width: '100%', marginTop: 8 }}>
+          <Model3DViewer modelPath={modelPath} backgroundColor="transparent" />
+        </div>
         {/* Header row */}
         <div className="ce-header">
           <div className="ce-header__left">
@@ -371,9 +384,32 @@ function CapsuleEditPage() {
 
         {/* Add friend — owner/admin only */}
         {canManage && (
-          <button type="button" className="ce-add-friend-btn" onClick={() => setShowAddFriend(true)}>
-            + {txt('anadir amigo', 'add friend')}
-          </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" className="ce-add-friend-btn" onClick={() => setShowAddFriend(true)}>
+                + {txt('anadir amigo', 'add friend')}
+              </button>
+              <button type="button" className="ce-add-friend-btn" onClick={async () => {
+                if (!id) return
+                try {
+                  const token = sessionStorage.getItem('authToken')
+                  const res = await fetch(`${API_BASE}/api/capsules/${id}/invite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ role: 'view', expiresInDays: 14 }),
+                  })
+                  if (!res.ok) throw new Error('Invite generation failed')
+                  const data = await res.json()
+                  const url = data.url || `${window.location.origin}/invite/${data.token}`
+                  await navigator.clipboard.writeText(url)
+                  alert(txt('Enlace de invitacion copiado al portapapeles', 'Invite link copied to clipboard'))
+                } catch (e) {
+                  console.error('Error generating invite:', e)
+                  alert(txt('No se pudo generar el enlace', 'Could not generate invite'))
+                }
+              }}>
+                {txt('Generar enlace', 'Generate link')}
+              </button>
+            </div>
         )}
 
         {/* Carousel */}
@@ -391,9 +427,18 @@ function CapsuleEditPage() {
                     style={slideWidth > 0 ? { minWidth: slideWidth + 'px' } : undefined}
                   >
                     {media.type === 'video' ? (
-                      <video src={resolveUrl(media.url)} className="ce-slide__media" />
-                    ) : (
+                      <video src={resolveUrl(media.url)} className="ce-slide__media" controls />
+                    ) : media.type === 'image' ? (
                       <img src={resolveUrl(media.url)} alt={`Slide ${idx + 1}`} className="ce-slide__media" />
+                    ) : media.type === '3d' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 20 }}>
+                        <span>{media.title || '3D model'}</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 20, flexDirection: 'column', gap: 8 }}>
+                        <a href={resolveUrl(media.url)} target="_blank" rel="noreferrer" style={{ color: 'var(--color-texto-principal)' }}>{media.originalName || media.fileName || media.title || 'Archivo'}</a>
+                        <small style={{ color: 'var(--color-texto-secundario)' }}>{media.mimeType || media.type}</small>
+                      </div>
                     )}
                     <button
                       type="button"
@@ -453,6 +498,11 @@ function CapsuleEditPage() {
                 aria-label={txt('Siguiente', 'Next')}
               >›</button>
             </div>
+            <div style={{ padding: '12px 16px' }}>
+              <button type="button" className="ce-add-media-btn" onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}>
+                {uploadingMedia ? txt('Subiendo...', 'Uploading...') : `+ ${txt('Añadir multimedia', 'Add media')}`}
+              </button>
+            </div>
           </div>
         ) : (
           <button
@@ -468,7 +518,7 @@ function CapsuleEditPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.glb,.gltf,.obj,.fbx,.stl"
           onChange={handleAddMedia}
           style={{ display: 'none' }}
           aria-hidden="true"

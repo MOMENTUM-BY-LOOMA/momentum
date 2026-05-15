@@ -38,7 +38,16 @@ function MiPerfil() {
         setFriendsCount(friends.length)
 
         if (me?._id) {
-          const mine = (allCapsules || []).filter((capsule) => ownerId(capsule) === me._id)
+          const myId = me._id
+          const mine = (allCapsules || []).filter((capsule) => {
+            const owner = ownerId(capsule)
+            if (owner === myId) return true
+            const shared = Array.isArray(capsule.sharedWith) && capsule.sharedWith.some((u: any) => (typeof u === 'string' ? u : u?._id) === myId)
+            if (shared) return true
+            const collab = Array.isArray(capsule.collaborators) && capsule.collaborators.some((c: any) => (typeof c.user === 'string' ? c.user : c.user?._id) === myId)
+            if (collab) return true
+            return false
+          })
           setCapsules(mine)
         } else {
           setCapsules([])

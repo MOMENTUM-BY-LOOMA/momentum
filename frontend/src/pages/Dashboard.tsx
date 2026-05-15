@@ -111,11 +111,19 @@ function Dashboard() {
         if (!active) return
 
         if (Array.isArray(capsulesData)) {
-          const ownedCapsules = userId
-            ? capsulesData.filter((capsule) => getCapsuleOwnerId(capsule) === userId)
+          const visibleCapsules = userId
+            ? capsulesData.filter((capsule) => {
+              const ownerId = getCapsuleOwnerId(capsule)
+              if (ownerId === userId) return true
+              const shared = Array.isArray(capsule.sharedWith) && capsule.sharedWith.some((u: any) => (typeof u === 'string' ? u : u?._id) === userId)
+              if (shared) return true
+              const collab = Array.isArray(capsule.collaborators) && capsule.collaborators.some((c: any) => (typeof c.user === 'string' ? c.user : c.user?._id) === userId)
+              if (collab) return true
+              return false
+            })
             : capsulesData
 
-          setMisCapsulas(ownedCapsules.slice(0, 3))
+          setMisCapsulas(visibleCapsules.slice(0, 3))
         } else {
           setMisCapsulas([])
         }

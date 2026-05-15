@@ -9,6 +9,12 @@ const { notifyFriendRequest, notifyFriendAccepted } = require('../services/notif
 
 const router = express.Router();
 
+function accessQuery(userId) {
+  return {
+    $or: [{ owner: userId }, { sharedWith: userId }, { 'collaborators.user': userId }],
+  };
+}
+
 function isDbConnected() {
   if (process.env.NODE_ENV === 'test') {
     return true;

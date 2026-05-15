@@ -1,6 +1,6 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { registerUser } from '../services/api.ts'
+import { registerUser, loginUser, acceptInvite } from '../services/api.ts'
 import { logoMAsset } from '../img'
 
 type RegisterDraft = {
@@ -35,7 +35,7 @@ function RegisterDetails() {
     setError('')
 
     try {
-      await registerUser(
+        await registerUser(
         draft.name,
         draft.email,
         draft.password,
@@ -46,7 +46,29 @@ function RegisterDetails() {
           gender,
         },
       )
-      navigate('/registro/confirmacion')
+      // Auto-login after successful registration
+      try {
+        const resp = await loginUser(draft.email, draft.password)
+        sessionStorage.setItem('authToken', resp.token)
+        if (resp.refreshToken) sessionStorage.setItem('refreshToken', resp.refreshToken)
+        sessionStorage.setItem('authUser', JSON.stringify(resp.user))
+        window.dispatchEvent(new Event('authUserChanged'))
+
+        // If there is an inviteToken in the draft, accept it now
+        const inviteToken = (draft as any).inviteToken
+        if (inviteToken) {
+          try {
+            await acceptInvite(inviteToken)
+          } catch (e) {
+            // ignore invite accept errors for now
+          }
+        }
+
+        navigate('/registro/confirmacion')
+      } catch (loginErr) {
+        // If login failed, still go to confirmation page
+        navigate('/registro/confirmacion')
+      }
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : 'No se pudo completar el registro'
       setError(message)
