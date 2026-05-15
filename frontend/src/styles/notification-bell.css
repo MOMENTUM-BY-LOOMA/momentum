@@ -239,6 +239,96 @@
   opacity: 0.75;
 }
 
+/* ── Toast notification (incoming notification) ── */
+.notification-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  animation: toast-slide-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes toast-slide-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes toast-slide-down {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}
+
+.notification-toast.closing {
+  animation: toast-slide-down 0.3s ease;
+}
+
+.notification-toast__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  max-width: 360px;
+  width: auto;
+}
+
+.notification-toast__action {
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.notification-toast__text {
+  font-size: 0.875rem;
+  color: var(--color-texto-principal);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.notification-toast__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--color-texto-secundario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.notification-toast__close:hover {
+  opacity: 0.6;
+}
+
 @media (min-width: 768px) {
   .nb-sharing-overlay {
     align-items: center;
@@ -248,5 +338,9 @@
     border-radius: 24px;
     max-width: 420px;
     margin: 0 auto;
+  }
+  
+  .notification-toast__content {
+    max-width: 420px;
   }
 }

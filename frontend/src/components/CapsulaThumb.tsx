@@ -25,6 +25,11 @@ function isGltfModel(url: string) {
   return clean.endsWith('.glb') || clean.endsWith('.gltf')
 }
 
+function isVideoUrl(url: string) {
+  const clean = String(url || '').split('?')[0].toLowerCase()
+  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/.test(clean)
+}
+
 function CapsulaThumb({ capsula, onOpen }: CapsulaThumbProps) {
   const { language } = useTranslate()
   const txt = (es: string, en: string) => (language === 'en' ? en : es)
@@ -38,7 +43,11 @@ function CapsulaThumb({ capsula, onOpen }: CapsulaThumbProps) {
       onClick={() => onOpen(capsula.id)}
     >
       {capsula.thumbnailUrl ? (
-        <img className="capsula-thumb" src={capsula.thumbnailUrl} alt={title} loading="lazy" />
+        isVideoUrl(capsula.thumbnailUrl) ? (
+          <video className="capsula-thumb" src={capsula.thumbnailUrl} muted playsInline loop preload="metadata" />
+        ) : (
+          <img className="capsula-thumb" src={capsula.thumbnailUrl} alt={title} loading="lazy" />
+        )
       ) : capsula.modelUrl && isGltfModel(capsula.modelUrl) ? (
         <Suspense fallback={<div className="capsula-thumb capsula-thumb--loading"><span className="capsula-thumb-spinner" /></div>}>
           <LazyCapsulaThumb3D modelUrl={capsula.modelUrl} title={title} />

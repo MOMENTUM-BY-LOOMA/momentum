@@ -4,10 +4,14 @@ const { body, validationResult } = require('express-validator');
 const Capsule = require('../models/capsule');
 const User = require('../models/user');
 const FriendRelation = require('../models/friendRelation');
+const InviteToken = require('../models/inviteToken');
 const auth = require('../middleware/authMiddleware');
 const { notifyCommentAdded, notifyCollaboratorAdded } = require('../services/notificationService');
+const logger = require('../utils/logger');
 
 const router = express.Router();
+
+const crypto = require('crypto');
 
 // R2 cleanup helpers
 const S3_3D_BUCKET = process.env.S3_3D_BUCKET || null;
@@ -549,9 +553,10 @@ router.post(
         date: req.body.date ?? new Date(),
       });
 
+      logger.info('Capsule created', { capsuleId: String(capsule._id), owner: String(req.user.id) });
       res.status(201).json(capsule);
     } catch (error) {
-      console.error('Capsule create error:', error);
+      logger.error('Capsule create error:', error);
       res.status(500).json({ message: 'Server error' });
     }
   },
@@ -666,9 +671,28 @@ router.post('/:id/share', auth, async (req, res) => {
       collaboratorMap.set(id, { user: id, role });
     });
 
+    const oldCollaborators = new Map(
+      (capsule.collaborators || []).map((item) => [String(item.user), { user: String(item.user), role: item.role }]),
+    );
+
     capsule.collaborators = Array.from(collaboratorMap.values());
     capsule.sharedWith = Array.from(new Set(capsule.collaborators.map((item) => String(item.user))));
     await capsule.save();
+
+    // Notify newly added or role-updated collaborators
+    const newCollaborators = capsule.collaborators.filter((item) => {
+      const old = oldCollaborators.get(String(item.user));
+      return !old || old.role !== item.role;
+    });
+
+    await Promise.all(
+      newCollaborators.map((item) => {
+        if (String(item.user) !== String(req.user.id)) {
+          return notifyCollaboratorAdded(item.user, req.user.id, capsule._id, item.role);
+        }
+        return Promise.resolve();
+      }),
+    );
 
     const populated = await Capsule.findById(capsule._id)
       .populate('owner', 'name email avatar')
@@ -680,6 +704,47 @@ router.post('/:id/share', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+  // Generate an invite token for a capsule (owner/admin)
+  router.post('/:id/invite', auth, async (req, res) => {
+    if (!isDbConnected()) {
+      return res.status(503).json({ message: 'Database unavailable' });
+    }
+
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid capsule id' });
+    }
+
+    try {
+      const capsule = await Capsule.findById(req.params.id);
+      if (!capsule) return res.status(404).json({ message: 'Capsule not found' });
+
+      if (!canManage(capsule, req.user.id)) {
+        return res.status(403).json({ message: 'Not authorized' });
+      }
+
+      const role = normalizeRole(req.body.role);
+      const expiresInDays = Number(req.body.expiresInDays) || 7;
+      const tokenValue = crypto.randomBytes(20).toString('hex');
+
+      const invite = await InviteToken.create({
+        token: tokenValue,
+        capsule: capsule._id,
+        role,
+        createdBy: req.user.id,
+        expiresAt: new Date(Date.now() + Math.max(0, expiresInDays) * 24 * 60 * 60 * 1000),
+        used: false,
+      });
+
+      const publicUrlBase = (process.env.PUBLIC_APP_URL || process.env.VITE_APP_URL || '').replace(/\/$/, '') || '';
+      const inviteUrl = publicUrlBase ? `${publicUrlBase}/invite/${invite.token}` : `/invite/${invite.token}`;
+
+      res.json({ token: invite.token, url: inviteUrl, expiresAt: invite.expiresAt });
+    } catch (error) {
+      console.error('Error generating invite token:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
 
 // Replace collaborators (owner/admin)
 router.patch(

@@ -90,8 +90,8 @@ function NotificationBell({ token, iconSrc }: NotificationBellProps) {
   function showToast(notification: ApiNotification) {
     setToast(notification)
     if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
-    // stay at least 3000ms
-    toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
+    // stay for 5 seconds
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 5000)
   }
 
   function hideToast() {

@@ -53,7 +53,10 @@ function CreateCapsuleStep3({
         const filtered = friends
           .map(rel => {
             const friend = typeof rel.friend === 'object' ? rel.friend : typeof rel.otherUser === 'object' ? rel.otherUser : null
-            return friend ? { userId: friend._id, username: friend.username || '', avatar: friend.avatar, name: friend.name } : null
+            if (!friend) return null
+
+            const username = friend.username || friend.name || friend.email || String(friend._id || '')
+            return { userId: friend._id, username, avatar: friend.avatar, name: friend.name }
           })
           .filter((f): f is FriendSearch => f !== null && (f.username.includes(searchQuery) || f.name.includes(searchQuery)))
 
@@ -216,7 +219,7 @@ function CreateCapsuleStep3({
                     style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
                   />
                 )}
-                <span style={{ flex: 1, fontSize: '0.8750rem' }}>@{friend.username}</span>
+                <span style={{ flex: 1, fontSize: '0.8750rem' }}>{friend.username.startsWith('@') ? friend.username : `@${friend.username}`}</span>
                 <button
                   type="button"
                   onClick={() => handleAddColaborador(friend)}
@@ -353,7 +356,7 @@ function CreateCapsuleStep3({
                       border: '1px solid var(--color-borde)',
                       borderRadius: '6px',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      zIndex: 1000,
+                      zIndex: 9999,
                     }}
                   >
                     {(['admin', 'editar', 'ver'] as const).map(rol => (
@@ -363,7 +366,6 @@ function CreateCapsuleStep3({
                         onClick={() => handleChangeRol(colaborador.userId, rol)}
                         disabled={isLoading}
                         style={{
-                          display: 'block',
                           width: '100%',
                           padding: '10px 16px',
                           textAlign: 'left',
