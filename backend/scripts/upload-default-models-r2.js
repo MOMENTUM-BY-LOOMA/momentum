@@ -71,6 +71,24 @@ function buildSvgThumb(label) {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
+function parseExistingModels(src) {
+  const routeStart = src.indexOf("router.get('/models', auth");
+  if (routeStart === -1) return [];
+
+  const tryStart = src.indexOf('  try {', routeStart);
+  const resJsonEnd = src.indexOf('res.json(models);', tryStart);
+  if (tryStart === -1 || resJsonEnd === -1) return [];
+
+  const block = src.slice(tryStart, resJsonEnd);
+  const models = [];
+  const entryRegex = /\{\s*id:\s*'([^']+)',\s*nombre:\s*'([^']+)',\s*thumbnailUrl:\s*'([^']*)',\s*modelUrl:\s*'([^']+)',?\s*\}/g;
+  let match;
+  while ((match = entryRegex.exec(block)) !== null) {
+    models.push({ id: match[1], nombre: match[2], thumbUrl: match[3], glbUrl: match[4] });
+  }
+  return models;
+}
+
 async function main() {
   if (!fs.existsSync(MODELS_DIR)) {
     console.error('ERROR: No existe la carpeta', MODELS_DIR);
@@ -120,8 +138,17 @@ async function main() {
     results.push({ id: `model-${baseName}`, nombre, glbUrl, thumbUrl });
   }
 
+  // Merge: mantener modelos existentes y añadir/actualizar los nuevos
+  let src = fs.readFileSync(ROUTES_FILE, 'utf8');
+  const existingModels = parseExistingModels(src);
+  const mergedById = new Map(existingModels.map(m => [m.id, m]));
+  for (const r of results) {
+    mergedById.set(r.id, r);
+  }
+  const merged = Array.from(mergedById.values());
+
   // Construye el bloque de código actualizado
-  const modelsBlock = results.map(r => {
+  const modelsBlock = merged.map(r => {
     const thumbValue = r.thumbUrl
       ? `'${r.thumbUrl}'`
       : `buildModelThumbnailDataUrl('${r.nombre}')`;
@@ -143,8 +170,6 @@ async function main() {
     '    res.json(models);';
 
   // Actualiza capsuleRoutes.js
-  let src = fs.readFileSync(ROUTES_FILE, 'utf8');
-
   const routeStart = src.indexOf("router.get('/models', auth");
   if (routeStart === -1) {
     console.error('\nERROR: No se encontró router.get(\'/models\') en capsuleRoutes.js');
@@ -167,7 +192,7 @@ async function main() {
   const updated = src.slice(0, tryStart) + newBlock + src.slice(resJsonEnd);
 
   // Elimina también los THUMB_* y makeThumb que ya no hacen falta si todos tienen PNG
-  const allHavePng = results.every(r => r.thumbUrl);
+  const allHavePng = merged.every(r => r.thumbUrl);
   if (allHavePng) {
     const thumbsClean = updated
       .replace(/\nfunction makeThumb[\s\S]*?\n\}\n/, '\n')
