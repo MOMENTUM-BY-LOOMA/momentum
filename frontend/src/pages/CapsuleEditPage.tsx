@@ -25,56 +25,8 @@ function resolveUrl(url: string) {
   return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
 }
 
-function getFileName(url: string, fallback = 'Archivo') {
-  try {
-    const cleanUrl = String(url).split('?')[0].split('#')[0]
-    const name = decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1))
-    return name || fallback
-  } catch {
-    return fallback
-  }
-}
-
-function getMediaKind(media: any) {
-  const url = String(media?.url || '')
-  const mimeType = String(media?.mimeType || '')
-  const title = String(media?.title || '')
-  const type = media?.type
-
-  if (mimeType) {
-    if (mimeType.startsWith('image/')) return 'image'
-    if (mimeType.startsWith('video/')) return 'video'
-    if (mimeType.startsWith('audio/')) return 'audio'
-    if (mimeType.startsWith('model/') || mimeType.includes('gltf')) return '3d'
-    if (mimeType === 'application/pdf') return 'pdf'
-    if (mimeType.startsWith('text/')) return 'text'
-  }
-
-  if (type === '3d') return '3d'
-  if (type === 'audio') return 'audio'
-  if (type === 'video') return 'video'
-  if (type === 'image') return 'image'
-  if (type === 'pdf') return 'pdf'
-  if (type === 'text') return 'text'
-
-  if (title) {
-    const t = title.toLowerCase()
-    if (/\.(glb|gltf|obj|fbx|stl)$/i.test(t)) return '3d'
-    if (/\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(t)) return 'video'
-    if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(t)) return 'image'
-    if (/\.(pdf)$/i.test(t)) return 'pdf'
-    if (/\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)$/i.test(t)) return 'text'
-  }
-
-  const urlLower = url.toLowerCase()
-  if (/\.(glb|gltf|obj|fbx|stl)(\?.*)?$/i.test(urlLower)) return '3d'
-  if (/\.(mp4|mov|webm|ogg|avi|mkv)(\?.*)?$/i.test(urlLower)) return 'video'
-  if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(urlLower)) return 'image'
-  if (/\.(pdf)(\?.*)?$/i.test(urlLower)) return 'pdf'
-  if (/\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)(\?.*)?$/i.test(urlLower)) return 'text'
-
-  return 'file'
-}
+// getFileName and getMediaKind are implemented inside the component to ensure
+// they use the current component context and avoid duplicate definitions.
 
 function getDisplayAvatar(user: any) {
   if (!user || typeof user === 'string') return ''
@@ -132,8 +84,8 @@ function CapsuleEditPage() {
   const [friends, setFriends] = useState<ApiUser[]>([])
   const [showAddFriend, setShowAddFriend] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [slideIndex, setSlideIndex] = useState(0)
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
+  
   const [slideWidth, setSlideWidth] = useState(0)
   const [canManage, setCanManage] = useState(false)
 
@@ -155,7 +107,7 @@ function CapsuleEditPage() {
     }
   }
 
-  function getMediaKind(media: any) {
+  function getMediaKind(media: any): 'image' | 'video' | 'audio' | '3d' | 'pdf' | 'text' | 'file' {
     const url = String(media?.url || '')
     const mimeType = String(media?.mimeType || '')
     const title = String(media?.title || '')
@@ -669,7 +621,7 @@ function CapsuleEditPage() {
                 })}
 
                 {/* pending staged files (not uploaded yet) */}
-                {pendingFiles.map((pending, pidx) => {
+                {pendingFiles.map((pending) => {
                   const file = pending.file
                   const t = (file.type || '').toLowerCase()
                   const kind = t.startsWith('image/') ? 'image' : t.startsWith('video/') ? 'video' : t.startsWith('audio/') ? 'audio' : (file.name && /\.(pdf)$/i.test(file.name)) ? 'pdf' : (file.name && /\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)$/i.test(file.name)) ? 'text' : 'file'

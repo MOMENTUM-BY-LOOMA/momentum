@@ -3,7 +3,6 @@ export const translations = {
     // Header
     back: '← ATRÁS',
     home: 'Ir a inicio',
-    settings: 'Abrir ajustes',
     notifications: 'Abrir notificaciones',
     logout: 'Salir',
 
@@ -101,7 +100,7 @@ export const translations = {
     sendRequestError: 'No se pudo enviar la solicitud',
 
     // Search
-    search: 'BÚSQUEDA',
+    // 'search' key already defined above as 'Buscar'
     searchCapsules: 'Buscar cápsulas',
     enterCapsuleName: 'Introduce el nombre de la cápsula',
     chooseCategory: 'Elige una categoría y encuentra tu cápsula',
@@ -151,7 +150,6 @@ export const translations = {
     // Header
     back: '← BACK',
     home: 'Go to home',
-    settings: 'Open settings',
     notifications: 'Open notifications',
     logout: 'Logout',
 
@@ -189,6 +187,8 @@ export const translations = {
     preferences: 'Preferences',
     sessionSecurity: 'Session and security',
     settingsTitle: 'SETTINGS',
+    accountSettingsTitle: 'Account settings',
+    sessionSettingsTitle: 'Session and security',
     backText: 'BACK',
 
     // Preferences
@@ -247,7 +247,7 @@ export const translations = {
     sendRequestError: 'Could not send the request',
 
     // Search
-    search: 'SEARCH',
+    // 'search' already defined above for dashboard/localized use
     searchCapsules: 'Search capsules',
     enterCapsuleName: 'Enter the name of the capsule',
     chooseCategory: 'Choose a category and find your capsule',

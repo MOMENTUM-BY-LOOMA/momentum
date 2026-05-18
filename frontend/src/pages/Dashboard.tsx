@@ -24,13 +24,7 @@ function getCapsuleOwnerId(capsule: ApiCapsule) {
   return owner._id || ''
 }
 
-const CATEGORIAS = [
-  { label: 'Viajes', valor: 'viajes' },
-  { label: 'Familia', valor: 'familia' },
-  { label: 'Amistad', valor: 'amistad' },
-  { label: 'Trabajo', valor: 'trabajo' },
-  { label: 'Otros', valor: 'otros' },
-]
+// Categorias definidas dinámicamente más abajo (localizadas)
 
 function Dashboard() {
   const navigate = useNavigate()

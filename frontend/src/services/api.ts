@@ -31,6 +31,9 @@ export type ApiMediaItem = {
   url: string
   author?: ApiUser | string
   modelFormat?: '' | 'glb' | 'gltf' | 'obj' | 'fbx' | 'stl'
+  fileName?: string
+  originalName?: string
+  mimeType?: string
   fileSize?: number
   title?: string
   description?: string

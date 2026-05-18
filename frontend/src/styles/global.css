@@ -143,3 +143,46 @@ body.pref-easy-read {
   color: var(--text-main);
   text-decoration: underline;
 }
+
+/* Registro: selector de archivo bonito */
+.auth-screen__file-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+}
+.auth-screen__file-picker:focus,
+.auth-screen__file-picker:focus-visible,
+.auth-screen__file-picker:hover {
+  outline: none;
+  box-shadow: 0 6px 18px rgba(16,32,54,0.08);
+  transform: translateY(-1px);
+}
+.auth-screen__file-picker span { display: inline-block }
+.auth-screen__file-picker-arrow { opacity: 0.7; font-weight: 700 }
+
+.auth-screen__file-hint { display: block; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.95rem }
+
+.auth-screen__preview-wrap { margin-top: 0.6rem; display:flex; align-items:center; gap:0.6rem }
+.auth-screen__preview-image { width: 64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--input-border) }
+
+/* Make label accessible via keyboard */
+.auth-screen__file-picker[role="button"]:active { transform: translateY(0) }
+
+/* File row with avatar preview */
+.auth-screen__file-row { display:flex; align-items:center; gap:0.8rem }
+.auth-screen__avatar-preview { width:56px; height:56px; flex:0 0 56px; display:flex; align-items:center; justify-content:center }
+.auth-screen__avatar-image { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid rgba(0,0,0,0.08) }
+.auth-screen__avatar-fallback { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#ece7df,#d9d4c8); color:#27323a; font-weight:700; font-size:1.1rem; border:2px solid var(--input-border) }
+
+/* Tweak file picker to match theme buttons */
+.auth-screen__file-picker { border-radius: 999px; padding: 0.45rem 0.9rem; font-size:0.95rem; background: var(--input-bg); color: var(--text-main); border:1px solid var(--input-border) }
+.auth-screen__file-picker img, .auth-screen__file-picker svg { height: 18px; display:block }
+.auth-screen__file-picker svg { filter: none }

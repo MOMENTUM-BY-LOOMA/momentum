@@ -1,4 +1,5 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react'
+import userIcon from '../img/icon_user.svg'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { logoMAsset } from '../img'
 function Register() {
@@ -162,19 +163,27 @@ function Register() {
               accept="image/*"
               onChange={handlePhotoChange}
               className="auth-screen__file-input"
+              style={{ display: 'none' }}
+              aria-hidden="true"
             />
-            <label htmlFor="register-photo" className="auth-screen__file-picker">
-              <span>{photoName ? 'Cambiar foto' : 'Seleccionar foto'}</span>
-              <span className="auth-screen__file-picker-arrow">&gt;</span>
-            </label>
+            <div className="auth-screen__file-row">
+              <label htmlFor="register-photo" className="auth-screen__file-picker" role="button" tabIndex={0} aria-label={photoName ? 'Cambiar foto' : 'Seleccionar foto'}>
+                <span>{photoName ? 'Cambiar foto' : 'Seleccionar foto'}</span>
+                <span className="auth-screen__file-picker-arrow">&gt;</span>
+              </label>
+
+              <div className="auth-screen__avatar-preview" aria-hidden="true">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Vista previa de foto de perfil" className="auth-screen__avatar-image" />
+                ) : (
+                  <img src={userIcon} alt="Icono usuario" className="auth-screen__avatar-image" />
+                )}
+              </div>
+            </div>
+
             <small className="auth-screen__file-hint">
               {photoName ? `Seleccionada: ${photoName}` : 'Elige una imagen para tu perfil'}
             </small>
-            {photoPreview ? (
-              <div className="auth-screen__preview-wrap">
-                <img src={photoPreview} alt="Vista previa de foto de perfil" className="auth-screen__preview-image" />
-              </div>
-            ) : null}
           </label>
 
           {error ? <p className="auth-screen__error">{error}</p> : null}
