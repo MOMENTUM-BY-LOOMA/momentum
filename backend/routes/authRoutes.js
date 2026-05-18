@@ -574,11 +574,11 @@ router.post(
   },
 );
 
-// Login
+// Login (accept email or username)
 router.post(
   '/login',
   [
-    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('identifier').trim().notEmpty().withMessage('Email or username is required'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
   async (req, res) => {
@@ -586,14 +586,9 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    const { identifier, password } = req.body;
 
-    const { email, password } = req.body;
-
-    console.log('Login attempt:', {
-      email,
-      passwordLength: password?.length,
-      userFound: !!(await User.findOne({ email })),
-    });
+    const isEmail = String(identifier || '').includes('@');
 
     if (!isDbConnected()) {
       return res.status(503).json({ message: 'Database unavailable' });
@@ -602,7 +597,32 @@ router.post(
     try {
       await cleanupExpiredRefreshTokens();
 
-      const user = await User.findOne({ email });
+      // Attempt lookup: email -> username field -> exact name match (case-insensitive) -> normalized name (no spaces)
+      let user = null;
+
+      if (isEmail) {
+        const email = String(identifier).trim().toLowerCase();
+        user = await User.findOne({ email });
+      } else {
+        const id = String(identifier).trim();
+
+        // try username field if present
+        user = await User.findOne({ username: id });
+
+        // try exact name (case-insensitive)
+        if (!user) {
+          const safe = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          user = await User.findOne({ name: { $regex: new RegExp(`^${safe}$`, 'i') } });
+        }
+
+        // fallback: match normalized name (lowercase, no spaces)
+        if (!user) {
+          const normalized = id.toLowerCase().replace(/\s+/g, '');
+          // use $where to compute normalized name per document (acceptable for small userbases)
+          const whereFn = `function(){ return (this.name||'').toLowerCase().replace(/\\s+/g,'') === '${normalized.replace(/'/g, "\\'")}' }`;
+          user = await User.findOne({ $where: whereFn });
+        }
+      }
 
       if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 

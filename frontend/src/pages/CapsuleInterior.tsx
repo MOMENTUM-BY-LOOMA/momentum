@@ -12,7 +12,7 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').repla
 
 function resolveUrl(url: string) {
   if (!url) return ''
-  if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
+  if (/^https?:\/\//i.test(url) || url.startsWith('//') || url.startsWith('data:') || url.startsWith('blob:')) return url
   if (url.startsWith('/3d/')) return url
   return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
 }
@@ -52,6 +52,11 @@ function getUserAvatar(user: any) {
   return user?.avatar || user?.profilePhoto || ''
 }
 
+function getDisplayAvatar(user: any) {
+  if (!user || typeof user === 'string') return ''
+  return user.avatar || user.profilePhoto || user.photo || user.image || user.avatarUrl || ''
+}
+
 function getMediaKind(media: any) {
   const url = String(media?.url || '')
   const mimeType = String(media?.mimeType || '')
@@ -64,6 +69,8 @@ function getMediaKind(media: any) {
     if (mimeType.startsWith('video/')) return 'video'
     if (mimeType.startsWith('audio/')) return 'audio'
     if (mimeType.startsWith('model/') || mimeType.includes('gltf')) return '3d'
+    if (mimeType === 'application/pdf') return 'pdf'
+    if (mimeType.startsWith('text/')) return 'text'
   }
 
   // Check explicit type field
@@ -71,6 +78,8 @@ function getMediaKind(media: any) {
   if (type === 'audio') return 'audio'
   if (type === 'video') return 'video'
   if (type === 'image') return 'image'
+  if (type === 'pdf') return 'pdf'
+  if (type === 'text') return 'text'
 
   // Check title/filename for extension
   if (title) {
@@ -87,6 +96,8 @@ function getMediaKind(media: any) {
   if (/\.(mp3|wav|ogg|oga|m4a|aac|flac|webm)(\?.*)?$/i.test(urlLower)) return 'audio'
   if (/\.(mp4|mov|webm|ogg|avi|mkv)(\?.*)?$/i.test(urlLower)) return 'video'
   if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(urlLower)) return 'image'
+  if (/\.(pdf)(\?.*)?$/i.test(urlLower)) return 'pdf'
+  if (/\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)(\?.*)?$/i.test(urlLower)) return 'text'
 
   return 'file'
 }
@@ -98,7 +109,14 @@ function CommentRow({ comment }: { comment: Comment }) {
   return (
     <div className="ci-comment">
       <div className="ci-comment__avatar">
-        {avatar ? <img src={avatar} alt={username} /> : <span>{username.charAt(0).toUpperCase()}</span>}
+        {avatar ? <img src={resolveUrl(avatar)} alt={username} onError={(e:any) => {
+            try {
+              const initial = (username || '?').charAt(0).toUpperCase();
+              const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23d5ccc0'/><text x='50' y='66' font-size='50' text-anchor='middle' fill='%23666' font-family='Arial, sans-serif'>${initial}</text></svg>`;
+              e.currentTarget.onerror = null
+              e.currentTarget.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
+            } catch { e.currentTarget.style.display = 'none' }
+          }} /> : <span>{username.charAt(0).toUpperCase()}</span>}
       </div>
       <div className="ci-comment__body">
         <div className="ci-comment__header">
@@ -139,15 +157,57 @@ function AvatarStack({ users, max = 4 }: { users: any[]; max?: number }) {
     <div className="ci-avatar-stack">
       {users.slice(0, max).map((u, i) => {
         const name = typeof u === 'string' ? u : (u?.name || u?.username || '?')
-        const avatar = typeof u === 'string' ? null : u?.avatar
+        const avatar = getDisplayAvatar(u)
         return (
           <div key={i} className="ci-avatar-stack__item" style={{ zIndex: max - i }}>
-            {avatar ? <img src={avatar} alt={name} /> : <span>{name.charAt(0).toUpperCase()}</span>}
+            {avatar ? <img src={resolveUrl(avatar)} alt={name} onError={(e:any) => {
+                try {
+                  const initial = (name || '?').charAt(0).toUpperCase();
+                  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23d5ccc0'/><text x='50' y='66' font-size='50' text-anchor='middle' fill='%23666' font-family='Arial, sans-serif'>${initial}</text></svg>`;
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
+                } catch { e.currentTarget.style.display = 'none' }
+              }} /> : <span>{name.charAt(0).toUpperCase()}</span>}
           </div>
         )
       })}
     </div>
   )
+}
+
+function getCurrentUserId() {
+  try {
+    const raw = sessionStorage.getItem('authUser')
+    if (!raw) return ''
+    const parsed = JSON.parse(raw) as { _id?: string; username?: string; name?: string }
+    return String(parsed._id || parsed.username || parsed.name || '')
+  } catch {
+    return ''
+  }
+}
+
+function getDisplaySharedUsers(capsule: ApiCapsule | null) {
+  const currentUserId = getCurrentUserId()
+  const entries = [capsule?.owner, ...(capsule?.sharedWith ?? []), ...((capsule?.collaborators ?? []).map((item) => item.user))]
+
+  const seen = new Set<string>()
+  return entries
+    .filter(Boolean)
+    .filter((user) => {
+      if (!currentUserId) return true
+      if (typeof user === 'string') return String(user) !== currentUserId
+      return String(user?._id || user?.username || user?.name || '') !== currentUserId
+    })
+    .filter((user) => {
+      const key = typeof user === 'string' ? String(user) : String(user?._id || user?.username || user?.name || '')
+      if (!key || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+}
+
+function getPrimaryDisplayUser(users: any[]) {
+  return users.find((user) => getDisplayAvatar(user)) ?? users[0] ?? null
 }
 
 const SLIDE_GAP = 0
@@ -170,6 +230,8 @@ function CapsuleInterior() {
   const [expandedReplyThreads, setExpandedReplyThreads] = useState<Record<string, boolean>>({})
   const [photoCommentText, setPhotoCommentText] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
+  const [lightboxTextContent, setLightboxTextContent] = useState<string | null>(null)
+  const [lightboxLoadingText, setLightboxLoadingText] = useState(false)
 
   // Measure carousel container so each slide matches the visible area exactly
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -199,6 +261,34 @@ function CapsuleInterior() {
       .catch(() => { if (active) { setError(txt('No se pudo cargar la capsula', 'Could not load capsule')); setLoading(false) } })
     return () => { active = false }
   }, [id, navigate, language])
+
+  // Load text content for lightbox when a text media is opened
+  useEffect(() => {
+    let active = true
+    const loadText = async () => {
+      setLightboxTextContent(null)
+      if (lightboxIndex === null) return
+      const media = mediaItems[lightboxIndex]
+      if (!media) return
+      const kind = getMediaKind(media)
+      if (kind !== 'text') return
+      const src = resolveUrl(media.url)
+      try {
+        setLightboxLoadingText(true)
+        const res = await fetch(src)
+        if (!active) return
+        if (!res.ok) throw new Error('Could not fetch text')
+        const txtContent = await res.text()
+        if (active) setLightboxTextContent(txtContent)
+      } catch (err) {
+        if (active) setLightboxTextContent(null)
+      } finally {
+        if (active) setLightboxLoadingText(false)
+      }
+    }
+    loadText()
+    return () => { active = false }
+  }, [lightboxIndex])
 
   const goToSlide = (index: number) => {
     if (index >= 0 && index < mediaItems.length) setActiveSlideIndex(index)
@@ -311,7 +401,8 @@ function CapsuleInterior() {
 
   const generalComments: Comment[] = (capsule as any)?.comments || []
   const generalCommentTree = buildCommentTree(generalComments)
-  const sharedUsers = capsule.sharedWith ?? []
+  const sharedUsers = getDisplaySharedUsers(capsule)
+  const primaryUser = getPrimaryDisplayUser(sharedUsers)
 
   const owner = capsule.owner
   const ownerName = typeof owner === 'string' ? owner : ((owner as any)?.name || (owner as any)?.username || 'Usuario')
@@ -325,6 +416,8 @@ function CapsuleInterior() {
   // Lightbox
   const lightboxMedia = lightboxIndex !== null ? mediaItems[lightboxIndex] : null
   const lightboxComments: Comment[] = (lightboxMedia as any)?.comments || []
+
+  
 
   // Carousel translate — JS uses measured px; CSS fallback caps at 600px (no black margins)
   const translateX = slideWidth > 0
@@ -379,6 +472,7 @@ function CapsuleInterior() {
 
   const renderMedia = (media: any, idx: number) => {
     const src = resolveUrl(media.url)
+    const filteredIdx = mediaItems.indexOf(media)
     const author = getMediaAuthor(media)
     const fallbackOwner = typeof capsule.owner === 'object' ? capsule.owner : null
     const effectiveAuthor = author || fallbackOwner
@@ -413,29 +507,26 @@ function CapsuleInterior() {
             aria-label={txt('Ver imagen ampliada', 'View enlarged image')}
           />
         ) : kind === 'video' ? (
-          <video
-            src={src}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
-            controls
-            playsInline
-            onClick={() => navigate(`/capsulas/${capsule._id}/media/${idx}`)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') navigate(`/capsulas/${capsule._id}/media/${idx}`)
-            }}
-            aria-label={txt('Ver video', 'View video')}
-          />
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <video
+              src={src}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              controls
+              playsInline
+              aria-label={txt('Ver video', 'View video')}
+            />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); navigate(`/capsulas/${capsule._id}/media/${idx}`) }}
+              className="ci-slide__open-btn"
+              aria-label={txt('Abrir video', 'Open video')}
+              style={{ position: 'absolute', right: 10, top: 10, zIndex: 5, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 8px' }}
+            >{txt('Abrir', 'Open')}</button>
+          </div>
         ) : kind === 'audio' ? (
           <div
             className="ci-slide__audio"
-            onClick={() => navigate(`/capsulas/${capsule._id}/media/${idx}`)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') navigate(`/capsulas/${capsule._id}/media/${idx}`)
-            }}
-            style={{ cursor: 'pointer' }}
+            style={{ position: 'relative', cursor: 'default' }}
             aria-label={txt('Ver audio', 'View audio')}
           >
             <div className="ci-slide__media-label">
@@ -450,6 +541,36 @@ function CapsuleInterior() {
           </div>
         ) : kind === '3d' ? (
           <CapsulaThumb3D modelUrl={src} title={fileName} className="capsula-thumb--3d--full" style={{ width: '100%', height: '100%' }} />
+        ) : kind === 'pdf' ? (
+          <button
+            type="button"
+            onClick={() => setLightboxIndex(filteredIdx)}
+            style={{ width: '100%', height: '100%', border: 'none', background: '#f6f1e8', cursor: 'pointer', padding: 20 }}
+            aria-label={txt('Abrir PDF', 'Open PDF')}
+          >
+            <object
+              data={src}
+              type="application/pdf"
+              style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 8 }}>
+                <span>{fileName}</span>
+                <small style={{ color: 'var(--color-texto-secundario)' }}>{txt('Toca para abrir el PDF', 'Tap to open PDF')}</small>
+              </div>
+            </object>
+          </button>
+        ) : kind === 'text' ? (
+          <button
+            type="button"
+            onClick={() => setLightboxIndex(filteredIdx)}
+            style={{ width: '100%', height: '100%', border: 'none', background: '#f6f1e8', cursor: 'pointer', padding: 20, textAlign: 'left' }}
+            aria-label={txt('Abrir archivo de texto', 'Open text file')}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, height: '100%', overflow: 'hidden' }}>
+              <span style={{ textDecoration: 'underline', color: 'var(--color-texto-principal)' }}>{fileName}</span>
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--color-texto-secundario)', overflow: 'hidden' }}>{txt('Toca para ver el archivo de texto', 'Tap to view text file')}</pre>
+            </div>
+          </button>
         ) : (
           <div className="ci-slide__file">
             <div className="ci-slide__media-label">
@@ -459,6 +580,13 @@ function CapsuleInterior() {
               </svg>
               <span>{fileName}</span>
             </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); navigate(`/capsulas/${capsule._id}/media/${idx}`) }}
+              className="ci-slide__open-btn"
+              aria-label={txt('Abrir audio', 'Open audio')}
+              style={{ position: 'absolute', right: 10, top: 10, zIndex: 5, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 8px' }}
+            >{txt('Abrir', 'Open')}</button>
           </div>
         )}
       </div>
@@ -487,10 +615,24 @@ function CapsuleInterior() {
 
           <div className="ci-lightbox__content" onClick={(e) => e.stopPropagation()}>
             <div className="ci-lightbox__img-wrap">
-              {lightboxMedia.type === 'video' ? (
+              {lightboxMedia && getMediaKind(lightboxMedia) === 'video' ? (
                 <video src={resolveUrl(lightboxMedia.url)} className="ci-lightbox__media" controls />
+              ) : lightboxMedia && getMediaKind(lightboxMedia) === 'pdf' ? (
+                <object data={resolveUrl(lightboxMedia.url)} type="application/pdf" className="ci-lightbox__media" style={{ width: '100%', height: '100%' }}>
+                  <p>{txt('PDF no soportado en este navegador', 'PDF not supported in this browser')}</p>
+                </object>
+              ) : lightboxMedia && getMediaKind(lightboxMedia) === 'text' ? (
+                <div className="ci-lightbox__media" style={{ padding: 16, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+                  {lightboxLoadingText ? (
+                    <p>{txt('Cargando...', 'Loading...')}</p>
+                  ) : lightboxTextContent !== null ? (
+                    <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{lightboxTextContent}</pre>
+                  ) : (
+                    <p>{txt('No se pudo cargar el archivo de texto', 'Could not load text file')}</p>
+                  )}
+                </div>
               ) : (
-                <img src={resolveUrl(lightboxMedia.url)} alt={txt('Foto ampliada', 'Enlarged photo')} className="ci-lightbox__media" />
+                <img src={resolveUrl(lightboxMedia?.url || '')} alt={txt('Foto ampliada', 'Enlarged photo')} className="ci-lightbox__media" />
               )}
             </div>
 
@@ -544,7 +686,7 @@ function CapsuleInterior() {
             )}
             <div className="ci-header__text">
               <h1 className="ci-header__title">{capsule.title}</h1>
-              <AvatarStack users={sharedUsers} />
+              <AvatarStack users={primaryUser ? [primaryUser] : sharedUsers} max={1} />
             </div>
           </div>
           {canEdit() && (

@@ -85,7 +85,7 @@ function CommentRow({ comment }: { comment: Comment }) {
   return (
     <div className="ci-comment">
       <div className="ci-comment__avatar">
-        {avatar ? <img src={avatar} alt={username} /> : <span>{username.charAt(0).toUpperCase()}</span>}
+        {avatar ? <img src={resolveUrl(avatar)} alt={username} /> : <span>{username.charAt(0).toUpperCase()}</span>}
       </div>
       <div className="ci-comment__body">
         <div className="ci-comment__header">

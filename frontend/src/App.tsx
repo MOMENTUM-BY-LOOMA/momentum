@@ -161,10 +161,11 @@ function AppLayout() {
           <Route path="/perfil/:username" element={<PerfilPublico />} />
           <Route path="/invite/:token" element={<InviteLanding />} />
 
+          <Route path="/" element={<InitialLoading />} />
+          <Route path="/inicio-publico" element={<Home />} />
+          <Route path="/inicio-registro" element={<StartAccess />} />
+
           <Route element={<RequireGuest />}>
-            <Route path="/" element={<InitialLoading />} />
-            <Route path="/inicio-publico" element={<Home />} />
-            <Route path="/inicio-registro" element={<StartAccess />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
             <Route path="/registro/datos" element={<RegisterDetails />} />

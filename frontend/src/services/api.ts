@@ -1,4 +1,5 @@
 const API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
+export const APP_PUBLIC_URL = (import.meta.env.VITE_APP_URL ?? 'https://momentum-frontend-xjzj.onrender.com').replace(/\/$/, '')
 
 export type ApiUser = {
   _id: string
@@ -197,7 +198,7 @@ async function requestJson<T>(path: string, init: RequestInit = {}, authRequired
   const data = await response.json().catch(() => ({})) as Record<string, unknown>
 
   if (!response.ok) {
-    if (authRequired && response.status === 401) {
+    if (authRequired && response.status === 401 && token) {
       sessionStorage.removeItem('authToken')
       sessionStorage.removeItem('refreshToken')
       sessionStorage.removeItem('authUser')
@@ -220,10 +221,10 @@ export function clearSession() {
   sessionStorage.removeItem('authUser')
 }
 
-export async function loginUser(email: string, password: string): Promise<LoginResponse> {
+export async function loginUser(identifier: string, password: string): Promise<LoginResponse> {
   const data = await requestJson<LoginResponse>('/api/users/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ identifier, password }),
   }, false)
 
   return data

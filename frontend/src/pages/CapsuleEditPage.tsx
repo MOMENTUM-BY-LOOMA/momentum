@@ -8,6 +8,7 @@ import { Model3DViewer } from '../3d/Model3DViewer'
 import {
   fetchCapsuleById,
   fetchFriends,
+  APP_PUBLIC_URL,
   type ApiCapsule,
   type ApiUser,
   type ApiFriendRelation,
@@ -16,13 +17,72 @@ import { useTranslate } from '../services/useTranslate'
 import '../styles/capsule-edit.css'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:5000').replace(/\/$/, '')
-const SLIDE_REDUCTION = 92
-const SLIDE_GAP = 12
+const SLIDE_GAP = 0
 
 function resolveUrl(url: string) {
   if (!url) return ''
-  if (/^https?:\/\//i.test(url) || url.startsWith('//')) return url
+  if (/^https?:\/\//i.test(url) || url.startsWith('//') || url.startsWith('data:') || url.startsWith('blob:')) return url
   return `${API_BASE}${url.startsWith('/') ? url : `/${url}`}`
+}
+
+function getFileName(url: string, fallback = 'Archivo') {
+  try {
+    const cleanUrl = String(url).split('?')[0].split('#')[0]
+    const name = decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1))
+    return name || fallback
+  } catch {
+    return fallback
+  }
+}
+
+function getMediaKind(media: any) {
+  const url = String(media?.url || '')
+  const mimeType = String(media?.mimeType || '')
+  const title = String(media?.title || '')
+  const type = media?.type
+
+  if (mimeType) {
+    if (mimeType.startsWith('image/')) return 'image'
+    if (mimeType.startsWith('video/')) return 'video'
+    if (mimeType.startsWith('audio/')) return 'audio'
+    if (mimeType.startsWith('model/') || mimeType.includes('gltf')) return '3d'
+    if (mimeType === 'application/pdf') return 'pdf'
+    if (mimeType.startsWith('text/')) return 'text'
+  }
+
+  if (type === '3d') return '3d'
+  if (type === 'audio') return 'audio'
+  if (type === 'video') return 'video'
+  if (type === 'image') return 'image'
+  if (type === 'pdf') return 'pdf'
+  if (type === 'text') return 'text'
+
+  if (title) {
+    const t = title.toLowerCase()
+    if (/\.(glb|gltf|obj|fbx|stl)$/i.test(t)) return '3d'
+    if (/\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(t)) return 'video'
+    if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(t)) return 'image'
+    if (/\.(pdf)$/i.test(t)) return 'pdf'
+    if (/\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)$/i.test(t)) return 'text'
+  }
+
+  const urlLower = url.toLowerCase()
+  if (/\.(glb|gltf|obj|fbx|stl)(\?.*)?$/i.test(urlLower)) return '3d'
+  if (/\.(mp4|mov|webm|ogg|avi|mkv)(\?.*)?$/i.test(urlLower)) return 'video'
+  if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(urlLower)) return 'image'
+  if (/\.(pdf)(\?.*)?$/i.test(urlLower)) return 'pdf'
+  if (/\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)(\?.*)?$/i.test(urlLower)) return 'text'
+
+  return 'file'
+}
+
+function getDisplayAvatar(user: any) {
+  if (!user || typeof user === 'string') return ''
+  return user.avatar || user.profilePhoto || user.photo || user.image || user.avatarUrl || ''
+}
+
+function getPrimaryDisplayUser(users: any[]) {
+  return users.find((user) => getDisplayAvatar(user)) ?? users[0] ?? null
 }
 
 function AvatarStack({ users, max = 4, size = 26 }: { users: any[]; max?: number; size?: number }) {
@@ -32,11 +92,18 @@ function AvatarStack({ users, max = 4, size = 26 }: { users: any[]; max?: number
     <div className="ce-avatar-stack" aria-hidden="true">
       {visible.map((u, i) => {
         const name = typeof u === 'string' ? u : (u?.name || u?.username || '?')
-        const avatar = typeof u === 'string' ? null : u?.avatar
+        const avatar = getDisplayAvatar(u)
         return (
           <div key={i} className="ce-avatar-stack__item" style={{ width: size, height: size, zIndex: max - i }}>
             {avatar
-              ? <img src={resolveUrl(avatar)} alt={name} />
+              ? <img src={resolveUrl(avatar)} alt={name} onError={(e:any) => {
+                  try {
+                    const initial = (name || '?').charAt(0).toUpperCase();
+                    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23d5ccc0'/><text x='50' y='66' font-size='50' text-anchor='middle' fill='%23666' font-family='Arial, sans-serif'>${initial}</text></svg>`;
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
+                  } catch { e.currentTarget.style.display = 'none' }
+                }} />
               : <span>{name.charAt(0).toUpperCase()}</span>}
           </div>
         )
@@ -61,10 +128,12 @@ function CapsuleEditPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [uploadingMedia, setUploadingMedia] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState<Array<{ id: string; file: File; preview?: string }>>([])
   const [friends, setFriends] = useState<ApiUser[]>([])
   const [showAddFriend, setShowAddFriend] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [slideIndex, setSlideIndex] = useState(0)
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0)
   const [slideWidth, setSlideWidth] = useState(0)
   const [canManage, setCanManage] = useState(false)
 
@@ -72,14 +141,61 @@ function CapsuleEditPage() {
   const [titleDraft, setTitleDraft] = useState('')
   const [savingTitle, setSavingTitle] = useState(false)
 
-  // Show all media types in the carousel (images, video, 3d, file)
-  const mediaItems = (capsule?.mediaItems || [])
-  const totalSlides = mediaItems.length
+  // Match CapsuleInterior: exclude 3d media from main carousel
+  const mediaItems = (capsule?.mediaItems || []).filter((m) => getMediaKind(m) !== '3d')
+  const totalSlides = mediaItems.length + pendingFiles.length
+
+  function getFileName(url: string, fallback = 'Archivo') {
+    try {
+      const cleanUrl = String(url).split('?')[0].split('#')[0]
+      const name = decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1))
+      return name || fallback
+    } catch {
+      return fallback
+    }
+  }
+
+  function getMediaKind(media: any) {
+    const url = String(media?.url || '')
+    const mimeType = String(media?.mimeType || '')
+    const title = String(media?.title || '')
+    const type = media?.type
+    if (mimeType) {
+      if (mimeType.startsWith('image/')) return 'image'
+      if (mimeType.startsWith('video/')) return 'video'
+      if (mimeType.startsWith('model/') || mimeType.includes('gltf')) return '3d'
+    }
+    if (type === '3d') return '3d'
+    if (type === 'audio') return 'audio'
+    if (type === 'video') return 'video'
+    if (type === 'image') return 'image'
+    if (title) {
+      const t = title.toLowerCase()
+      if (/\.(glb|gltf|obj|fbx|stl)$/i.test(t)) return '3d'
+      if (/\.(mp4|mov|webm|ogg|avi|mkv)$/i.test(t)) return 'video'
+      if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(t)) return 'image'
+    }
+    const urlLower = url.toLowerCase()
+    if (/\.(glb|gltf|obj|fbx|stl)(\?.*)?$/i.test(urlLower)) return '3d'
+    if (/\.(mp4|mov|webm|ogg|avi|mkv)(\?.*)?$/i.test(urlLower)) return 'video'
+    if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(urlLower)) return 'image'
+    return 'file'
+  }
+
+  function getMediaAuthor(media: any) {
+    const author = media?.author
+    if (author && typeof author === 'object') return author
+    return null
+  }
+
+  function getUserAvatar(user: any) {
+    return user?.avatar || user?.profilePhoto || ''
+  }
 
   useEffect(() => {
     const el = carouselRef.current
     if (!el) return
-    const measure = () => setSlideWidth(el.offsetWidth - SLIDE_REDUCTION)
+    const measure = () => setSlideWidth(el.offsetWidth)
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
@@ -192,13 +308,13 @@ function CapsuleEditPage() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       })
-      if (res.ok) {
+        if (res.ok) {
         const updated = await fetchCapsuleById(id)
         setCapsule(updated)
         const newCount = (updated.mediaItems ?? []).filter(
           (m) => m.type === 'image' || m.type === 'video'
         ).length
-        setSlideIndex((prev) => Math.min(prev, Math.max(0, newCount - 1)))
+        setActiveSlideIndex((prev) => Math.min(prev, Math.max(0, newCount - 1)))
       }
     } catch (err) {
       console.error('Error deleting media:', err)
@@ -227,36 +343,25 @@ function CapsuleEditPage() {
 
   const handleAddMedia = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file || !capsule || !id) return
-    setUploadingMedia(true)
+    if (!file) return
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const token = sessionStorage.getItem('authToken')
-
-      const uploadRes = await fetch(`${API_BASE}/api/uploads/media`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      })
-      if (!uploadRes.ok) throw new Error('Upload failed')
-      const uploaded = await uploadRes.json()
-
-      const addRes = await fetch(`${API_BASE}/api/capsules/${id}/media`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ url: uploaded.fileUrl || uploaded.file || uploaded.url, type: uploaded.type, modelFormat: uploaded.modelFormat, thumbnailUrl: uploaded.thumbnailUrl }),
-      })
-      if (addRes.ok) {
-        const updated = await fetchCapsuleById(id)
-        setCapsule(updated)
-        if (fileInputRef.current) fileInputRef.current.value = ''
-      }
+      const idStr = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      const preview = URL.createObjectURL(file)
+      setPendingFiles((p) => [...p, { id: idStr, file, preview }])
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      setActiveSlideIndex(mediaItems.length + pendingFiles.length)
     } catch (err) {
-      console.error('Error uploading media:', err)
-    } finally {
-      setUploadingMedia(false)
+      console.error('Error staging media:', err)
     }
+  }
+
+  const removePendingFile = (pendingId: string) => {
+    setPendingFiles((p) => {
+      const toRemove = p.find((x) => x.id === pendingId)
+      if (toRemove && toRemove.preview) URL.revokeObjectURL(toRemove.preview)
+      return p.filter((x) => x.id !== pendingId)
+    })
+    setActiveSlideIndex((i) => Math.max(0, Math.min(i, (mediaItems.length + pendingFiles.length - 2))))
   }
 
   const handleAddFriend = async (friendId: string) => {
@@ -281,15 +386,55 @@ function CapsuleEditPage() {
 
   const handleSave = async () => {
     const desc = descriptionRef.current?.value ?? ''
-    if (capsule && desc !== (capsule.description ?? '')) {
-      await patchCapsule({ description: desc })
+    try {
+      if (pendingFiles.length > 0 && id) {
+        setUploadingMedia(true)
+        const token = sessionStorage.getItem('authToken')
+        for (const p of pendingFiles) {
+          try {
+            const formData = new FormData()
+            formData.append('file', p.file)
+            const uploadRes = await fetch(`${API_BASE}/api/uploads/media`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` },
+              body: formData,
+            })
+            if (!uploadRes.ok) { console.error('Upload failed for', p.file.name); continue }
+            const uploaded = await uploadRes.json()
+            await fetch(`${API_BASE}/api/capsules/${id}/media`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ url: uploaded.fileUrl || uploaded.file || uploaded.url, type: uploaded.type, modelFormat: uploaded.modelFormat, thumbnailUrl: uploaded.thumbnailUrl }),
+            })
+          } catch (err) {
+            console.error('Error uploading pending file:', err)
+          }
+        }
+        // clear pending previews
+        pendingFiles.forEach((p) => p.preview && URL.revokeObjectURL(p.preview))
+        setPendingFiles([])
+        // refresh capsule after uploads
+        if (id) {
+          const updated = await fetchCapsuleById(id)
+          setCapsule(updated)
+        }
+      }
+
+      if (capsule && desc !== (capsule.description ?? '')) {
+        await patchCapsule({ description: desc })
+      }
+    } catch (err) {
+      console.error('Error saving capsule:', err)
+    } finally {
+      setUploadingMedia(false)
     }
+
     navigate(-1)
   }
 
   const translateX = slideWidth > 0
-    ? `${slideIndex * -(slideWidth + SLIDE_GAP)}px`
-    : `calc(${slideIndex} * -1 * (min(100vw, 600px) - ${SLIDE_REDUCTION - SLIDE_GAP}px))`
+  ? `${activeSlideIndex * -(slideWidth + SLIDE_GAP)}px`
+  : `calc(${activeSlideIndex} * -1 * 100%)`
 
   const header = (
     <header className="mobile-header" aria-label={txt('Editar capsula', 'Edit capsule')}>
@@ -321,6 +466,7 @@ function CapsuleEditPage() {
       typeof c.user === 'string' ? { _id: c.user } : c.user
     ),
   ]
+  const primaryCollaborator = getPrimaryDisplayUser(collaborators)
 
   // Find 3D model for top viewer (reuse view styling)
   const model3D = (capsule?.mediaItems || []).find((m: any) => m.type === '3d') ?? null
@@ -334,7 +480,7 @@ function CapsuleEditPage() {
         {/* Top preview similar to CapsuleView */}
         <div className="capsule-view__title-row" style={{ width: '100%' }}>
           <h1 className="capsule-view__title">{capsule.title}</h1>
-          <AvatarStack users={collaborators} size={28} />
+          <AvatarStack users={primaryCollaborator ? [primaryCollaborator] : collaborators} size={28} max={1} />
         </div>
 
         <div className="capsule-view__model-wrapper" style={{ width: '100%', marginTop: 8 }}>
@@ -374,7 +520,7 @@ function CapsuleEditPage() {
                 <span className="ce-title__pencil" aria-hidden="true">✎</span>
               </button>
             )}
-            <AvatarStack users={collaborators} size={26} />
+            <AvatarStack users={primaryCollaborator ? [primaryCollaborator] : collaborators} size={26} max={1} />
           </div>
 
           <button type="button" className="ce-header__cancel" onClick={() => navigate(-1)}>
@@ -399,7 +545,7 @@ function CapsuleEditPage() {
                   })
                   if (!res.ok) throw new Error('Invite generation failed')
                   const data = await res.json()
-                  const url = data.url || `${window.location.origin}/invite/${data.token}`
+                  const url = data.url || `${APP_PUBLIC_URL}/invite/${data.token}`
                   await navigator.clipboard.writeText(url)
                   alert(txt('Enlace de invitacion copiado al portapapeles', 'Invite link copied to clipboard'))
                 } catch (e) {
@@ -414,31 +560,101 @@ function CapsuleEditPage() {
 
         {/* Carousel */}
         {mediaItems.length > 0 ? (
-          <div className="ce-carousel-wrap">
-            <div className="ce-carousel-outer" ref={carouselRef}>
+          <div className="ci-carousel-wrap">
+            <div className="ci-carousel-outer" ref={carouselRef}>
               <div
-                className="ce-carousel-track"
+                className="ci-carousel-track"
                 style={{ transform: `translateX(${translateX})` }}
               >
-                {mediaItems.map((media, idx) => (
+                {mediaItems.map((media, idx) => {
+                  const author = getMediaAuthor(media)
+                  const fallbackOwner = typeof capsule?.owner === 'object' ? capsule?.owner : null
+                  const effectiveAuthor = author || fallbackOwner
+                  const avatar = getUserAvatar(effectiveAuthor)
+                  const kind = getMediaKind(media)
+                  const fileName = media.title?.trim() || getFileName(media.url)
+                  return (
                   <div
                     key={media._id || idx}
-                    className="ce-slide"
-                    style={slideWidth > 0 ? { minWidth: slideWidth + 'px' } : undefined}
+                    className="ci-slide"
+                    style={slideWidth > 0 ? { width: `${slideWidth}px` } : undefined}
                   >
-                    {media.type === 'video' ? (
-                      <video src={resolveUrl(media.url)} className="ce-slide__media" controls />
-                    ) : media.type === 'image' ? (
-                      <img src={resolveUrl(media.url)} alt={`Slide ${idx + 1}`} className="ce-slide__media" />
-                    ) : media.type === '3d' ? (
+                    <div className="ci-slide__author" aria-label={`Subido por`}>
+                      {avatar
+                        ? <img src={resolveUrl(avatar)} alt={effectiveAuthor?.name || ''} />
+                        : <span>{(effectiveAuthor?.name || 'U').charAt(0).toUpperCase()}</span>}
+                    </div>
+
+                    {kind === 'image' ? (
+                      <img
+                        className="ci-slide__media"
+                        src={resolveUrl(media.url)}
+                        alt={media.title || getFileName(media.url)}
+                        style={{ display: 'block', objectFit: 'contain' }}
+                        onClick={() => navigate(`/capsulas/${capsule?._id}/media/${idx}`)}
+                        role="button"
+                        tabIndex={0}
+                      />
+                    ) : kind === 'video' ? (
+                      <video
+                        className="ci-slide__media"
+                        src={resolveUrl(media.url)}
+                        controls
+                      />
+                    ) : kind === 'audio' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 20, flexDirection: 'column', gap: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => window.open(resolveUrl(media.url), '_blank', 'noopener,noreferrer')}
+                          style={{ border: 'none', background: 'transparent', color: 'var(--color-texto-principal)', cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}
+                        >
+                          {fileName}
+                        </button>
+                        <audio src={resolveUrl(media.url)} controls style={{ width: '90%' }} />
+                      </div>
+                    ) : kind === 'pdf' ? (
+                      <button
+                        type="button"
+                        onClick={() => window.open(resolveUrl(media.url), '_blank', 'noopener,noreferrer')}
+                        style={{ width: '100%', height: '100%', border: 'none', background: '#f6f1e8', cursor: 'pointer', padding: 20 }}
+                        aria-label={txt('Abrir PDF', 'Open PDF')}
+                      >
+                        <object
+                          data={resolveUrl(media.url)}
+                          type="application/pdf"
+                          style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 8 }}>
+                            <span>{fileName}</span>
+                            <small style={{ color: 'var(--color-texto-secundario)' }}>{txt('Toca para abrir el PDF', 'Tap to open PDF')}</small>
+                          </div>
+                        </object>
+                      </button>
+                    ) : kind === 'text' ? (
+                      <button
+                        type="button"
+                        onClick={() => window.open(resolveUrl(media.url), '_blank', 'noopener,noreferrer')}
+                        style={{ width: '100%', height: '100%', border: 'none', background: '#f6f1e8', cursor: 'pointer', padding: 20, textAlign: 'left' }}
+                        aria-label={txt('Abrir archivo de texto', 'Open text file')}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, height: '100%', overflow: 'hidden' }}>
+                          <span style={{ textDecoration: 'underline', color: 'var(--color-texto-principal)' }}>{fileName}</span>
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--color-texto-secundario)', overflow: 'hidden' }}>{txt('Toca para abrir el archivo de texto', 'Tap to open text file')}</pre>
+                        </div>
+                      </button>
+                    ) : kind === '3d' ? (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 20 }}>
-                        <span>{media.title || '3D model'}</span>
+                        <span>{fileName}</span>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 20, flexDirection: 'column', gap: 8 }}>
-                        <a href={resolveUrl(media.url)} target="_blank" rel="noreferrer" style={{ color: 'var(--color-texto-principal)' }}>{media.originalName || media.fileName || media.title || 'Archivo'}</a>
+                      <button
+                        type="button"
+                        onClick={() => window.open(resolveUrl(media.url), '_blank', 'noopener,noreferrer')}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', padding: 20, flexDirection: 'column', gap: 8, border: 'none', background: '#f6f1e8', cursor: 'pointer' }}
+                      >
+                        <span style={{ color: 'var(--color-texto-principal)', textDecoration: 'underline' }}>{media.originalName || media.fileName || media.title || fileName}</span>
                         <small style={{ color: 'var(--color-texto-secundario)' }}>{media.mimeType || media.type}</small>
-                      </div>
+                      </button>
                     )}
                     <button
                       type="button"
@@ -449,12 +665,45 @@ function CapsuleEditPage() {
                       <img src={deleteIcon} alt="" width={16} height={16} aria-hidden="true" />
                     </button>
                   </div>
-                ))}
+                  )
+                })}
+
+                {/* pending staged files (not uploaded yet) */}
+                {pendingFiles.map((pending, pidx) => {
+                  const file = pending.file
+                  const t = (file.type || '').toLowerCase()
+                  const kind = t.startsWith('image/') ? 'image' : t.startsWith('video/') ? 'video' : t.startsWith('audio/') ? 'audio' : (file.name && /\.(pdf)$/i.test(file.name)) ? 'pdf' : (file.name && /\.(txt|md|csv|log|json|xml|yaml|yml|ini|rtf)$/i.test(file.name)) ? 'text' : 'file'
+                  const fileName = file.name || 'Archivo'
+                  return (
+                    <div key={pending.id} className="ci-slide" style={slideWidth > 0 ? { width: `${slideWidth}px` } : undefined}>
+                      <div className="ci-slide__author" aria-label={`Pendiente`}> 
+                        <span>P</span>
+                      </div>
+                      {kind === 'image' ? (
+                        <img className="ci-slide__media" src={pending.preview} alt={fileName} style={{ display: 'block', objectFit: 'contain' }} />
+                      ) : kind === 'video' ? (
+                        <video className="ci-slide__media" src={pending.preview} controls />
+                      ) : kind === 'audio' ? (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 20, flexDirection: 'column', gap: 8 }}>
+                          <span>{fileName}</span>
+                          <audio src={pending.preview} controls style={{ width: '90%' }} />
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', padding: 20 }}>
+                          <span>{fileName}</span>
+                        </div>
+                      )}
+                      <button type="button" className="ce-slide__delete" onClick={() => removePendingFile(pending.id)} aria-label={txt('Eliminar medio pendiente', 'Remove pending media')}>
+                        ×
+                      </button>
+                    </div>
+                  )
+                })}
 
                 {/* + add slide */}
                 <div
-                  className="ce-slide ce-slide--add"
-                  style={slideWidth > 0 ? { minWidth: slideWidth + 'px' } : undefined}
+                  className="ci-slide ci-slide--add"
+                  style={slideWidth > 0 ? { width: `${slideWidth}px` } : undefined}
                 >
                   <button
                     type="button"
@@ -471,30 +720,30 @@ function CapsuleEditPage() {
               </div>
             </div>
 
-            <div className="ce-carousel-controls">
+              <div className="ci-carousel-controls">
               <button
                 type="button"
-                className="ce-carousel__arrow"
-                onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
-                disabled={slideIndex === 0}
+                className="ci-carousel__arrow"
+                onClick={() => setActiveSlideIndex((i) => Math.max(0, i - 1))}
+                disabled={activeSlideIndex === 0}
                 aria-label={txt('Anterior', 'Previous')}
               >‹</button>
-              <div className="ce-dots">
-                {Array.from({ length: totalSlides + 1 }, (_, i) => (
+              <div className="ci-dots">
+                {Array.from({ length: totalSlides }, (_, i) => (
                   <button
                     key={i}
                     type="button"
-                    className={`ce-dot${slideIndex === i ? ' ce-dot--active' : ''}`}
-                    onClick={() => setSlideIndex(i)}
+                    className={`ci-dot${activeSlideIndex === i ? ' ci-dot--active' : ''}`}
+                    onClick={() => setActiveSlideIndex(i)}
                     aria-label={`${txt('Ir a slide', 'Go to slide')} ${i + 1}`}
                   />
                 ))}
               </div>
               <button
                 type="button"
-                className="ce-carousel__arrow"
-                onClick={() => setSlideIndex((i) => Math.min(totalSlides, i + 1))}
-                disabled={slideIndex >= totalSlides}
+                className="ci-carousel__arrow"
+                onClick={() => setActiveSlideIndex((i) => Math.min(totalSlides - 1, i + 1))}
+                disabled={activeSlideIndex >= totalSlides - 1}
                 aria-label={txt('Siguiente', 'Next')}
               >›</button>
             </div>

@@ -5,7 +5,8 @@ import { logoMAsset } from '../img'
 
 function Login() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const location = useLocation()
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,7 +17,7 @@ function Login() {
     setLoading(true)
 
     try {
-      const response = await loginUser(email, password)
+      const response = await loginUser(identifier, password)
       sessionStorage.setItem('authToken', response.token)
       if (response.refreshToken) {
         sessionStorage.setItem('refreshToken', response.refreshToken)
@@ -49,16 +50,16 @@ function Login() {
       <section className="auth-screen" aria-label="Pantalla de inicio de sesión">
         <article className="auth-screen__card">
         <form className="auth-screen__form" onSubmit={handleLogin}>
-          <label className="field auth-field" htmlFor="login-email">
-            <span>Correo electrónico</span>
+          <label className="field auth-field" htmlFor="login-identifier">
+            <span>Correo o nombre de usuario</span>
             <input
-              id="login-email"
-              name="email"
-              type="email"
-              placeholder="ejemplo@gmail.com"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="login-identifier"
+              name="identifier"
+              type="text"
+              placeholder="ejemplo@gmail.com o usuario"
+              autoComplete="username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
             />
           </label>

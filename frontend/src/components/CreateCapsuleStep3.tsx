@@ -3,6 +3,7 @@ import type { CreateCapsuleFormState } from '../pages/CreateCapsuleFlowPage'
 import type { ApiUser } from '../services/api'
 import { fetchFriends } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
+import { APP_PUBLIC_URL } from '../services/api'
 
 interface CreateCapsuleStep3Props {
   form: CreateCapsuleFormState
@@ -138,8 +139,7 @@ function CreateCapsuleStep3({
   }
 
   const handleShareProfile = () => {
-    const APP_BASE = (import.meta.env.VITE_APP_URL ?? window.location.origin).replace(/\/$/, '')
-    const profileUrl = `${APP_BASE}/perfil/${currentUser.username}`
+    const profileUrl = `${APP_PUBLIC_URL}/perfil/${currentUser.username}`
     updateForm({ sharingDecision: 'link' })
     
     if (navigator.share) {
@@ -352,11 +352,13 @@ function CreateCapsuleStep3({
                       top: '100%',
                       right: 0,
                       marginTop: '4px',
-                      backgroundColor: 'var(--color-fondo-principal)',
+                      backgroundColor: 'var(--color-fondo-secundario)',
                       border: '1px solid var(--color-borde)',
                       borderRadius: '6px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      zIndex: 9999,
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+                      zIndex: 2147483000,
+                      minWidth: 140,
+                      overflow: 'hidden',
                     }}
                   >
                     {(['admin', 'editar', 'ver'] as const).map(rol => (
@@ -370,11 +372,12 @@ function CreateCapsuleStep3({
                           padding: '10px 16px',
                           textAlign: 'left',
                           fontSize: '0.8750rem',
-                          background: 'none',
+                          background: 'transparent',
                           border: 'none',
                           cursor: 'pointer',
                           color: 'var(--color-texto-principal)',
                           borderBottom: rol !== 'ver' ? '1px solid var(--color-separador)' : 'none',
+                          display: 'block',
                         }}
                       >
                         {getRoleLabel(rol)}

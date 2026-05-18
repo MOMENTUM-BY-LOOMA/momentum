@@ -87,12 +87,17 @@ async function ensureNotBlocked(currentUserId, targetUserId) {
 }
 
 function resolveUsername(user) {
-  const email = String(user?.email || '').trim();
-  if (email.includes('@')) {
-    return email.split('@')[0];
+  const name = String(user?.name || '').trim();
+  if (name) {
+    return name.toLowerCase().replace(/\s+/g, '.')
   }
 
-  return String(user?.name || '').trim().toLowerCase().replace(/\s+/g, '.');
+  const email = String(user?.email || '').trim();
+  if (email.includes('@')) {
+    return email.split('@')[0]
+  }
+
+  return 'usuario'
 }
 
 // Send a friend request or auto-accept reciprocal pending request
@@ -407,9 +412,11 @@ router.get('/shared', auth, async (req, res) => {
     }
 
     const friendIds = friends.map((friend) => friend._id);
+
+    // Find capsules that are owned by any friend and that have been shared with the current user
     const capsules = await Capsule.find({
-      ...accessQuery(req.user.id),
-      sharedWith: { $in: friendIds },
+      owner: { $in: friendIds },
+      sharedWith: { $in: [String(req.user.id)] },
     })
       .sort({ updatedAt: -1 })
       .populate('owner', 'name email avatar profilePhoto')
@@ -419,8 +426,8 @@ router.get('/shared', auth, async (req, res) => {
     const grouped = friends
       .map((friend) => {
         const sharedCapsules = capsules.filter((capsule) => {
-          const sharedWithIds = (capsule.sharedWith || []).map((entry) => String(entry._id || entry));
-          return sharedWithIds.includes(friend._id);
+          const ownerId = typeof capsule.owner === 'string' ? capsule.owner : String(capsule.owner?._id || '');
+          return ownerId === friend._id;
         });
 
         return {

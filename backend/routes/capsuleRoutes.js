@@ -255,34 +255,10 @@ router.get('/models', auth, async (req, res) => {
   try {
     const models = [
       {
-        id: 'model-globe with luggage 3d model',
-        nombre: 'Globe With Luggage 3d Model',
-        thumbnailUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/thumbnails/globe with luggage 3d model.png',
-        modelUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/models/globe with luggage 3d model.glb',
-      },
-      {
         id: 'model-infinity+clock+sculpture+3d+model',
         nombre: 'Infinity+Clock+Sculpture+3d+Model',
         thumbnailUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/thumbnails/infinity+clock+sculpture+3d+model.png',
         modelUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/models/infinity+clock+sculpture+3d+model.glb',
-      },
-      {
-        id: 'model-stack of books 3d model',
-        nombre: 'Stack Of Books 3d Model',
-        thumbnailUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/thumbnails/stack of books 3d model.png',
-        modelUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/models/stack of books 3d model.glb',
-      },
-      {
-        id: 'model-stylized house 3d model',
-        nombre: 'Stylized House 3d Model',
-        thumbnailUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/thumbnails/stylized house 3d model.png',
-        modelUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/models/stylized house 3d model.glb',
-      },
-      {
-        id: 'model-tiny_planet_friends_3d-packaging-2922',
-        nombre: 'Tiny Planet Friends 3d Packaging 2922',
-        thumbnailUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/thumbnails/tiny_planet_friends_3d-packaging-2922.png',
-        modelUrl: 'https://pub-028631b9fcee42e0898f8bf691d9255f.r2.dev/defaults/models/tiny_planet_friends_3d-packaging-2922.glb',
       },
     ];
 
@@ -338,8 +314,8 @@ router.get('/', auth, async (req, res) => {
       .skip(offset)
       .limit(Math.min(limit, 100))
       .populate('owner', 'name email avatar')
-      .populate('sharedWith', 'name email avatar')
-      .populate('collaborators.user', 'name email avatar');
+      .populate('sharedWith', 'name email avatar profilePhoto')
+      .populate('collaborators.user', 'name email avatar profilePhoto');
 
     res.json(capsules);
   } catch (error) {
@@ -437,8 +413,8 @@ router.get('/:id', auth, async (req, res) => {
   try {
     let capsule = await Capsule.findOne({ _id: req.params.id, ...accessQuery(req.user.id) })
       .populate('owner', 'name username email avatar profilePhoto')
-      .populate('sharedWith', 'name username email avatar')
-      .populate('collaborators.user', 'name username email avatar')
+      .populate('sharedWith', 'name username email avatar profilePhoto')
+      .populate('collaborators.user', 'name username email avatar profilePhoto')
       .populate('comments.author', 'name username email avatar')
       .populate('mediaItems.author', 'name username email avatar profilePhoto')
       .populate('mediaItems.comments.author', 'name username email avatar');
@@ -760,7 +736,7 @@ router.post('/:id/share', auth, async (req, res) => {
         used: false,
       });
 
-      const publicUrlBase = (process.env.PUBLIC_APP_URL || process.env.VITE_APP_URL || '').replace(/\/$/, '') || '';
+      const publicUrlBase = (process.env.PUBLIC_APP_URL || process.env.VITE_APP_URL || 'https://momentum-frontend-xjzj.onrender.com').replace(/\/$/, '');
       const inviteUrl = publicUrlBase ? `${publicUrlBase}/invite/${invite.token}` : `/invite/${invite.token}`;
 
       res.json({ token: invite.token, url: inviteUrl, expiresAt: invite.expiresAt });

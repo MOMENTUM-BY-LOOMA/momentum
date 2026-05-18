@@ -8,8 +8,8 @@ function InitialLoading() {
   const [exiting, setExiting] = useState(false)
 
   useEffect(() => {
-    // auto-advance after 6 seconds
-    timeoutRef.current = window.setTimeout(() => handleAdvance(), 6000)
+    // auto-advance after 5 seconds
+    timeoutRef.current = window.setTimeout(() => handleAdvance(), 5000)
 
     return () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
@@ -24,7 +24,7 @@ function InitialLoading() {
     // add a small exit animation before navigating
     setExiting(true)
     // wait for animation (300ms) then navigate
-    setTimeout(() => navigate('/inicio-publico'), 300)
+    window.setTimeout(() => navigate('/inicio-publico'), 300)
   }
 
   return (

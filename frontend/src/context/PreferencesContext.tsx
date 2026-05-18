@@ -23,6 +23,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   // Load preferences on mount
   useEffect(() => {
     const loadPreferences = async () => {
+      const token = sessionStorage.getItem('authToken')
+      if (!token) {
+        applyUserPreferences(DEFAULT_USER_PREFERENCES)
+        setIsLoading(false)
+        return
+      }
+
       try {
         const user = await fetchCurrentUser()
         const normalized = normalizeUserPreferences(user.preferences)

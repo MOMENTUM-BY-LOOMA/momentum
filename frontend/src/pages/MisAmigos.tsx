@@ -19,6 +19,7 @@ import {
   type ApiUser,
 } from '../services/api'
 import { useTranslate } from '../services/useTranslate'
+import { APP_PUBLIC_URL } from '../services/api'
 
 type FriendItem = {
   friend: ApiUser
@@ -265,8 +266,7 @@ function MisAmigos() {
   }, [currentUser])
 
   const shareUrl = useMemo(() => {
-    const APP_BASE = (import.meta.env.VITE_APP_URL ?? window.location.origin).replace(/\/$/, '')
-    return `${APP_BASE}/perfil/${username}`
+    return `${APP_PUBLIC_URL}/perfil/${username}`
   }, [username])
   const outgoingPendingIds = useMemo(() => new Set(outgoingRequests.map((entry) => entry.user._id)), [outgoingRequests])
 
